@@ -1,4 +1,4 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.module;
 
 import jdk.nashorn.api.scripting.NashornException;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
@@ -7,13 +7,19 @@ import jdk.nashorn.internal.runtime.ECMAException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.clever.nashorn.modules.utils.Paths;
+import org.clever.nashorn.folder.Folder;
+import org.clever.nashorn.internal.Console;
+import org.clever.nashorn.module.cache.ModuleCache;
+import org.clever.nashorn.utils.Paths;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 
 import javax.script.*;
 import java.util.*;
 
 @Slf4j
 public class Module extends SimpleBindings implements RequireFunction {
+
+    // ---------------------------------------------------------------------------------------------- 自定义注入对象名(module、this)
     private static final String Module_Main = "main";
     private static final String Module_Exports = "exports";
     private static final String Module_Children = "children";
@@ -23,6 +29,9 @@ public class Module extends SimpleBindings implements RequireFunction {
     private static final String Module_Loaded = "loaded";
     private static final String Module_Parent = "parent";
     private static final String Module_Console = "console";
+    // ----------------------------------------------------------------------------------------------JS加载初始化生命周期
+    private static final String Module_Fuc_Init = "init";
+    // ----------------------------------------------------------------------------------------------
 
     // 当前线程缓存(fileFullPath --> ScriptObjectMirror缓存)
     private final static ThreadLocal<Map<String, ScriptObjectMirror>> refCache = new ThreadLocal<>();
@@ -33,20 +42,13 @@ public class Module extends SimpleBindings implements RequireFunction {
     // 当前模块使用的Module缓存(fileFullPath ---> Module缓存)
     @Getter
     private final ModuleCache moduleCache;
-    // 最顶层的Module对象(根Module)
+    // 最顶层的Module对象(root Module)
     @Getter
     private final Module main;
-    // 用于构造Js空对象 {}
-    private final ScriptObjectMirror objectConstructor;
-    // 用户构造Js Error 对象
-    private final ScriptObjectMirror errorConstructor;
-    // 用于解析JSON
-    private final ScriptObjectMirror jsonConstructor;
-
     // 当前Module所在文件夹
     @Getter
     private final Folder folder;
-    // 加载Module时定义的 module 对象 TODO 删除此属性
+    // 加载Module时定义的 module 对象
     @Getter
     private final Bindings module;
     // 当前Module依赖(require)的 module 对象
@@ -57,37 +59,30 @@ public class Module extends SimpleBindings implements RequireFunction {
     private ScriptObjectMirror exports;
 
     /**
+     * 新建一个 root Module
+     *
      * @param engine      Script Engine
      * @param moduleCache Module Cache
      * @param rootFolder  Root Folder
      * @param module      module
      * @param exports     exports
      */
-    public Module(NashornScriptEngine engine, ModuleCache moduleCache, Folder rootFolder, Bindings module, ScriptObjectMirror exports) throws ScriptException {
+    public Module(NashornScriptEngine engine, ModuleCache moduleCache, Folder rootFolder, Bindings module, ScriptObjectMirror exports) {
         this.folder = rootFolder;
         this.engine = engine;
         this.moduleCache = moduleCache;
-        this.objectConstructor = (ScriptObjectMirror) engine.eval("Object");
-        this.jsonConstructor = (ScriptObjectMirror) engine.eval("JSON");
-        this.errorConstructor = (ScriptObjectMirror) engine.eval("Error");
         // 设置根Module
         this.main = this;
         this.module = module;
         this.exports = exports;
         String filename = "<main>";
-        put(Module_Main, this.main.module);
-        this.module.put(Module_Exports, exports);
-        this.module.put(Module_Children, children);
-        this.module.put(Module_Filepath, folder.getPath());
-        this.module.put(Module_Filename, filename);
-        this.module.put(Module_Id, folder.getFilePath(filename));
-        this.module.put(Module_Loaded, false);
-        this.module.put(Module_Parent, null);
-        this.module.put(Module_Console, new Console(folder.getFilePath(filename)));
-        // TODO 注入其他自定义的对象
+        inject(filename, null);
+        setLoaded();
     }
 
     /**
+     * 新建一个 child Module
+     *
      * @param folder   当前Module所在文件夹
      * @param filename 当前Module文件名
      * @param parent   当前Module的父Module
@@ -96,9 +91,6 @@ public class Module extends SimpleBindings implements RequireFunction {
         this.folder = folder;
         this.engine = parent.engine;
         this.moduleCache = parent.moduleCache;
-        this.objectConstructor = parent.objectConstructor;
-        this.errorConstructor = parent.errorConstructor;
-        this.jsonConstructor = parent.jsonConstructor;
         // 设置根Module
         this.main = parent.main;
         // 初始化 exports
@@ -109,18 +101,12 @@ public class Module extends SimpleBindings implements RequireFunction {
         // 初始化 module
         this.module = createSafeBindings();
         module.putAll(parent.engine.getBindings(ScriptContext.ENGINE_SCOPE));
-        put(Module_Main, this.main.module);
-        this.module.put(Module_Exports, exports);
-        this.module.put(Module_Children, children);
-        this.module.put(Module_Filepath, folder.getPath());
-        this.module.put(Module_Filename, filename);
-        this.module.put(Module_Id, folder.getFilePath(filename));
-        this.module.put(Module_Loaded, false);
-        this.module.put(Module_Parent, parent.module);
-        this.module.put(Module_Console, new Console(folder.getFilePath(filename)));
-        // TODO 注入其他自定义的对象
+        inject(filename, parent);
     }
 
+    /**
+     * 使用 require 得到 JS 对象
+     */
     public ScriptObjectMirror useJs(String name) {
         try {
             return require(name);
@@ -190,9 +176,38 @@ public class Module extends SimpleBindings implements RequireFunction {
         }
     }
 
+    /**
+     * 自定义注入对象名(module、this)
+     *
+     * @param filename 当前Module文件名
+     * @param parent   当前Module的父Module
+     */
+    private void inject(String filename, Module parent) {
+        Console console = new Console(folder.getFilePath(filename), filename);
+        // 当前模块内容
+        put(Module_Main, this.main.module);
+        put(Module_Exports, exports);
+        put(Module_Children, children);
+        put(Module_Filepath, folder.getPath());
+        put(Module_Filename, filename);
+        put(Module_Id, folder.getFilePath(filename));
+        put(Module_Loaded, false);
+        put(Module_Parent, null);
+        put(Module_Console, console);
+        // 当前模块module对象内容
+        this.module.put(Module_Exports, exports);
+        this.module.put(Module_Children, children);
+        this.module.put(Module_Filepath, folder.getPath());
+        this.module.put(Module_Filename, filename);
+        this.module.put(Module_Id, folder.getFilePath(filename));
+        this.module.put(Module_Loaded, false);
+        this.module.put(Module_Parent, parent == null ? null : parent.module);
+        this.module.put(Module_Console, console);
+    }
+
     // 抛出Module找不到异常
     private void throwModuleNotFoundException(String module) {
-        Bindings error = (Bindings) errorConstructor.newObject("Module not found: " + module);
+        Bindings error = ScriptEngineUtils.newError("Module not found: " + module);
         error.put("code", "MODULE_NOT_FOUND");
         throw new ECMAException(error, null);
     }
@@ -222,7 +237,7 @@ public class Module extends SimpleBindings implements RequireFunction {
 
     // 创建一个安全的Bindings对象
     private ScriptObjectMirror createSafeBindings() {
-        return (ScriptObjectMirror) objectConstructor.newObject();
+        return ScriptEngineUtils.newObject();
     }
 
     // 前缀是固定的 “/” 或 “../” 或 “./”
@@ -297,8 +312,10 @@ public class Module extends SimpleBindings implements RequireFunction {
             // 编译 json
             created = compileJsonModule(path, filename, scriptCode);
         } else {
-            // 不支持的 module 类型 TODO 抛异常
-            return null;
+            // 不支持的 module 类型
+            Bindings error = ScriptEngineUtils.newError("not support file type:" + filename);
+            error.put("code", "MODULE_NOT_SUPPORT");
+            throw new ECMAException(error, null);
         }
         return created;
     }
@@ -342,24 +359,24 @@ public class Module extends SimpleBindings implements RequireFunction {
     }
 
     // 设置加载成功
-    void setLoaded() {
+    private void setLoaded() {
         // 修改加载状态
-        module.put("loaded", true);
-        // TODO JS加载初始化生命周期
-        if (!exports.hasMember("init")) {
+        module.put(Module_Loaded, true);
+        // JS加载初始化生命周期
+        if (!exports.hasMember(Module_Fuc_Init)) {
             return;
         }
-        Object init = exports.getMember("init");
+        Object init = exports.getMember(Module_Fuc_Init);
         if (init instanceof ScriptObjectMirror) {
             ScriptObjectMirror initFuc = (ScriptObjectMirror) init;
             Object res = initFuc.call(this);
-            log.debug("[init] [{}] -> {}", this.module.get(Module_Id), res);
+            log.debug("[{}] [{}] -> {}", Module_Fuc_Init, this.module.get(Module_Id), res);
         }
     }
 
     // 解析Json成为 ScriptObjectMirror 对象
     private ScriptObjectMirror parseJson(String json) {
-        return (ScriptObjectMirror) jsonConstructor.callMember("parse", json);
+        return ScriptEngineUtils.parseJson(json);
     }
 
     // 从文件夹加载 Module

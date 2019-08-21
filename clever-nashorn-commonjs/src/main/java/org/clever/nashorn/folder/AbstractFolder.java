@@ -1,4 +1,4 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.folder;
 
 public abstract class AbstractFolder implements Folder {
     private Folder parent;

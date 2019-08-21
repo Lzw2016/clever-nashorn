@@ -1,8 +1,9 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.internal;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
 import org.clever.common.utils.mapper.JacksonMapper;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +15,15 @@ import java.util.List;
 public class Console {
 
     @Getter
-    private final String name;
+    private final String filePath;
+    @Getter
+    private final String fileName;
     private final Logger log;
 
-    public Console(String name) {
-        this.name = name;
-        this.log = LoggerFactory.getLogger(name);
+    public Console(String filePath, String fileName) {
+        this.filePath = filePath;
+        this.fileName = fileName;
+        this.log = LoggerFactory.getLogger(fileName);
     }
 
     public void log(Object... args) {
@@ -70,12 +74,10 @@ public class Console {
             str = String.valueOf(object);
         } else if (object instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) object;
-            if (scriptObjectMirror.isArray()) {
-                str = JacksonMapper.nonEmptyMapper().toJson(scriptObjectMirror.values());
-            } else if (scriptObjectMirror.isExtensible() || scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
+            if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
                 str = scriptObjectMirror.toString();
             } else {
-                str = JacksonMapper.nonEmptyMapper().toJson(object);
+                str = ScriptEngineUtils.stringify(scriptObjectMirror);
             }
         } else {
             str = JacksonMapper.nonEmptyMapper().toJson(object);

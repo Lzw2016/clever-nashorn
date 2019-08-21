@@ -1,4 +1,4 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.module;
 
 import jdk.nashorn.api.scripting.NashornException;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;

@@ -1,4 +1,4 @@
-package org.clever.nashorn.modules.utils;
+package org.clever.nashorn.utils;
 
 import org.apache.commons.lang3.StringUtils;
 

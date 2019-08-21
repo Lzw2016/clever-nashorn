@@ -1,4 +1,6 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.module.cache;
+
+import org.clever.nashorn.module.Module;
 
 import java.util.HashMap;
 import java.util.Map;

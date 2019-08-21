@@ -1,4 +1,4 @@
-package org.clever.nashorn.modules;
+package org.clever.nashorn.folder;
 
 /**
  * 文件夹路径抽象

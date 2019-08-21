@@ -3,11 +3,9 @@ package org.clever.nashorn.modules;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
+import org.clever.nashorn.ScriptModuleInstance;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.junit.Test;
-
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.io.File;
 
 /**
  * 作者： lzw<br/>
@@ -17,80 +15,80 @@ import java.io.File;
 public class MyTest {
 
     private NashornScriptEngine getEngine() {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        NashornScriptEngine engine = (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
-        log.info("# getEngine -> {}", engine);
-        return engine;
+        return ScriptEngineUtils.creatEngine();
+    }
+
+    @Test
+    public void test() {
+        NashornScriptEngine engine1 = getEngine();
+        NashornScriptEngine engine2 = getEngine();
+        // 每次获取的Engine对象不一样
+        log.info("### engine1={} | engine2={}", engine1, engine2);
+    }
+
+    @Test
+    public void test1() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test1");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./foo.js");
+        scriptObjectMirror.callMember("test", "nashorn");
+        log.info(" # --- {}", scriptModuleInstance.getRootModule());
+    }
+
+    @Test
+    public void test3() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test3");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./test.js");
+        log.info(" # --- {}", scriptObjectMirror.get("invariant"));
     }
 
     // 循环依赖 test4 - cycles
     @Test
-    public void test4Cycles() throws ScriptException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/test4/cycles"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./main.js");
+    public void test4Cycles() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/cycles");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### scriptObjectMirror - {}", scriptObjectMirror);
     }
 
     // 循环依赖 test4 - deep
     @Test
-    public void test4Deep() throws ScriptException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/test4/deep"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./main.js");
+    public void test4Deep() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/deep");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### scriptObjectMirror - {}", scriptObjectMirror);
     }
 
     // 循环依赖 test4 - demo3
     @Test
-    public void test4Demo3() throws ScriptException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/test4/demo3"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./main.js");
+    public void test4Demo3() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/demo3");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### --------------------------------------------------------------------- scriptObjectMirror - {}", scriptObjectMirror);
-        ScriptObjectMirror a = rootModule.useJs("./a.js");
+        ScriptObjectMirror a = scriptModuleInstance.useJs("./a.js");
         a.callMember("aFuc");
-        ScriptObjectMirror b = rootModule.useJs("./b.js");
+        ScriptObjectMirror b = scriptModuleInstance.useJs("./b.js");
         b.callMember("bFuc");
     }
 
     @Test
-    public void test1() throws ScriptException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/test1"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./foo.js");
-        scriptObjectMirror.callMember("test", "nashorn");
-        log.info(" # --- {}", rootModule);
-    }
-
-    @Test
-    public void test6() throws ScriptException, InterruptedException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/test6"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./t01");
+    public void test6() throws InterruptedException {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test6");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t01");
         scriptObjectMirror.callMember("test");
         Thread.sleep(1000 * 10);
-        rootModule.getModuleCache().clear();
+        scriptModuleInstance.getModuleCache().clear();
         log.info(" # --- {}", "clear");
-        scriptObjectMirror = rootModule.useJs("./t01");
+        scriptObjectMirror = scriptModuleInstance.useJs("./t01");
         scriptObjectMirror.callMember("test");
-        log.info(" # --- {}", rootModule);
+        log.info(" # --- {}", scriptModuleInstance);
     }
 
     // ========================================================================================================================================================
 
     @Test
-    public void tmp() throws ScriptException {
-        NashornScriptEngine engine = getEngine();
-        Folder rootFolder = FilesystemFolder.create(new File("src/test/resources/tmp"));
-        Module rootModule = Require.enable(engine, rootFolder);
-        ScriptObjectMirror scriptObjectMirror = rootModule.useJs("./index.js");
+    public void tmp() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./index.js");
         scriptObjectMirror.callMember("test", "nashorn");
-        log.info(" # --- {}", rootModule);
+        log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
 }
