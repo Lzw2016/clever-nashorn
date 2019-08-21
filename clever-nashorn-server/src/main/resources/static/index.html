@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    var ws = new WebSocket("ws://127.0.0.1:18081/ws/debug");
+    ws.onopen = function () {
+        console.log("open");
+        ws.send(JSON.stringify({
+            filePath: 'clever-nashorn-commonjs/src/test/resources/tmp',
+            fileName: './index.js',
+            fucName: 'test'
+        }));
+    };
+
+    ws.onmessage = function (evt) {
+        console.log(evt.data)
+    };
+
+    ws.onclose = function (evt) {
+        console.log("WebSocketClosed");
+    };
+
+    ws.onerror = function (evt) {
+        console.log("WebSocketError");
+    };
+</script>
+</html>

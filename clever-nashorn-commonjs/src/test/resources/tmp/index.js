@@ -28,7 +28,7 @@ console.log("console -> {}", this.console);
 var init = function () {
     console.log("###############################");
     test();
-    abcd.callBack();
+    // abcd.callBack();
 };
 
 exports.test = test;

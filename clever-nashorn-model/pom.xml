@@ -3,20 +3,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    
     <parent>
         <artifactId>clever-nashorn</artifactId>
         <groupId>org.clever</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>clever-nashorn-commonjs</artifactId>
+    <artifactId>clever-nashorn-model</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.clever</groupId>
-            <artifactId>clever-common-utils</artifactId>
+            <artifactId>clever-common-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -54,6 +54,8 @@
 
     <modules>
         <module>clever-nashorn-commonjs</module>
+        <module>clever-nashorn-model</module>
+        <module>clever-nashorn-server</module>
     </modules>
 
     <properties>
@@ -79,21 +81,16 @@
                 <artifactId>clever-nashorn-commonjs</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!--            <dependency>-->
-            <!--                <groupId>org.clever</groupId>-->
-            <!--                <artifactId>clever-security-client</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.clever</groupId>-->
-            <!--                <artifactId>clever-security-embed</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>org.clever</groupId>-->
-            <!--                <artifactId>clever-security-server</artifactId>-->
-            <!--                <version>${project.version}</version>-->
-            <!--            </dependency>-->
+            <dependency>
+                <groupId>org.clever</groupId>
+                <artifactId>clever-nashorn-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.clever</groupId>
+                <artifactId>clever-nashorn-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!--clever common-->
             <dependency>
                 <groupId>org.clever</groupId>
