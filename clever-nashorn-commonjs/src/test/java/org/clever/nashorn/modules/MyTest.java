@@ -7,6 +7,9 @@ import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 作者： lzw<br/>
  * 创建时间：2019-01-10 12:01 <br/>
@@ -74,7 +77,7 @@ public class MyTest {
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test6");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t01");
         scriptObjectMirror.callMember("test");
-        Thread.sleep(1000 * 10);
+        Thread.sleep(1000 * 3);
         scriptModuleInstance.getModuleCache().clear();
         log.info(" # --- {}", "clear");
         scriptObjectMirror = scriptModuleInstance.useJs("./t01");
@@ -85,10 +88,23 @@ public class MyTest {
     // ========================================================================================================================================================
 
     @Test
-    public void tmp() {
+    public void tmp1() {
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./index.js");
         scriptObjectMirror.callMember("test", "nashorn");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
+    }
+
+    @Test
+    public void tmp2() {
+        Map<String, Object> context = new HashMap<>();
+        context.put("abcd", new MyTest());
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        scriptModuleInstance.useJs("./index.js");
+        log.info(" # --- {}", scriptModuleInstance.getRootModule());
+    }
+
+    public void callBack() {
+        log.info("### callBack");
     }
 }

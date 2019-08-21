@@ -100,7 +100,6 @@ public class Module extends SimpleBindings implements RequireFunction {
         }
         // 初始化 module
         this.module = createSafeBindings();
-        module.putAll(parent.engine.getBindings(ScriptContext.ENGINE_SCOPE));
         inject(filename, parent);
     }
 
@@ -184,7 +183,18 @@ public class Module extends SimpleBindings implements RequireFunction {
      */
     private void inject(String filename, Module parent) {
         Console console = new Console(folder.getFilePath(filename), filename);
+        // 当前模块module对象内容
+        module.putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
+        module.put(Module_Exports, exports);
+        module.put(Module_Children, children);
+        module.put(Module_Filepath, folder.getPath());
+        module.put(Module_Filename, filename);
+        module.put(Module_Id, folder.getFilePath(filename));
+        module.put(Module_Loaded, false);
+        module.put(Module_Parent, parent == null ? null : parent.module);
+        module.put(Module_Console, console);
         // 当前模块内容
+        putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
         put(Module_Main, this.main.module);
         put(Module_Exports, exports);
         put(Module_Children, children);
@@ -192,17 +202,8 @@ public class Module extends SimpleBindings implements RequireFunction {
         put(Module_Filename, filename);
         put(Module_Id, folder.getFilePath(filename));
         put(Module_Loaded, false);
-        put(Module_Parent, null);
+        put(Module_Parent, parent == null ? null : parent.module);
         put(Module_Console, console);
-        // 当前模块module对象内容
-        this.module.put(Module_Exports, exports);
-        this.module.put(Module_Children, children);
-        this.module.put(Module_Filepath, folder.getPath());
-        this.module.put(Module_Filename, filename);
-        this.module.put(Module_Id, folder.getFilePath(filename));
-        this.module.put(Module_Loaded, false);
-        this.module.put(Module_Parent, parent == null ? null : parent.module);
-        this.module.put(Module_Console, console);
     }
 
     // 抛出Module找不到异常
@@ -362,6 +363,7 @@ public class Module extends SimpleBindings implements RequireFunction {
     private void setLoaded() {
         // 修改加载状态
         module.put(Module_Loaded, true);
+        put(Module_Loaded, true);
         // JS加载初始化生命周期
         if (!exports.hasMember(Module_Fuc_Init)) {
             return;

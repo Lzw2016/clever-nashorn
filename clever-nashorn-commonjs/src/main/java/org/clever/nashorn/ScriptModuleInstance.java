@@ -13,6 +13,7 @@ import org.clever.nashorn.utils.ScriptEngineUtils;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import java.io.File;
+import java.util.Map;
 
 /**
  * NashornScriptEngine Module 实例
@@ -47,19 +48,44 @@ public class ScriptModuleInstance {
     /**
      * @param folder      脚本资源获取实现
      * @param moduleCache 模块缓存实现
+     * @param context     全局的对象
      */
-    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache) {
+    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache, Map<String, Object> context) {
         this.folder = folder;
         this.moduleCache = moduleCache;
         // 初始化 root Module
         engine = ScriptEngineUtils.creatEngine();
         Bindings global = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        if (context != null && context.size() > 0) {
+            global.putAll(context);
+        }
         Bindings module = engine.createBindings();
         ScriptObjectMirror exports = ScriptEngineUtils.newObject();
         rootModule = new Module(engine, moduleCache, folder, module, exports);
         global.put("require", rootModule);
         global.put("module", module);
         global.put("exports", exports);
+    }
+
+    /**
+     * @param folder      脚本资源获取实现
+     * @param moduleCache 模块缓存实现
+     */
+    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache) {
+        this(folder, moduleCache, null);
+    }
+
+    /**
+     * 创建默认的 ScriptModuleInstance <br />
+     * 使用本地文件获取脚本资源<br />
+     * 使用内存缓存Module<br />
+     *
+     * @param rootFilePath 本地文件路径
+     * @param context      全局的对象
+     */
+    public static ScriptModuleInstance creatDefault(String rootFilePath, Map<String, Object> context) {
+        Folder rootFolder = FilesystemFolder.create(new File(rootFilePath));
+        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), context);
     }
 
     /**
@@ -70,9 +96,9 @@ public class ScriptModuleInstance {
      * @param rootFilePath 本地文件路径
      */
     public static ScriptModuleInstance creatDefault(String rootFilePath) {
-        Folder rootFolder = FilesystemFolder.create(new File(rootFilePath));
-        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache());
+        return creatDefault(rootFilePath, null);
     }
+
 
     /**
      * 使用 require 得到 JS 对象
