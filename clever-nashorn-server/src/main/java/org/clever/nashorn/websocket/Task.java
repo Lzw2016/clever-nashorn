@@ -56,7 +56,7 @@ public abstract class Task<T> {
     /**
      * 增加一个WebSocketSession到当前任务
      */
-    private void addWebSocketSession(WebSocketSession session) {
+    public void addWebSocketSession(WebSocketSession session) {
         Session_Set.add(session);
     }
 
@@ -173,6 +173,7 @@ public abstract class Task<T> {
      */
     public void stop() {
         stop = true;
+        closeAllSession();
         doDestroy();
     }
 

@@ -223,6 +223,7 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
             K newTask = handleFirstMessage(session, msg, verify);
             if (newTask != null) {
                 log.info("[创建任务] SessionId={} | TaskId={}", session.getId(), newTask.getTaskId());
+                newTask.addWebSocketSession(session);
                 putTask(newTask);
                 if (!newTask.isStart()) {
                     newTask.start(msg, verify);
