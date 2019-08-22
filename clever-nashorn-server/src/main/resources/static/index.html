@@ -11,7 +11,7 @@
 <script>
     var ws = new WebSocket("ws://127.0.0.1:18081/ws/debug");
     ws.onopen = function () {
-        console.log("open");
+        logConsole.log("open");
         ws.send(JSON.stringify({
             filePath: 'clever-nashorn-commonjs/src/test/resources/tmp',
             fileName: './index.js',
@@ -20,15 +20,15 @@
     };
 
     ws.onmessage = function (evt) {
-        console.log(evt.data)
+        logConsole.log(evt.data)
     };
 
     ws.onclose = function (evt) {
-        console.log("WebSocketClosed");
+        logConsole.log("WebSocketClosed");
     };
 
     ws.onerror = function (evt) {
-        console.log("WebSocketError");
+        logConsole.log("WebSocketError");
     };
 </script>
 </html>

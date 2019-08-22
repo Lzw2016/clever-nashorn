@@ -5,6 +5,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
 import org.clever.nashorn.folder.FilesystemFolder;
 import org.clever.nashorn.folder.Folder;
+import org.clever.nashorn.internal.Console;
+import org.clever.nashorn.internal.LogConsole;
 import org.clever.nashorn.module.Module;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
@@ -48,9 +50,10 @@ public class ScriptModuleInstance {
     /**
      * @param folder      脚本资源获取实现
      * @param moduleCache 模块缓存实现
+     * @param console     Console
      * @param context     全局的对象
      */
-    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache, Map<String, Object> context) {
+    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache, Console console, Map<String, Object> context) {
         this.folder = folder;
         this.moduleCache = moduleCache;
         // 初始化 root Module
@@ -61,7 +64,7 @@ public class ScriptModuleInstance {
         }
         Bindings module = engine.createBindings();
         ScriptObjectMirror exports = ScriptEngineUtils.newObject();
-        rootModule = new Module(engine, moduleCache, folder, module, exports);
+        rootModule = new Module(engine, console, moduleCache, folder, module, exports);
         global.put("require", rootModule);
         global.put("module", module);
         global.put("exports", exports);
@@ -70,22 +73,24 @@ public class ScriptModuleInstance {
     /**
      * @param folder      脚本资源获取实现
      * @param moduleCache 模块缓存实现
+     * @param console     Console
      */
-    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache) {
-        this(folder, moduleCache, null);
+    public ScriptModuleInstance(Folder folder, ModuleCache moduleCache, Console console) {
+        this(folder, moduleCache, console, null);
     }
 
     /**
      * 创建默认的 ScriptModuleInstance <br />
      * 使用本地文件获取脚本资源<br />
      * 使用内存缓存Module<br />
+     * 使用LogConsole<br />
      *
      * @param rootFilePath 本地文件路径
      * @param context      全局的对象
      */
     public static ScriptModuleInstance creatDefault(String rootFilePath, Map<String, Object> context) {
         Folder rootFolder = FilesystemFolder.create(new File(rootFilePath));
-        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), context);
+        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(rootFilePath, Module.Root_Filename), context);
     }
 
     /**

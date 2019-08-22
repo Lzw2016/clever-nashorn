@@ -19,6 +19,8 @@ import java.util.*;
 @Slf4j
 public class Module extends SimpleBindings implements RequireFunction {
 
+    public static final String Root_Filename = "<main>";
+
     // ---------------------------------------------------------------------------------------------- 自定义注入对象名(module、this)
     private static final String Module_Main = "main";
     private static final String Module_Exports = "exports";
@@ -39,6 +41,8 @@ public class Module extends SimpleBindings implements RequireFunction {
     // 当前Module使用的JS引擎
     @Getter
     private final NashornScriptEngine engine;
+    // 当前Module使用的Console
+    private final Console console;
     // 当前模块使用的Module缓存(fileFullPath ---> Module缓存)
     @Getter
     private final ModuleCache moduleCache;
@@ -62,21 +66,22 @@ public class Module extends SimpleBindings implements RequireFunction {
      * 新建一个 root Module
      *
      * @param engine      Script Engine
+     * @param console     Console
      * @param moduleCache Module Cache
      * @param rootFolder  Root Folder
      * @param module      module
      * @param exports     exports
      */
-    public Module(NashornScriptEngine engine, ModuleCache moduleCache, Folder rootFolder, Bindings module, ScriptObjectMirror exports) {
-        this.folder = rootFolder;
+    public Module(NashornScriptEngine engine, Console console, ModuleCache moduleCache, Folder rootFolder, Bindings module, ScriptObjectMirror exports) {
         this.engine = engine;
+        this.console = console;
         this.moduleCache = moduleCache;
-        // 设置根Module
-        this.main = this;
+        this.folder = rootFolder;
         this.module = module;
         this.exports = exports;
-        String filename = "<main>";
-        inject(filename, null);
+        // 设置根Module
+        this.main = this;
+        inject(Root_Filename, null);
         setLoaded();
     }
 
@@ -88,18 +93,19 @@ public class Module extends SimpleBindings implements RequireFunction {
      * @param parent   当前Module的父Module
      */
     protected Module(Folder folder, String filename, Module parent) {
-        this.folder = folder;
         this.engine = parent.engine;
+        this.console = parent.console.creat(folder.getFilePath(filename), filename);
         this.moduleCache = parent.moduleCache;
-        // 设置根Module
-        this.main = parent.main;
+        this.folder = folder;
+        // 初始化 module
+        this.module = createSafeBindings();
         // 初始化 exports
         this.exports = refCache.get() != null ? refCache.get().get(this.folder.getFilePath(filename)) : null;
         if (this.exports == null) {
             this.exports = createSafeBindings();
         }
-        // 初始化 module
-        this.module = createSafeBindings();
+        // 设置根Module
+        this.main = parent.main;
         inject(filename, parent);
     }
 
@@ -182,7 +188,6 @@ public class Module extends SimpleBindings implements RequireFunction {
      * @param parent   当前Module的父Module
      */
     private void inject(String filename, Module parent) {
-        Console console = new Console(folder.getFilePath(filename), filename);
         // 当前模块module对象内容
         module.putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
         module.put(Module_Exports, exports);
