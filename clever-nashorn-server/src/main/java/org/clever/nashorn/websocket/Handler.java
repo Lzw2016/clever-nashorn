@@ -237,7 +237,7 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
     // ----------------------------------------------------------------------------------------------------------- 需要子类实现的方法
 
     /**
-     * 客户段连接成功后第一次处理请求消息(用户创建Task)
+     * 客户段连接成功后第一次处理请求消息(用于创建Task)
      *
      * @param session 会话
      * @param message 请求消息

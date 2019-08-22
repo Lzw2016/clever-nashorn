@@ -104,7 +104,6 @@ public class ScriptModuleInstance {
         return creatDefault(rootFilePath, null);
     }
 
-
     /**
      * 使用 require 得到 JS 对象
      */
