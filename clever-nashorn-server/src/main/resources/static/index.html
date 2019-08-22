@@ -20,7 +20,7 @@
     };
 
     ws.onmessage = function (evt) {
-        console.log(evt.data)
+        console.log(JSON.parse(evt.data).log)
     };
 
     ws.onclose = function (evt) {
