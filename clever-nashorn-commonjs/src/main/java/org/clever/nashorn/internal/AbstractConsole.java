@@ -4,6 +4,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
+import org.clever.nashorn.module.Module;
 import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.clever.nashorn.utils.StrFormatter;
 
@@ -39,6 +40,14 @@ public abstract class AbstractConsole implements Console {
     public AbstractConsole(String filePath, String fileName) {
         this.filePath = filePath;
         this.fileName = fileName;
+    }
+
+    /**
+     * 创建 root Console
+     * @param filePath root文件路径
+     */
+    public AbstractConsole(String filePath) {
+        this(filePath, Module.Root_Filename);
     }
 
     /**

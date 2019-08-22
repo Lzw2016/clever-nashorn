@@ -30,7 +30,7 @@ public class DebugTask extends Task<DebugReq> {
         super(String.format("%s-%s/%s", IDCreateUtils.shortUuid(), debugReq.getFilePath(), debugReq.getFileName()));
         Folder rootFolder = FilesystemFolder.create(new File(debugReq.getFilePath()));
         MemoryModuleCache cache = new MemoryModuleCache();
-        Console console = new WebSocketConsole(debugReq.getFilePath(), Module.Root_Filename, this);
+        Console console = new WebSocketConsole(debugReq.getFilePath(), this);
         scriptModuleInstance = new ScriptModuleInstance(rootFolder, cache, console);
     }
 
@@ -47,7 +47,7 @@ public class DebugTask extends Task<DebugReq> {
     }
 
     @Override
-    protected void doDestroy() {
+    protected void doStop() {
     }
 
     @Override

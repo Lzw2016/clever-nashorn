@@ -90,7 +90,7 @@ public class ScriptModuleInstance {
      */
     public static ScriptModuleInstance creatDefault(String rootFilePath, Map<String, Object> context) {
         Folder rootFolder = FilesystemFolder.create(new File(rootFilePath));
-        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(rootFilePath, Module.Root_Filename), context);
+        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(rootFilePath), context);
     }
 
     /**

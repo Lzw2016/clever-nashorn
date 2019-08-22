@@ -20,11 +20,21 @@ public class WebSocketConsole extends AbstractConsole {
      * @param fileName 文件名称
      * @param task     WebSocket任务
      */
-    public WebSocketConsole(String filePath, String fileName, Task task) {
+    private WebSocketConsole(String filePath, String fileName, Task task) {
         super(filePath, fileName);
         this.task = task;
     }
 
+    /**
+     * 创建 root Console
+     *
+     * @param filePath root文件路径
+     * @param task     WebSocket任务
+     */
+    public WebSocketConsole(String filePath, Task task) {
+        super(filePath);
+        this.task = task;
+    }
 
     @Override
     public void log(Object... args) {

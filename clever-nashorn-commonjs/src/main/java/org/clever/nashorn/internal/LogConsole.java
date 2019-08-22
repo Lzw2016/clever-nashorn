@@ -18,6 +18,16 @@ public class LogConsole extends AbstractConsole {
         this.log = LoggerFactory.getLogger(fileName);
     }
 
+    /**
+     * 创建 root Console
+     *
+     * @param filePath root文件路径
+     */
+    public LogConsole(String filePath) {
+        super(filePath);
+        this.log = LoggerFactory.getLogger(this.getFileName());
+    }
+
     @Override
     public void log(Object... args) {
         log.info(logString(args));

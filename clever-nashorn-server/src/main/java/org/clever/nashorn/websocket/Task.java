@@ -169,12 +169,13 @@ public abstract class Task<T> {
     }
 
     /**
-     * 释放任务
+     * 关闭任务<br />
+     * 释放资源
      */
     public void stop() {
         stop = true;
         closeAllSession();
-        doDestroy();
+        doStop();
     }
 
     // ----------------------------------------------------------------------------------------------------------- 需要子类实现的方法
@@ -195,7 +196,7 @@ public abstract class Task<T> {
     /**
      * 结束任务释放资源
      */
-    protected abstract void doDestroy();
+    protected abstract void doStop();
 
     /**
      * 处理请求消息
