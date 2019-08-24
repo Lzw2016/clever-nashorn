@@ -1,19 +1,17 @@
 package org.clever.nashorn.dto.request;
 
 import lombok.Data;
-
-import java.io.Serializable;
+import lombok.EqualsAndHashCode;
+import org.clever.nashorn.model.WebSocketTaskReq;
 
 /**
  * 请求 Debug JS
  * 作者：lizw <br/>
  * 创建时间：2019/08/21 17:42 <br/>
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class DebugReq implements Serializable {
-
-//    @NotBlank
-//    private String jsCode;
+public class DebugReq extends WebSocketTaskReq {
 
     /**
      * 调用文件路径
@@ -29,4 +27,7 @@ public class DebugReq implements Serializable {
      * 调用方法
      */
     private String fucName;
+
+//    @NotBlank
+//    private String jsCode;
 }

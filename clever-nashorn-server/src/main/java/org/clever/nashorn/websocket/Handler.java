@@ -8,15 +8,15 @@ import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.reflection.ReflectionsUtils;
 import org.clever.common.utils.validator.BaseValidatorUtils;
 import org.clever.common.utils.validator.ValidatorFactoryUtils;
+import org.clever.nashorn.dto.response.ConsoleLogRes;
+import org.clever.nashorn.model.WebSocketTaskReq;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -30,10 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @SuppressWarnings("WeakerAccess")
 @Slf4j
-public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHandler {
+public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> extends AbstractWebSocketHandler {
 
     /**
-     * 所有的任务 Map<taskId, Task>
+     * 所有的任务 Map<taskId, Task> <br />
+     * 一个Task对应多个session，一个session只能对应一个Task
      */
     private static final ConcurrentHashMap<String, Task> TASK_MAP = new ConcurrentHashMap<>();
 
@@ -47,7 +48,12 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
                     String key = entry.getKey();
                     Task task = entry.getValue();
                     allSessionCount += task.getWebSocketSessionSize();
-                    if (task.isStop()) {
+                    // 任务已停止或者任务已经超时
+                    if (task.isStop()
+                            || (
+                            task.getStartTime() != null
+                                    && task.getRunTimeOut() > 0
+                                    && ((System.currentTimeMillis() - task.getStartTime()) / 1000) >= task.getRunTimeOut())) {
                         try {
                             task.stop();
                             rmList.add(key);
@@ -59,7 +65,8 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
                 for (String key : rmList) {
                     TASK_MAP.remove(key);
                 }
-                log.info(String.format("[WebSocket] 连接总数[%1$s] 任务总数[%2$s] 移除任务数[%3$s]", allSessionCount, TASK_MAP.size(), rmList.size()));
+                // 打印日志
+                log.info(getText(allSessionCount, rmList));
                 try {
                     Thread.sleep(1000 * 3);
                 } catch (Throwable e) {
@@ -69,6 +76,65 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
         });
         thread.setDaemon(true);
         thread.start();
+    }
+
+    private static String getText(int allSessionCount, List<String> rmList) {
+        final String tab = "\t";
+        final String enter = "\r\n";
+        final String line1 = "=======================================================================================================================================================================";
+        final String line2 = "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+        Map<String, StringBuilder> taskInfoMap = new HashMap<>(TASK_MAP.size());
+        StringBuilder summary = new StringBuilder(256);
+        summary.append(enter).append(line1).append(enter);
+        summary.append(String.format(
+                " [WebSocket] -> ConnectorCount=%-5s   | TaskCount=%-5s          | RemoveTaskCount=%-5s",
+                allSessionCount,
+                TASK_MAP.size(),
+                rmList.size())
+        ).append(enter);
+        // summary.append(line2).append(enter);
+        summary.append(String.format(
+                "[ThreadPool] -> CorePoolSize=%-5s     | MaximumPoolSize=%-5s    | PoolSize=%-5s | Queue.size=%s ||-> TaskCount=%s | ActiveCount=%s |  CompletedTaskCount=%s",
+                Task.Task_Thread_Pool.getCorePoolSize(),
+                Task.Task_Thread_Pool.getMaximumPoolSize(),
+                Task.Task_Thread_Pool.getPoolSize(),
+                Task.Task_Thread_Pool.getQueue().size(),
+                Task.Task_Thread_Pool.getTaskCount(),
+                Task.Task_Thread_Pool.getActiveCount(),
+                Task.Task_Thread_Pool.getCompletedTaskCount()
+        )).append(enter);
+        for (Map.Entry<String, Task> entry : TASK_MAP.entrySet()) {
+            String taskId = entry.getKey();
+            Task task = entry.getValue();
+            StringBuilder sb = taskInfoMap.computeIfAbsent(taskId, s -> new StringBuilder());
+            sb.append(String.format(
+                    "[Task] -> [5%s]",
+                    taskId
+            )).append(enter);
+            sb.append(tab).append("            TaskType：").append(task.getTaskType()).append(enter);
+            sb.append(tab).append("WebSocketSessionSize：").append(task.getWebSocketSessionSize()).append(enter);
+            sb.append(tab).append("    RunningTaskCount：").append(task.getRunningTaskCount()).append(enter);
+            sb.append(tab).append("      TotalTaskCount：").append(task.getTotalTaskCount()).append(enter);
+        }
+        // 组装返回数据
+        if (taskInfoMap.size() <= 0) {
+            summary.append(line1).append(enter);
+        } else {
+            summary.append(line2).append(enter);
+        }
+        StringBuilder text = new StringBuilder();
+        text.append(summary);
+        int index = 0;
+        for (StringBuilder sb : taskInfoMap.values()) {
+            index++;
+            text.append(sb);
+            if (index >= taskInfoMap.values().size()) {
+                text.append(line1).append(enter);
+            } else {
+                text.append(line2).append(enter);
+            }
+        }
+        return text.toString();
     }
 
     /**
@@ -93,10 +159,11 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
 
     /**
      * 添加任务 <br/>
-     * 启动任务 <br/>
+     * 把session与task关联起来 <br/>
      */
-    private void putTask(K task) {
+    private void putTask(Task task, WebSocketSession session) {
         TASK_MAP.put(task.getTaskId(), task);
+        task.addWebSocketSession(session);
     }
 
     /**
@@ -129,6 +196,9 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
      * @param close        是否需要关闭连接
      */
     protected void sendErrorMessage(WebSocketSession session, Object errorMessage, boolean close) {
+        if (!session.isOpen()) {
+            return;
+        }
         TextMessage textMessage = new TextMessage(JacksonMapper.nonEmptyMapper().toJson(errorMessage));
         try {
             session.sendMessage(textMessage);
@@ -198,6 +268,9 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
         K task = getTaskBySession(session);
         log.info("[关闭连接] SessionId={} | TaskId={}", session.getId(), task == null ? "" : task.getTaskId());
         WebSocketCloseSessionUtils.closeSession(session);
+        if (task != null) {
+            task.removeCloseSession();
+        }
     }
 
     /**
@@ -205,6 +278,14 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
      */
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        try {
+            doHandleTextMessage(session, message);
+        } catch (Throwable e) {
+            sendErrorMessage(session, ConsoleLogRes.newError(ExceptionUtils.getStackTraceAsString(e), null), true);
+        }
+    }
+
+    private void doHandleTextMessage(WebSocketSession session, TextMessage message) {
         K task = getTaskBySession(session);
         T msg = convert(message);
         if (msg == null) {
@@ -220,19 +301,48 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
         }
         if (task == null) {
             // 第一次处理消息
-            K newTask = handleFirstMessage(session, msg, verify);
+            if (Objects.equals(msg.getType(), WebSocketTaskReq.Type_Join_Task)) {
+                // 讲当前session加入到Task
+                if (StringUtils.isNotBlank(msg.getTaskId())) {
+                    Task tmpTask = getTaskByTaskId(msg.getTaskId());
+                    if (tmpTask != null) {
+                        putTask(tmpTask, session);
+                    } else {
+                        sendErrorMessage(session, ConsoleLogRes.newError("请求TaskId不存在或者Task已经结束", null), true);
+                    }
+                } else {
+                    sendErrorMessage(session, ConsoleLogRes.newError("请求TaskId为空", null), true);
+                }
+                return;
+            }
+            // 创建任务
+            K newTask;
+            try {
+                newTask = creatTask(session, msg, verify);
+            } catch (Throwable e) {
+                sendErrorMessage(session, ConsoleLogRes.newError(ExceptionUtils.getStackTraceAsString(e), null), true);
+                return;
+            }
             if (newTask != null) {
-                log.info("[创建任务] SessionId={} | TaskId={}", session.getId(), newTask.getTaskId());
-                newTask.addWebSocketSession(session);
-                putTask(newTask);
+                log.info("[创建任务成功] SessionId={} | TaskId={}", session.getId(), newTask.getTaskId());
+                putTask(newTask, session);
                 if (!newTask.isStart()) {
-                    newTask.start(msg, verify);
+                    try {
+                        newTask.start(msg, verify);
+                        log.info("[启动任务成功] SessionId={} | TaskId={}", session.getId(), newTask.getTaskId());
+                    } catch (Throwable e) {
+                        sendErrorMessage(session, ConsoleLogRes.newError(ExceptionUtils.getStackTraceAsString(e), null), true);
+                        newTask.stop();
+                    }
                 }
             }
-        } else {
-            // 处理请求消息
-            // handleMessage(session, msg, task, verify);
+            return;
+        }
+        // 处理请求消息
+        try {
             task.handleMessage(session, msg, verify);
+        } catch (Throwable e) {
+            sendErrorMessage(session, ConsoleLogRes.newError(ExceptionUtils.getStackTraceAsString(e), null), false);
         }
     }
 
@@ -245,15 +355,5 @@ public abstract class Handler<T, K extends Task<T>> extends AbstractWebSocketHan
      * @param message 请求消息
      * @param verify  消息数据校验结果
      */
-    public abstract K handleFirstMessage(WebSocketSession session, T message, boolean verify);
-
-//    /**
-//     * 处理请求消息
-//     *
-//     * @param session 会话
-//     * @param message 请求消息
-//     * @param task    当前Session对应的任务
-//     * @param verify  消息数据校验结果
-//     */
-//    public abstract void handleMessage(WebSocketSession session, T message, K task, boolean verify);
+    public abstract K creatTask(WebSocketSession session, T message, boolean verify);
 }

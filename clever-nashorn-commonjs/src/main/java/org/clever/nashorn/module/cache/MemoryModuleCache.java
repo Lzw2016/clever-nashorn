@@ -5,6 +5,9 @@ import org.clever.nashorn.module.Module;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Module 内存缓存
+ */
 public class MemoryModuleCache implements ModuleCache {
     private Map<String, Module> modules = new HashMap<>();
 

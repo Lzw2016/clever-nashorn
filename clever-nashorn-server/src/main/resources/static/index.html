@@ -13,14 +13,17 @@
     ws.onopen = function () {
         console.log("open");
         ws.send(JSON.stringify({
+            type: 'normal',
             filePath: 'clever-nashorn-commonjs/src/test/resources/tmp',
-            fileName: './index.js',
+            fileName: './tmp.js',
             fucName: 'test'
         }));
     };
 
     ws.onmessage = function (evt) {
-        console.log(JSON.parse(evt.data).log)
+        var data = JSON.parse(evt.data);
+        console.log(data.log);
+        // console.log(data.logs);
     };
 
     ws.onclose = function (evt) {

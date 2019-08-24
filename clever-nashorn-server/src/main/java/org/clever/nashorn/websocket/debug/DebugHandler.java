@@ -15,7 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 public class DebugHandler extends Handler<DebugReq, DebugTask> {
 
     @Override
-    public DebugTask handleFirstMessage(WebSocketSession session, DebugReq message, boolean verify) {
+    public DebugTask creatTask(WebSocketSession session, DebugReq message, boolean verify) {
         return new DebugTask(message);
     }
 }

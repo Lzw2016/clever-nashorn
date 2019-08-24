@@ -1,18 +1,44 @@
 控制台接口 - OK
 控制台ws实现 - OK
+Task应该有一个final TaskType的成员变量 OK
+Handler注释，一个Task对应多个session，一个session只能对应一个Task OK
+抽象websocket通讯请求响应数据结构 OK
+Task中需要为任务增加线程池异步执行任务 OK
+Handler中打印任务信息需要更详细的信息，按照Task分组 OK
+Handler判断是要新创建任务，还是把当前session加入之前的任务 OK
+debug异常后无法释放Task OK
+Handler增加异常处理，把异常输出到浏览器 OK
+Handler中当客户端关闭链接时从Task中移除session OK
+Handler中putTask时吧当前session加入Task OK
+Task的stop没有被调用 OK
+Task增加任务启动开始时间用于判断超时OK
 
-js加载数据库实现
-js数据加载debug层外壳
-执行临时js实现
 
-debug异常后无法释放Task
+
+---
+
+
+
+
+提供一个接口返回任务详情
+提供接口用于管理任务，关闭等操作。
+
 
 js代码语法错误能有提示
 js执行错误能有提示行位置
 
-Handler判断是要新创建任务还是把当前session加入之前的任务
-Handler增加异常处理，把异常输出到浏览器
+js加载数据库实现
+js数据加载debug层外壳
+js缓存debug层外壳
+js Folder debug层外壳
+执行临时js实现
 
-Task中需要为任务增加线程池异步执行任务
-Task的stop没有被调用
-Task增加任务启动开始时间用于判断超时
+---
+
+
+
+
+
+
+
+

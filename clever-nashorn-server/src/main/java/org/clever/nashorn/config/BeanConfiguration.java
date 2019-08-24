@@ -82,6 +82,7 @@ public class BeanConfiguration {
         return sqlExplainInterceptor;
     }
 
+    // TODO 需要删除
     @Bean
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
