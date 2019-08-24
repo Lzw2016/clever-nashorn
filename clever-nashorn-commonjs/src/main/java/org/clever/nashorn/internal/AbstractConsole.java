@@ -1,15 +1,10 @@
 package org.clever.nashorn.internal;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.nashorn.module.Module;
-import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.clever.nashorn.utils.StrFormatter;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +39,7 @@ public abstract class AbstractConsole implements Console {
 
     /**
      * 创建 root Console
+     *
      * @param filePath root文件路径
      */
     public AbstractConsole(String filePath) {
@@ -54,17 +50,20 @@ public abstract class AbstractConsole implements Console {
      * 根据日志输出参数得到日志字符串
      */
     protected String logString(Object... args) {
-        if (args == null) {
+        if (args == null || args.length <= 0) {
             return "";
         }
         String format;
-        if (args.length >= 1 && args[0] instanceof String) {
+        if (args[0] instanceof String) {
             format = (String) args[0];
         } else {
-            format = "{}";
+            StringBuilder sb = new StringBuilder(args.length * 2);
+            for (Object ignored : args) {
+                sb.append("{}");
+            }
+            format = sb.toString();
         }
         List<String> list = null;
-
         for (int index = 0; index < args.length; index++) {
             if (index <= 0) {
                 continue;
@@ -72,46 +71,14 @@ public abstract class AbstractConsole implements Console {
             if (list == null) {
                 list = new ArrayList<>(args.length - 1);
             }
-            String str = toString(args[index]);
-            list.add(str);
+            String str = StrFormatter.toString(args[index]);
+            list.add(overflow(str));
         }
         if (list == null) {
-            return "";
+            return overflow(StrFormatter.toString(args[0]));
         } else {
             return overflow(format(format, list.toArray()));
         }
-    }
-
-    /**
-     * 单个对象转成字符串
-     */
-    protected String toString(Object object) {
-        if (object == null) {
-            return null;
-        }
-        String str;
-        if (object instanceof Byte
-                || object instanceof Short
-                || object instanceof Integer
-                || object instanceof Long
-                || object instanceof Float
-                || object instanceof Double
-                || object instanceof BigInteger
-                || object instanceof BigDecimal
-                || object instanceof Boolean
-                || object instanceof String) {
-            str = String.valueOf(object);
-        } else if (object instanceof ScriptObjectMirror) {
-            ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) object;
-            if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
-                str = scriptObjectMirror.toString();
-            } else {
-                str = ScriptEngineUtils.stringify(scriptObjectMirror);
-            }
-        } else {
-            str = JacksonMapper.nonEmptyMapper().toJson(object);
-        }
-        return overflow(str);
     }
 
     /**

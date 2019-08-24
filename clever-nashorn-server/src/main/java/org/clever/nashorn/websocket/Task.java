@@ -256,6 +256,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * @param task 异步任务
      * @return 异步执行任务成功返回true
      */
+    @SuppressWarnings("UnusedReturnValue")
     protected boolean execTask(DoTask task) {
         try {
             Task_Thread_Pool.execute(() -> {

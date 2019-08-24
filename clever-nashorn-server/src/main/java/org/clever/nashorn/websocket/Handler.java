@@ -108,7 +108,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
             Task task = entry.getValue();
             StringBuilder sb = taskInfoMap.computeIfAbsent(taskId, s -> new StringBuilder());
             sb.append(String.format(
-                    "[Task] -> [5%s]",
+                    "[Task] -> [%s]",
                     taskId
             )).append(enter);
             sb.append(tab).append("            TaskType：").append(task.getTaskType()).append(enter);

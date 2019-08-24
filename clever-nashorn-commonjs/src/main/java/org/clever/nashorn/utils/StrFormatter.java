@@ -1,13 +1,19 @@
 package org.clever.nashorn.utils;
 
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.lang3.StringUtils;
+import org.clever.common.utils.DateTimeUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
+import org.clever.common.utils.mapper.JacksonMapper;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -172,7 +178,159 @@ public class StrFormatter {
         } else if (isArray(obj)) {
             return toString(obj);
         }
-        return obj.toString();
+        return toString(obj);
+    }
+
+    /**
+     * 是否空白符<br>
+     * 空白符包括空格、制表符、全角空格和不间断空格<br>
+     *
+     * @param c 字符
+     * @return 是否空白符
+     * @see Character#isWhitespace(int)
+     * @see Character#isSpaceChar(int)
+     * @since 4.0.10
+     */
+    public static boolean isBlankChar(int c) {
+        return Character.isWhitespace(c) || Character.isSpaceChar(c) || c == '\ufeff' || c == '\u202a';
+    }
+
+    /**
+     * 是否空白符<br>
+     * 空白符包括空格、制表符、全角空格和不间断空格<br>
+     *
+     * @param c 字符
+     * @return 是否空白符
+     * @see Character#isWhitespace(int)
+     * @see Character#isSpaceChar(int)
+     * @since 4.0.10
+     */
+    public static boolean isBlankChar(char c) {
+        return isBlankChar((int) c);
+    }
+
+    /**
+     * 字符串是否为空白 空白的定义如下： <br>
+     * 1、为null <br>
+     * 2、为不可见字符（如空格）<br>
+     * 3、""<br>
+     *
+     * @param str 被检测的字符串
+     * @return 是否为空
+     */
+    public static boolean isBlank(CharSequence str) {
+        int length;
+        if ((str == null) || ((length = str.length()) == 0)) {
+            return true;
+        }
+        for (int i = 0; i < length; i++) {
+            // 只要有一个非空字符即为非空字符串
+            if (!isBlankChar(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 将byte数组转为字符串
+     *
+     * @param bytes   byte数组
+     * @param charset 字符集
+     * @return 字符串
+     */
+    public static String str(byte[] bytes, String charset) {
+        return str(bytes, isBlank(charset) ? Charset.defaultCharset() : Charset.forName(charset));
+    }
+
+    /**
+     * 解码字节码
+     *
+     * @param data    字符串
+     * @param charset 字符集，如果此字段为空，则解码的结果取决于平台
+     * @return 解码后的字符串
+     */
+    public static String str(byte[] data, Charset charset) {
+        if (data == null) {
+            return null;
+        }
+
+        if (null == charset) {
+            return new String(data);
+        }
+        return new String(data, charset);
+    }
+
+    /**
+     * 将Byte数组转为字符串
+     *
+     * @param bytes   byte数组
+     * @param charset 字符集
+     * @return 字符串
+     */
+    public static String str(Byte[] bytes, String charset) {
+        return str(bytes, isBlank(charset) ? Charset.defaultCharset() : Charset.forName(charset));
+    }
+
+    /**
+     * 解码字节码
+     *
+     * @param data    字符串
+     * @param charset 字符集，如果此字段为空，则解码的结果取决于平台
+     * @return 解码后的字符串
+     */
+    public static String str(Byte[] data, Charset charset) {
+        if (data == null) {
+            return null;
+        }
+
+        byte[] bytes = new byte[data.length];
+        Byte dataByte;
+        for (int i = 0; i < data.length; i++) {
+            dataByte = data[i];
+            bytes[i] = (null == dataByte) ? -1 : dataByte;
+        }
+
+        return str(bytes, charset);
+    }
+
+    /**
+     * 将编码的byteBuffer数据转换为字符串
+     *
+     * @param data    数据
+     * @param charset 字符集，如果为空使用当前系统字符集
+     * @return 字符串
+     */
+    public static String str(ByteBuffer data, String charset) {
+        if (data == null) {
+            return null;
+        }
+
+        return str(data, Charset.forName(charset));
+    }
+
+    /**
+     * 将编码的byteBuffer数据转换为字符串
+     *
+     * @param data    数据
+     * @param charset 字符集，如果为空使用当前系统字符集
+     * @return 字符串
+     */
+    public static String str(ByteBuffer data, Charset charset) {
+        if (null == charset) {
+            charset = Charset.defaultCharset();
+        }
+        return charset.decode(data).toString();
+    }
+
+    /**
+     * {@link CharSequence} 转为字符串，null安全
+     *
+     * @param cs {@link CharSequence}
+     * @return 字符串
+     */
+    public static String str(CharSequence cs) {
+        return null == cs ? null : cs.toString();
     }
 
     /**
@@ -213,7 +371,32 @@ public class StrFormatter {
                 }
             }
         }
-        return obj.toString();
+        String str;
+        if (obj instanceof Byte
+                || obj instanceof Short
+                || obj instanceof Integer
+                || obj instanceof Long
+                || obj instanceof Float
+                || obj instanceof Double
+                || obj instanceof BigInteger
+                || obj instanceof BigDecimal
+                || obj instanceof Boolean
+                || obj instanceof String) {
+            str = String.valueOf(obj);
+        } else if (obj instanceof Date) {
+            str = DateTimeUtils.formatToString((Date) obj);
+        } else if (obj instanceof ScriptObjectMirror) {
+            ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) obj;
+            if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
+                str = scriptObjectMirror.toString();
+            } else {
+                str = ScriptEngineUtils.stringify(scriptObjectMirror);
+            }
+        } else {
+            // TODO json序列化优化
+            str = JacksonMapper.nonEmptyMapper().toJson(obj);
+        }
+        return str;
     }
 
     /**

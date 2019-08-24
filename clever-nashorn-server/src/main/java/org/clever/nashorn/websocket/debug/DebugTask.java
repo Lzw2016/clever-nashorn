@@ -2,6 +2,7 @@ package org.clever.nashorn.websocket.debug;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.clever.common.utils.IDCreateUtils;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.dto.request.DebugReq;
@@ -29,7 +30,8 @@ public class DebugTask extends Task<DebugReq> {
     private final ScriptModuleInstance scriptModuleInstance;
 
     public DebugTask(DebugReq debugReq) {
-        super(String.format("%s-%s/%s", IDCreateUtils.shortUuid(), debugReq.getFilePath(), debugReq.getFileName()), TaskType.DebugJs);
+        // (uuid)path
+        super(String.format("(%s)%s", IDCreateUtils.uuid(), FilenameUtils.concat(debugReq.getFilePath(), debugReq.getFileName())), TaskType.DebugJs);
         Folder rootFolder = FilesystemFolder.create(new File(debugReq.getFilePath()));
         MemoryModuleCache cache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFilePath(), this);
