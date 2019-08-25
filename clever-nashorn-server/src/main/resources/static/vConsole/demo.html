@@ -6,8 +6,19 @@
     <script src="vconsole.min.js"></script>
     <script>
         // 初始化
-        var vConsole = new VConsole();
+        // var vConsole = new VConsole();
         console.log('Hello world');
+
+        console.log("打印JS变量 | null ", null, " | 行尾");
+        console.log("打印JS变量 | int ", 1, " | 行尾");
+        console.log("打印JS变量 | float ", 2.2, " | 行尾");
+        console.log("打印JS变量 | boolean ", true, " | 行尾");
+        console.log("打印JS变量 | string ", "nashorn", " | 行尾");
+        console.log("打印JS变量 | date ", new Date(), " | 行尾");
+        console.log("打印JS变量 | array ", [1, 2.2, true, "nashorn", null, new Date()], " | 行尾");
+        console.log("打印JS变量 | object ", {"string": "aaa", "number1": 12, "number2": 12.345, "boolean": true, "null": null, "date": new Date()}, " | 行尾");
+        console.log("打印JS变量 | function ", function () { return 1 + 6; }, " | 行尾");
+        console.log("打印JS变量 | JSON.stringify ", JSON.stringify({date: new Date()}), " | 行尾");
     </script>
 </head>
 <body>
