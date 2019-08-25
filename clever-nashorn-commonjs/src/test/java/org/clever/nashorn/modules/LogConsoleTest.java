@@ -33,29 +33,42 @@ public class LogConsoleTest {
         log.info(String.valueOf(list));
     }
 
+    @SuppressWarnings("ConfusingArgumentToVarargsMethod")
     @Test
     public void t3() {
         Map<String, Object> context = new HashMap<>();
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
-        scriptObjectMirror.callMember("test", 1);
-        scriptObjectMirror.callMember("test", 2.2F);
-        scriptObjectMirror.callMember("test", 3.3D);
-        scriptObjectMirror.callMember("test", 4L);
-        scriptObjectMirror.callMember("test", false);
-        scriptObjectMirror.callMember("test", "nashorn");
-        scriptObjectMirror.callMember("test", new Date());
-
+        scriptObjectMirror.callMember("printJava", null);
+        scriptObjectMirror.callMember("printJava", 1);
+        scriptObjectMirror.callMember("printJava", 2.2F);
+        scriptObjectMirror.callMember("printJava", 3.3D);
+        scriptObjectMirror.callMember("printJava", 4L);
+        scriptObjectMirror.callMember("printJava", false);
+        scriptObjectMirror.callMember("printJava", "nashorn");
+        scriptObjectMirror.callMember("printJava", new Date());
         Map<String, Object> tmp = new HashMap<>();
-        tmp.put("1", 1);
-        tmp.put("2", 2.2F);
-        tmp.put("3", 3.3D);
-        tmp.put("4", 4L);
-        tmp.put("5", false);
-        tmp.put("6", "nashorn");
-        tmp.put("7", new Date());
-        tmp.put("8", new Object[]{1, 2.2F, 3.3D, 4L, true, "nashorn"});
-        scriptObjectMirror.callMember("test", tmp);
+        tmp.put("null", null);
+        tmp.put("int", 1);
+        tmp.put("float", 2.2F);
+        tmp.put("double", 3.3D);
+        tmp.put("long", 4L);
+        tmp.put("boolean", false);
+        tmp.put("string", "nashorn");
+        tmp.put("date", new Date());
+        tmp.put("array", new Object[]{1, 2.2F, 3.3D, 4L, true, "nashorn", null, new Date()});
+        scriptObjectMirror.callMember("printJava", tmp);
+        scriptObjectMirror.callMember("printJS");
+        log.info(" # --- {}", scriptModuleInstance.getRootModule());
+    }
+
+    @SuppressWarnings("ConfusingArgumentToVarargsMethod")
+    @Test
+    public void tmp() {
+        Map<String, Object> context = new HashMap<>();
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
+        scriptObjectMirror.callMember("tmp", null);
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
 }

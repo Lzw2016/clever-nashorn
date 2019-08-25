@@ -1,6 +1,7 @@
 package org.clever.nashorn.utils;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.Undefined;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
@@ -385,16 +386,19 @@ public class StrFormatter {
             str = String.valueOf(obj);
         } else if (obj instanceof Date) {
             str = DateTimeUtils.formatToString((Date) obj);
+        } else if (obj instanceof Undefined) {
+            str = obj.toString();
         } else if (obj instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) obj;
+            // jdk.nashorn.internal.objects.NativeDate
+            // scriptObjectMirror.getScriptObject();
             if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
                 str = scriptObjectMirror.toString();
             } else {
                 str = ScriptEngineUtils.stringify(scriptObjectMirror);
             }
         } else {
-            // TODO json序列化优化
-            str = JacksonMapper.nonEmptyMapper().toJson(obj);
+            str = JacksonMapper.getInstance().toJson(obj);
         }
         return str;
     }
