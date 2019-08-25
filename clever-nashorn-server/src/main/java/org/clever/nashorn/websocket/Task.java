@@ -160,7 +160,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * @param object  消息对象
      */
     private void sendMessage(WebSocketSession session, Object object) {
-        TextMessage textMessage = new TextMessage(JacksonMapper.nonEmptyMapper().toJson(object));
+        TextMessage textMessage = new TextMessage(JacksonMapper.getInstance().toJson(object));
         try {
             session.sendMessage(textMessage);
         } catch (Throwable e) {

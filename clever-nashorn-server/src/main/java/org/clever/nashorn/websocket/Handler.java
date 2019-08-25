@@ -199,7 +199,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         if (!session.isOpen()) {
             return;
         }
-        TextMessage textMessage = new TextMessage(JacksonMapper.nonEmptyMapper().toJson(errorMessage));
+        TextMessage textMessage = new TextMessage(JacksonMapper.getInstance().toJson(errorMessage));
         try {
             session.sendMessage(textMessage);
         } catch (Throwable e) {
@@ -221,7 +221,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         }
         T msg = null;
         try {
-            msg = JacksonMapper.nonEmptyMapper().fromJson(message.getPayload(), clazzByT);
+            msg = JacksonMapper.getInstance().fromJson(message.getPayload(), clazzByT);
         } catch (Throwable e) {
             log.error("请求消息转换失败", e);
         }
