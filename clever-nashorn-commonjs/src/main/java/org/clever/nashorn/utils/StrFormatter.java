@@ -395,6 +395,7 @@ public class StrFormatter {
             if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
                 str = scriptObjectMirror.toString();
             } else {
+                // TODO 处理JS function
                 str = ScriptEngineUtils.stringify(scriptObjectMirror);
             }
         } else {
