@@ -71,4 +71,14 @@ public class LogConsoleTest {
         scriptObjectMirror.callMember("tmp", null);
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
+
+    @Test
+    public void t4() {
+        // 打印语法错误位置(行列)
+        Map<String, Object> context = new HashMap<>();
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t4.js");
+        scriptObjectMirror.callMember("tmp");
+        log.info(" # --- {}", scriptModuleInstance.getRootModule());
+    }
 }
