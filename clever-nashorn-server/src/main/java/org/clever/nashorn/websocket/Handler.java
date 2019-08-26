@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
-import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.reflection.ReflectionsUtils;
 import org.clever.common.utils.validator.BaseValidatorUtils;
 import org.clever.common.utils.validator.ValidatorFactoryUtils;
@@ -18,6 +17,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 import javax.validation.ConstraintViolationException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * WebSocket 请求处理类
@@ -199,7 +199,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         if (!session.isOpen()) {
             return;
         }
-        TextMessage textMessage = new TextMessage(JacksonMapper.getInstance().toJson(errorMessage));
+        TextMessage textMessage = new TextMessage(Task.Jackson_Mapper.toJson(errorMessage));
         try {
             session.sendMessage(textMessage);
         } catch (Throwable e) {
@@ -221,7 +221,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         }
         T msg = null;
         try {
-            msg = JacksonMapper.getInstance().fromJson(message.getPayload(), clazzByT);
+            msg = Task.Jackson_Mapper.fromJson(message.getPayload(), clazzByT);
         } catch (Throwable e) {
             log.error("请求消息转换失败", e);
         }

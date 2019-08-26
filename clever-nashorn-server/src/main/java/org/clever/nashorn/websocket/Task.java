@@ -1,9 +1,11 @@
 package org.clever.nashorn.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
+import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.dto.response.ConsoleLogRes;
 import org.clever.nashorn.model.WebSocketTaskReq;
 import org.springframework.web.socket.TextMessage;
@@ -34,12 +36,16 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * 执行WebSocket任务的线程池
      */
     public static final ThreadPoolExecutor Task_Thread_Pool = new ThreadPoolExecutor(
-            1,                          // 核心线程数，即使空闲也仍保留在池中的线程数
-            64,                     // 最大线程数
+            16,                         // 核心线程数，即使空闲也仍保留在池中的线程数
+            32,                     // 最大线程数
             30, TimeUnit.SECONDS,      // 保持激活时间，当线程数大于核心数时，这是多余的空闲线程在终止之前等待新任务的最大时间
             new ArrayBlockingQueue<>(512),  // 当线程池的任务缓存队列容量
             new ThreadPoolExecutor.AbortPolicy()    // 当线程池的任务缓存队列已满，并且线程池中的线程数目达到最大线程数，如果还有任务到来就会采取任务拒绝策略
     );
+    /**
+     * 响应数据序列化
+     */
+    public static final JacksonMapper Jackson_Mapper;
 
     static {
         // 优雅关闭线程池
@@ -51,6 +57,9 @@ public abstract class Task<T extends WebSocketTaskReq> {
                 log.warn("关闭WebSocket任务线程池异常", e);
             }
         }));
+
+        ObjectMapper objectMapper = SpringContextHolder.getBean(ObjectMapper.class);
+        Jackson_Mapper = new JacksonMapper(objectMapper);
     }
 
     /**
@@ -160,7 +169,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * @param object  消息对象
      */
     private void sendMessage(WebSocketSession session, Object object) {
-        TextMessage textMessage = new TextMessage(JacksonMapper.getInstance().toJson(object));
+        TextMessage textMessage = new TextMessage(Jackson_Mapper.toJson(object));
         try {
             session.sendMessage(textMessage);
         } catch (Throwable e) {
@@ -264,6 +273,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
                     runningTaskCount.incrementAndGet();
                     task.runTask();
                 } catch (Throwable e) {
+                    // log.error("支持任务失败", e);
                     sendMessage(ConsoleLogRes.newError(ExceptionUtils.getStackTraceAsString(e), null));
                 } finally {
                     totalTaskCount.decrementAndGet();

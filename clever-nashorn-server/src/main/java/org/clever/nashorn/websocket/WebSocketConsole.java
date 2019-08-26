@@ -38,31 +38,6 @@ public class WebSocketConsole extends AbstractConsole {
         this.task = task;
     }
 
-//    private List<Object> getLogs(final Object... args) {
-//        if (args == null) {
-//            return new ArrayList<>();
-//        }
-//        String format;
-//        if (args.length >= 1 && args[0] instanceof String) {
-//            format = (String) args[0];
-//            if (args.length <= 1) {
-//                return new ArrayList<Object>() {{
-//                    add(format);
-//                }};
-//            }
-//            Object[] argList = new Object[args.length - 1];
-//            for (int index = 0; index < args.length; index++) {
-//                if (index == 0) {
-//                    continue;
-//                }
-//                argList[index - 1] = args[index];
-//            }
-//            return StrFormatter.formatToList(format, argList);
-//        }
-//        format = "{}";
-//        return StrFormatter.formatToList(format, args);
-//    }
-
     /**
      * debug不需要做溢出处理
      */

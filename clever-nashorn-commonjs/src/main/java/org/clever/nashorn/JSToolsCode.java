@@ -1,6 +1,8 @@
 package org.clever.nashorn;
 
+import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.PropertyAccess;
 import org.clever.nashorn.folder.ResourceFolder;
 import org.clever.nashorn.internal.LogConsole;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
@@ -35,7 +37,27 @@ public class JSToolsCode {
      *
      * @param object JS 对象
      */
+    public static String inspect(JSObject object) {
+        Object res = JSToolsCode.callMember("inspect", object);
+        return String.valueOf(res);
+    }
+
+    /**
+     * 使用Json序列化 JS 对象(解除了循环依赖问题)
+     *
+     * @param object JS 对象
+     */
     public static String inspect(Bindings object) {
+        Object res = JSToolsCode.callMember("inspect", object);
+        return String.valueOf(res);
+    }
+
+    /**
+     * 使用Json序列化 JS 对象(解除了循环依赖问题)
+     *
+     * @param object JS 对象
+     */
+    public static String inspect(PropertyAccess object) {
         Object res = JSToolsCode.callMember("inspect", object);
         return String.valueOf(res);
     }
@@ -45,7 +67,27 @@ public class JSToolsCode {
      *
      * @param object JS 对象
      */
+    public static String stringify(JSObject object) {
+        Object res = JSToolsCode.callMember("stringify", object);
+        return String.valueOf(res);
+    }
+
+    /**
+     * 使用Json序列化 JS 对象(存在循环依赖问题)
+     *
+     * @param object JS 对象
+     */
     public static String stringify(Bindings object) {
+        Object res = JSToolsCode.callMember("stringify", object);
+        return String.valueOf(res);
+    }
+
+    /**
+     * 使用Json序列化 JS 对象(存在循环依赖问题)
+     *
+     * @param object JS 对象
+     */
+    public static String stringify(PropertyAccess object) {
         Object res = JSToolsCode.callMember("stringify", object);
         return String.valueOf(res);
     }

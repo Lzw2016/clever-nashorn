@@ -8,6 +8,7 @@ import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.nashorn.JSToolsCode;
 
+import javax.script.Bindings;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -391,7 +392,7 @@ public class StrFormatter {
             str = obj.toString();
         } else if (obj instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) obj;
-            str = JSToolsCode.inspect(scriptObjectMirror);
+            str = JSToolsCode.inspect((Bindings) scriptObjectMirror);
         } else {
             str = JacksonMapper.getInstance().toJson(obj);
         }

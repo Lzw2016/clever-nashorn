@@ -71,8 +71,11 @@ public class CommonUtils {
         if (!matcher.matches()) {
             return str;
         }
+        //return str.replace('T', ' ').substring(0, str.length() - 5);
         try {
             Date date = DateTimeUtils.parseDate(str, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            // 8个小时的时差
+            date = DateTimeUtils.addHours(date, 8);
             return DateTimeUtils.formatToString(date);
         } catch (ParseException e) {
             return str;

@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>首页</title>
+    <script src="./vConsole/vconsole.min.js"></script>
+    <script>
+        // 初始化
+        var vConsole = new VConsole();
+    </script>
 </head>
 <body>
 
@@ -22,8 +27,30 @@
 
     ws.onmessage = function (evt) {
         var data = JSON.parse(evt.data);
-        console.log(data.log);
+        // console.log(data.log);
         // console.log(data.logs);
+        if (data.type === "log") {
+            var _console;
+            switch (data.level) {
+                case "trace":
+                    (_console = console).trace.apply(_console, data.logs);
+                    break;
+                case "debug":
+                    (_console = console).debug.apply(_console, data.logs);
+                    break;
+                case "info":
+                    (_console = console).info.apply(_console, data.logs);
+                    break;
+                case "warn":
+                    (_console = console).warn.apply(_console, data.logs);
+                    break;
+                case "error":
+                    (_console = console).error.apply(_console, data.logs);
+                    break;
+                default:
+                    (_console = console).log.apply(_console, data.logs);
+            }
+        }
     };
 
     ws.onclose = function (evt) {
@@ -31,7 +58,7 @@
     };
 
     ws.onerror = function (evt) {
-        console.log("WebSocketError");
+        console.error("WebSocketError");
     };
 </script>
 </html>

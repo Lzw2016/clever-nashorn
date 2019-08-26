@@ -110,11 +110,14 @@ Date.prototype.toJSON = function () {
 
 // 解除了循环依赖问题
 function inspect(object) {
+    if(isUndefined(object)) {
+        return "\"undefined\"";
+    }
     if (isNumber(object) || isString(object) || isBoolean(object) || isUndefined(object) || isNull(object)) {
         return object;
     }
     if (isDate(object)) {
-        return dateToJSON(object);
+        return "\"" + dateToJSON(object) + "\"";
     }
     var cache = [];
     var keyCache = [];
@@ -127,12 +130,15 @@ function inspect(object) {
             cache.push(value);
             keyCache.push(key || "root");
         }
+        if (isFunction(value)) {
+            return {"function ()": value.toString()};
+        }
+        if(isUndefined(value)) {
+            return "undefined";
+        }
         if (isString(value)) {
             // noinspection JSUnresolvedFunction
             return CommonUtils.formatDate(value);
-        }
-        if (isFunction(value)) {
-            return {"function ()": value.toString()};
         }
         return value;
     });
