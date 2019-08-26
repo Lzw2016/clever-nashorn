@@ -5,9 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.clever.nashorn.module.Module;
 import org.clever.nashorn.utils.StrFormatter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 作者：lizw <br/>
  * 创建时间：2019/08/22 09:30 <br/>
@@ -53,32 +50,13 @@ public abstract class AbstractConsole implements Console {
         if (args == null || args.length <= 0) {
             return "";
         }
-        String format;
-        if (args[0] instanceof String) {
-            format = (String) args[0];
-        } else {
-            StringBuilder sb = new StringBuilder(args.length * 2);
-            for (Object ignored : args) {
-                sb.append("{}");
-            }
-            format = sb.toString();
+        StringBuilder sb = new StringBuilder(args.length * 32);
+        for (Object arg : args) {
+            String str = StrFormatter.toString(arg);
+            sb.append(overflow(str));
+
         }
-        List<String> list = null;
-        for (int index = 0; index < args.length; index++) {
-            if (index <= 0) {
-                continue;
-            }
-            if (list == null) {
-                list = new ArrayList<>(args.length - 1);
-            }
-            String str = StrFormatter.toString(args[index]);
-            list.add(overflow(str));
-        }
-        if (list == null) {
-            return overflow(StrFormatter.toString(args[0]));
-        } else {
-            return overflow(format(format, list.toArray()));
-        }
+        return overflow(sb.toString());
     }
 
     /**

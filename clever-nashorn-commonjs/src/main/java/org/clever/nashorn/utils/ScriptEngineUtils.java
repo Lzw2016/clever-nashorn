@@ -61,14 +61,4 @@ public class ScriptEngineUtils {
     public static ScriptObjectMirror parseJson(String json) {
         return (ScriptObjectMirror) Json_Constructor.callMember("parse", json);
     }
-
-    /**
-     * 使用Json序列化 JS 对象
-     *
-     * @param object JS 对象
-     */
-    public static String stringify(Bindings object) {
-        Object res = Json_Constructor.callMember("stringify", object);
-        return String.valueOf(res);
-    }
 }

@@ -2,6 +2,7 @@ package org.clever.nashorn.modules;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
+import org.clever.nashorn.JSToolsCode;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.internal.LogConsole;
 import org.clever.nashorn.utils.StrFormatter;
@@ -36,6 +37,7 @@ public class LogConsoleTest {
     @SuppressWarnings("ConfusingArgumentToVarargsMethod")
     @Test
     public void t3() {
+        log.info(" # --- {}", JSToolsCode.Instance);
         Map<String, Object> context = new HashMap<>();
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");

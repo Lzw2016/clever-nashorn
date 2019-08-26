@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
+import org.clever.nashorn.JSToolsCode;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -390,14 +391,7 @@ public class StrFormatter {
             str = obj.toString();
         } else if (obj instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) obj;
-            // jdk.nashorn.internal.objects.NativeDate
-            // scriptObjectMirror.getScriptObject();
-            if (scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
-                str = scriptObjectMirror.toString();
-            } else {
-                // TODO 处理JS function
-                str = ScriptEngineUtils.stringify(scriptObjectMirror);
-            }
+            str = JSToolsCode.inspect(scriptObjectMirror);
         } else {
             str = JacksonMapper.getInstance().toJson(obj);
         }
