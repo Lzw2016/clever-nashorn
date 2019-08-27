@@ -13,20 +13,22 @@ public interface JsCodeFileCache {
     /**
      * 获取 文件夹类型 JsCodeFile
      *
-     * @param bizType    业务类型
-     * @param groupName  代码分组
-     * @param folderPath 文件夹路径，以路径分隔符“/”结尾
+     * @param bizType   业务类型
+     * @param groupName 代码分组
+     * @param filePath  上级路径
+     * @param name      文件或文件夹名称
      */
-    JsCodeFile getFolder(String bizType, String groupName, String folderPath);
+    JsCodeFile getFolder(String bizType, String groupName, String filePath, String name);
 
     /**
      * 获取 文件类型 JsCodeFile
      *
      * @param bizType   业务类型
      * @param groupName 代码分组
-     * @param filePath  文件全路径
+     * @param filePath  上级路径
+     * @param name      文件或文件夹名称
      */
-    JsCodeFile getFile(String bizType, String groupName, String filePath);
+    JsCodeFile getFile(String bizType, String groupName, String filePath, String name);
 
     /**
      * 加入缓存

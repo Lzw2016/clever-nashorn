@@ -24,23 +24,38 @@ public interface JsCodeFileMapper extends BaseMapper<JsCodeFile> {
      * @param bizType   业务类型
      * @param groupName 代码分组
      * @param nodeType  数据类型
-     * @param fullPath  全路径 filePath(上级路径) + name(文件或文件夹名称)
+     * @param filePath  上级路径
+     * @param name      文件或文件夹名称
      */
-    @Select("select * from js_code_file where biz_type=#{bizType} and group_name=#{groupName} and node_type=#{nodeType} and CONCAT(file_path, name)=#{fullPath} limit 1")
+    @Select({
+            "select * from js_code_file ",
+            "where biz_type=#{bizType} and group_name=#{groupName} and node_type=#{nodeType} and file_path=#{filePath} and name=#{name} ",
+            "limit 1"
+    })
     JsCodeFile getJsCodeFile(@Param("bizType") String bizType,
                              @Param("groupName") String groupName,
                              @Param("nodeType") int nodeType,
-                             @Param("fullPath") String fullPath);
+                             @Param("filePath") String filePath,
+                             @Param("name") String name);
 
     /**
      * 获取单个 JsCodeFile
      *
      * @param bizType   业务类型
      * @param groupName 代码分组
-     * @param fullPath  全路径 filePath(上级路径) + name(文件或文件夹名称)
+     * @param filePath  上级路径
+     * @param name      文件或文件夹名称
      */
-    @Select("select * from js_code_file where biz_type=#{bizType} and group_name=#{groupName} and CONCAT(file_path,name)=#{fullPath} limit 1")
-    JsCodeFile getByFullPath(@Param("bizType") String bizType, @Param("groupName") String groupName, @Param("fullPath") String fullPath);
+    @Select({
+            "select * from js_code_file ",
+            "where biz_type=#{bizType} and group_name=#{groupName} and file_path=#{filePath} and name=#{name} ",
+            "limit 1"
+    })
+    JsCodeFile getByFullPath(
+            @Param("bizType") String bizType,
+            @Param("groupName") String groupName,
+            @Param("filePath") String filePath,
+            @Param("name") String name);
 
     @Select("select * from js_code_file")
     Set<JsCodeFile> findAll();

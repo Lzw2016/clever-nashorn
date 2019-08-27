@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.clever.nashorn.dto.request.JsCodeFileAddReq;
 import org.clever.nashorn.dto.request.JsCodeFileTreeFindReq;
+import org.clever.nashorn.dto.request.JsCodeFileUpdateReq;
 import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.model.JsCodeFileNode;
 import org.clever.nashorn.service.JsCodeFileService;
@@ -40,5 +41,11 @@ public class JsCodeFileController {
     @PostMapping("/add")
     public JsCodeFile addJsCodeFile(@RequestBody @Validated JsCodeFileAddReq req) {
         return jsCodeFileService.addJsCodeFile(req);
+    }
+
+    @ApiOperation("更新")
+    @PutMapping("/{id}")
+    public JsCodeFile updateJsCodeFile(@PathVariable("id") Long id, @RequestBody @Validated JsCodeFileUpdateReq req) {
+        return jsCodeFileService.updateJsCodeFile(id, req);
     }
 }

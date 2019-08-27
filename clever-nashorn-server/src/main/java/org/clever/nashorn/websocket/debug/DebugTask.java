@@ -4,9 +4,12 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.clever.common.utils.IDCreateUtils;
+import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.ScriptModuleInstance;
+import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.dto.request.DebugReq;
-import org.clever.nashorn.folder.FileSystemFolder;
+import org.clever.nashorn.entity.EnumConstant;
+import org.clever.nashorn.folder.DatabaseFolder;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
@@ -16,7 +19,6 @@ import org.clever.nashorn.websocket.TaskType;
 import org.clever.nashorn.websocket.WebSocketConsole;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +34,8 @@ public class DebugTask extends Task<DebugReq> {
     public DebugTask(DebugReq debugReq) {
         // (uuid)path
         super(String.format("(%s)%s", IDCreateUtils.uuid(), FilenameUtils.concat(debugReq.getFilePath(), debugReq.getFileName())), TaskType.DebugJs);
-        Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
+//        Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
+        Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, SpringContextHolder.getBean(JsCodeFileCache.class));
         MemoryModuleCache cache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFilePath(), this);
         Map<String, Object> context = new HashMap<>(1);

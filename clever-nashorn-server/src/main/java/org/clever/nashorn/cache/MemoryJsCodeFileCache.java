@@ -19,7 +19,7 @@ import java.util.Set;
 @Service
 public class MemoryJsCodeFileCache implements JsCodeFileCache {
     /**
-     * 内存缓存 Map<bizType|groupName|nodeType|filePath+name, JsCodeFile>
+     * 内存缓存 Map<bizType|groupName|nodeType|filePath|name, JsCodeFile>
      */
     private static final Map<String, JsCodeFile> Js_Code_File_Map = new HashMap<>();
     @Autowired
@@ -31,35 +31,36 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
      * @param bizType   业务类型
      * @param groupName 代码分组
      * @param nodeType  数据类型
-     * @param fullPath  全路径 filePath(上级路径) + name(文件或文件夹名称)
+     * @param filePath  上级路径
+     * @param name      文件或文件夹名称
      */
-    public static String getCacheKey(String bizType, String groupName, Integer nodeType, String fullPath) {
-        return String.format("%s|%s|%s|%s", bizType, groupName, nodeType, fullPath);
+    public static String getCacheKey(String bizType, String groupName, Integer nodeType, String filePath, String name) {
+        return String.format("%s|%s|%s|%s|%s", bizType, groupName, nodeType, filePath, name);
     }
 
     /**
      * 得到缓存 key
      */
     public static String getCacheKey(JsCodeFile jsCodeFile) {
-        return getCacheKey(jsCodeFile.getBizType(), jsCodeFile.getGroupName(), jsCodeFile.getNodeType(), jsCodeFile.getFilePath() + jsCodeFile.getName());
+        return getCacheKey(jsCodeFile.getBizType(), jsCodeFile.getGroupName(), jsCodeFile.getNodeType(), jsCodeFile.getFilePath(), jsCodeFile.getName());
     }
 
     @Override
-    public JsCodeFile getFolder(String bizType, String groupName, String folderPath) {
-        String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_2, folderPath);
+    public JsCodeFile getFolder(String bizType, String groupName, String filePath, String name) {
+        String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
-            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, folderPath);
+            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
         }
         return jsCodeFile;
     }
 
     @Override
-    public JsCodeFile getFile(String bizType, String groupName, String filePath) {
-        String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_1, filePath);
+    public JsCodeFile getFile(String bizType, String groupName, String filePath, String name) {
+        String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
-            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, filePath);
+            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
         }
         return jsCodeFile;
     }

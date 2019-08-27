@@ -3,6 +3,7 @@ package org.clever.nashorn.folder;
 import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
+import org.clever.nashorn.utils.JsCodeFilePathUtils;
 
 /**
  * 作者：lizw <br/>
@@ -51,18 +52,17 @@ public class DatabaseFolder extends AbstractFolder {
 
     @Override
     public Folder getFolder(String name) {
-        String folderPath = this.getPath() + name + EnumConstant.File_Path_Separator;
-        JsCodeFile jsCodeFile = cache.getFolder(bizType, groupName, folderPath);
+        JsCodeFile jsCodeFile = cache.getFolder(bizType, groupName, this.getPath(), name);
         if (jsCodeFile == null) {
             return null;
         }
+        String folderPath = JsCodeFilePathUtils.concat(this.getPath(), name) + EnumConstant.File_Path_Separator;
         return new DatabaseFolder(this, folderPath);
     }
 
     @Override
     public String getFileContent(String name) {
-        String filePath = this.getPath() + name;
-        JsCodeFile jsCodeFile = cache.getFile(bizType, groupName, filePath);
+        JsCodeFile jsCodeFile = cache.getFile(bizType, groupName, this.getPath(), name);
         if (jsCodeFile == null) {
             return null;
         }

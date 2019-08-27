@@ -37,6 +37,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
      * 一个Task对应多个session，一个session只能对应一个Task
      */
     private static final ConcurrentHashMap<String, Task> TASK_MAP = new ConcurrentHashMap<>();
+    private static long Last_Debug_Text = System.currentTimeMillis();
 
     static {
         // 守护线程
@@ -66,8 +67,9 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                     TASK_MAP.remove(key);
                 }
                 // 打印日志
-                if (log.isDebugEnabled()) {
+                if (log.isDebugEnabled() && (System.currentTimeMillis() - Last_Debug_Text) > 1000 * 30) {
                     log.debug(getText(allSessionCount, rmList));
+                    Last_Debug_Text = System.currentTimeMillis();
                 }
                 try {
                     Thread.sleep(1000 * 3);
