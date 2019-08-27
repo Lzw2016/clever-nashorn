@@ -11,7 +11,7 @@ create table js_code_file
     biz_type            varchar(127)    not null                                                comment '业务类型',
     group_name          varchar(127)    not null                                                comment '代码分组',
     node_type           int(1)          not null        default 1                               comment '数据类型：1-文件，2-文件夹',
-    file_path           varchar(255)    not null                                                comment '上级路径',
+    file_path           varchar(255)    not null                                                comment '上级路径，以“/”号结尾',
     name                varchar(255)    not null                                                comment '文件或文件夹名称',
     js_code             mediumtext                                                              comment '脚本内容',
     description         varchar(511)                                                            comment '说明',

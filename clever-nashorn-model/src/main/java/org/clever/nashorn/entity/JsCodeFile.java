@@ -25,7 +25,7 @@ public class JsCodeFile implements Serializable {
     /** 数据类型：1-文件，2-文件夹 */    
     private Integer nodeType;
     
-    /** 上级路径 */    
+    /** 上级路径，以“/”号结尾 */
     private String filePath;
     
     /** 文件或文件夹名称 */    
