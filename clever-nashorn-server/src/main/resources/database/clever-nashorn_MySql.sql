@@ -3,9 +3,9 @@ use `clever-nashorn`;
 
 
 /* ====================================================================================================================
-    nashorn_js_code -- 系统JS代码
+    js_code_file -- 系统JS代码
 ==================================================================================================================== */
-create table nashorn_js_code
+create table js_code_file
 (
     id                  bigint          not null        auto_increment                          comment '主键id',
     biz_type            varchar(127)    not null                                                comment '业务类型',
@@ -19,19 +19,19 @@ create table nashorn_js_code
     update_at           datetime(3)                     on update current_timestamp(3)          comment '更新时间',
     primary key (id)
 ) comment = '系统JS代码';
-create index nashorn_js_code_biz_type on nashorn_js_code (biz_type);
-create index nashorn_js_code_group_name on nashorn_js_code (group_name);
-create index nashorn_js_code_file_path on nashorn_js_code (file_path);
-create index nashorn_js_code_name on nashorn_js_code (name);
+create index js_code_file_biz_type on js_code_file (biz_type);
+create index js_code_file_group_name on js_code_file (group_name);
+create index js_code_file_file_path on js_code_file (file_path);
+create index js_code_file_name on js_code_file (name);
 /*------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------*/
 
 
 /* ====================================================================================================================
-    nashorn_code_history -- 历史JS代码
+    code_file_history -- 历史JS代码
 ==================================================================================================================== */
-create table nashorn_code_history
+create table code_file_history
 (
     id                  bigint          not null        auto_increment                          comment '主键id',
     biz_type            varchar(127)    not null                                                comment '业务类型',
@@ -44,19 +44,19 @@ create table nashorn_code_history
     update_at           datetime(3)                     on update current_timestamp(3)          comment '更新时间',
     primary key (id)
 ) comment = '历史JS代码';
-create index nashorn_code_history_biz_type on nashorn_code_history (biz_type);
-create index nashorn_code_history_group_name on nashorn_code_history (group_name);
-create index nashorn_code_history_file_path on nashorn_code_history (file_path);
-create index nashorn_code_history_name on nashorn_code_history (name);
+create index code_file_history_biz_type on code_file_history (biz_type);
+create index code_file_history_group_name on code_file_history (group_name);
+create index code_file_history_file_path on code_file_history (file_path);
+create index code_file_history_name on code_file_history (name);
 /*------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------*/
 
 
 /* ====================================================================================================================
-    nashorn_code_run_log -- JS代码运行日志
+    code_run_log -- JS代码运行日志
 ==================================================================================================================== */
-create table nashorn_code_run_log
+create table code_run_log
 (
     id                  bigint          not null        auto_increment                          comment '主键id',
     js_code_id          bigint          not null                                                comment '系统JS代码ID(nashorn_js_code.id)',
@@ -69,9 +69,9 @@ create table nashorn_code_run_log
     update_at           datetime(3)                     on update current_timestamp(3)          comment '更新时间',
     primary key (id)
 ) comment = '历史JS代码';
-create index nashorn_code_run_log_js_code_id on nashorn_code_run_log (js_code_id);
-create index nashorn_code_run_log_run_start on nashorn_code_run_log (run_start);
-create index nashorn_code_run_log_run_end on nashorn_code_run_log (run_end);
+create index code_run_log_js_code_id on code_run_log (js_code_id);
+create index code_run_log_run_start on code_run_log (run_start);
+create index code_run_log_run_end on code_run_log (run_end);
 /*------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------*/
