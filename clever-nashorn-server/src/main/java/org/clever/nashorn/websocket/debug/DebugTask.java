@@ -34,8 +34,10 @@ public class DebugTask extends Task<DebugReq> {
     public DebugTask(DebugReq debugReq) {
         // (uuid)path
         super(String.format("(%s)%s", IDCreateUtils.uuid(), FilenameUtils.concat(debugReq.getFilePath(), debugReq.getFileName())), TaskType.DebugJs);
-//        Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
-        Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, SpringContextHolder.getBean(JsCodeFileCache.class));
+        // Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
+        JsCodeFileCache jsCodeFileCache = SpringContextHolder.getBean(JsCodeFileCache.class);
+        jsCodeFileCache.clear();
+        Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, jsCodeFileCache);
         MemoryModuleCache cache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFilePath(), this);
         Map<String, Object> context = new HashMap<>(1);
