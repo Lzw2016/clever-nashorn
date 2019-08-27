@@ -30,32 +30,44 @@ public class LogConsole extends AbstractConsole {
 
     @Override
     public void log(Object... args) {
-        log.info(logString(args));
+        if (log.isInfoEnabled()) {
+            log.info(logString(args));
+        }
     }
 
     @Override
     public void trace(Object... args) {
-        log.trace(logString(args));
+        if (log.isTraceEnabled()) {
+            log.trace(logString(args));
+        }
     }
 
     @Override
     public void debug(Object... args) {
-        log.debug(logString(args));
+        if (log.isDebugEnabled()) {
+            log.debug(logString(args));
+        }
     }
 
     @Override
     public void info(Object... args) {
-        log.info(logString(args));
+        if (log.isInfoEnabled()) {
+            log.info(logString(args));
+        }
     }
 
     @Override
     public void warn(Object... args) {
-        log.warn(logString(args));
+        if (log.isWarnEnabled()) {
+            log.warn(logString(args));
+        }
     }
 
     @Override
     public void error(Object... args) {
-        log.error(logString(args));
+        if (log.isErrorEnabled()) {
+            log.error(logString(args));
+        }
     }
 
     @Override

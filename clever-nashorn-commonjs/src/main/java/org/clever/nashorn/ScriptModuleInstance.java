@@ -3,7 +3,7 @@ package org.clever.nashorn;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
-import org.clever.nashorn.folder.FilesystemFolder;
+import org.clever.nashorn.folder.FileSystemFolder;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.internal.LogConsole;
@@ -89,7 +89,7 @@ public class ScriptModuleInstance {
      * @param context      全局的对象
      */
     public static ScriptModuleInstance creatDefault(String rootFilePath, Map<String, Object> context) {
-        Folder rootFolder = FilesystemFolder.create(new File(rootFilePath));
+        Folder rootFolder = FileSystemFolder.create(new File(rootFilePath));
         return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(rootFilePath), context);
     }
 

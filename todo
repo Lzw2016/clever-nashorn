@@ -22,6 +22,7 @@ debug不需要做溢出处理 OK
 JSToolsCode改成JSTools OK
 JSToolsCode定时刷新缓存，时间可配置 OK
 
+js加载数据库实现 OK
 
 ---
 
@@ -31,12 +32,19 @@ JSToolsCode定时刷新缓存，时间可配置 OK
 提供一个接口返回任务详情
 提供接口用于管理任务，关闭等操作。
 
-js加载数据库实现
+
 js数据加载debug层外壳
 js缓存debug层外壳
 js Folder debug层外壳
 执行临时js实现
 
+
+-- 增删查改
+JsCodeFile
+
+CodeFileHistory
+
+CodeRunLog
 ---
 
 

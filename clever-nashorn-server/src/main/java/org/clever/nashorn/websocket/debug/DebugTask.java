@@ -6,7 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.clever.common.utils.IDCreateUtils;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.dto.request.DebugReq;
-import org.clever.nashorn.folder.FilesystemFolder;
+import org.clever.nashorn.folder.FileSystemFolder;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
@@ -32,7 +32,7 @@ public class DebugTask extends Task<DebugReq> {
     public DebugTask(DebugReq debugReq) {
         // (uuid)path
         super(String.format("(%s)%s", IDCreateUtils.uuid(), FilenameUtils.concat(debugReq.getFilePath(), debugReq.getFileName())), TaskType.DebugJs);
-        Folder rootFolder = FilesystemFolder.create(new File(debugReq.getFilePath()));
+        Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
         MemoryModuleCache cache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFilePath(), this);
         Map<String, Object> context = new HashMap<>(1);

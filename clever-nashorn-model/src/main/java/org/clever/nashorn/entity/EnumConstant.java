@@ -5,7 +5,14 @@ package org.clever.nashorn.entity;
  * 创建时间：2018-09-17 14:15 <br/>
  */
 public class EnumConstant {
-
+    /**
+     * 默认的业务类型
+     */
+    public static final String DefaultBizType = "default";
+    /**
+     * 默认的代码分组
+     */
+    public static final String DefaultGroupName = "default";
     /**
      * 文件路径统一分隔符
      */

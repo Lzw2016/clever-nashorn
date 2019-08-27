@@ -66,7 +66,9 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                     TASK_MAP.remove(key);
                 }
                 // 打印日志
-                log.info(getText(allSessionCount, rmList));
+                if (log.isDebugEnabled()) {
+                    log.debug(getText(allSessionCount, rmList));
+                }
                 try {
                     Thread.sleep(1000 * 3);
                 } catch (Throwable e) {
