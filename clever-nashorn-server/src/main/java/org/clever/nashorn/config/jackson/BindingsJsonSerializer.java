@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.internal.runtime.PropertyAccess;
 import org.apache.commons.lang3.StringUtils;
-import org.clever.nashorn.JSToolsCode;
+import org.clever.nashorn.JSTools;
 
 import javax.script.Bindings;
 import java.io.IOException;
@@ -23,11 +23,11 @@ public class BindingsJsonSerializer extends JsonSerializer<Object> {
     public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         String json = null;
         if (value instanceof JSObject) {
-            json = JSToolsCode.inspect((JSObject) value);
+            json = JSTools.inspect((JSObject) value);
         } else if (value instanceof Bindings) {
-            json = JSToolsCode.inspect((Bindings) value);
+            json = JSTools.inspect((Bindings) value);
         } else if (value instanceof PropertyAccess) {
-            json = JSToolsCode.inspect((PropertyAccess) value);
+            json = JSTools.inspect((PropertyAccess) value);
         }
         if (StringUtils.isNotBlank(json)) {
             gen.writeRawValue(json);

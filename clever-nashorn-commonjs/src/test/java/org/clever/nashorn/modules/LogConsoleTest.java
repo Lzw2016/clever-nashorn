@@ -2,7 +2,7 @@ package org.clever.nashorn.modules;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
-import org.clever.nashorn.JSToolsCode;
+import org.clever.nashorn.JSTools;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.internal.LogConsole;
 import org.clever.nashorn.utils.StrFormatter;
@@ -34,14 +34,13 @@ public class LogConsoleTest {
         log.info(String.valueOf(list));
     }
 
-    @SuppressWarnings("ConfusingArgumentToVarargsMethod")
     @Test
     public void t3() {
-        log.info(" # --- {}", JSToolsCode.Instance);
+        log.info(" # --- {}", JSTools.Instance);
         Map<String, Object> context = new HashMap<>();
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
-        scriptObjectMirror.callMember("printJava", null);
+        scriptObjectMirror.callMember("printJava");
         scriptObjectMirror.callMember("printJava", 1);
         scriptObjectMirror.callMember("printJava", 2.2F);
         scriptObjectMirror.callMember("printJava", 3.3D);
@@ -64,13 +63,12 @@ public class LogConsoleTest {
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
 
-    @SuppressWarnings("ConfusingArgumentToVarargsMethod")
     @Test
     public void tmp() {
         Map<String, Object> context = new HashMap<>();
         ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
-        scriptObjectMirror.callMember("tmp", null);
+        scriptObjectMirror.callMember("tmp");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
 

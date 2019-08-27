@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
-import org.clever.nashorn.JSToolsCode;
+import org.clever.nashorn.JSTools;
 
 import javax.script.Bindings;
 import java.math.BigDecimal;
@@ -392,7 +392,7 @@ public class StrFormatter {
             str = obj.toString();
         } else if (obj instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) obj;
-            str = JSToolsCode.inspect((Bindings) scriptObjectMirror);
+            str = JSTools.inspect((Bindings) scriptObjectMirror);
         } else {
             str = JacksonMapper.getInstance().toJson(obj);
         }

@@ -14,7 +14,7 @@ import javax.script.Bindings;
  * 作者：lizw <br/>
  * 创建时间：2019/08/26 12:01 <br/>
  */
-public class JSToolsCode {
+public class JSTools {
 
     /**
      * 系统自带的默认实例
@@ -26,7 +26,7 @@ public class JSToolsCode {
     static {
         Instance = new ScriptModuleInstance(
                 ResourceFolder.create(ScriptEngineUtils.class.getClassLoader(), "javascript", "UTF-8"),
-                new MemoryModuleCache(),
+                new MemoryModuleCache(1000 * 60),
                 new LogConsole("/resources")
         );
         JSToolsCode = Instance.useJs("./JSToolsCode.js");
