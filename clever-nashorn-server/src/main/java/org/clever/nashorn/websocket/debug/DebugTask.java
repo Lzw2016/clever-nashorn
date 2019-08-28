@@ -43,6 +43,7 @@ public class DebugTask extends Task<DebugReq> {
         Map<String, Object> context = new HashMap<>(1);
         context.put("CommonUtils", CommonUtils.Instance);
         scriptModuleInstance = new ScriptModuleInstance(rootFolder, cache, console, context);
+        this.runTimeOut = 5;
     }
 
     @Override

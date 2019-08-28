@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.reflection.ReflectionsUtils;
+import org.clever.common.utils.tuples.TupleSeven;
 import org.clever.common.utils.validator.BaseValidatorUtils;
 import org.clever.common.utils.validator.ValidatorFactoryUtils;
 import org.clever.nashorn.dto.response.ConsoleLogRes;
 import org.clever.nashorn.model.WebSocketTaskReq;
+import org.clever.nashorn.websocket.utils.ThreadPoolUtils;
+import org.clever.nashorn.websocket.utils.WebSocketCloseSessionUtils;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -50,12 +53,14 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                     Task task = entry.getValue();
                     allSessionCount += task.getWebSocketSessionSize();
                     // 任务已停止或者任务已经超时
-                    if (task.isStop()
-                            || (
-                            task.getStartTime() != null
-                                    && task.getRunTimeOut() > 0
-                                    && ((System.currentTimeMillis() - task.getStartTime()) / 1000) >= task.getRunTimeOut())) {
+                    boolean timeOut = task.getStartTime() != null
+                            && task.getRunTimeOut() > 0
+                            && ((System.currentTimeMillis() - task.getStartTime()) / 1000) >= task.getRunTimeOut();
+                    if (task.isStop() || timeOut) {
                         try {
+                            if (timeOut) {
+                                task.sendMessage(ConsoleLogRes.newError("[执行超时] - 服务端主动关闭", null));
+                            }
                             task.stop();
                             rmList.add(key);
                         } catch (Throwable e) {
@@ -97,15 +102,16 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                 rmList.size())
         ).append(enter);
         // summary.append(line2).append(enter);
+        TupleSeven<Integer, Integer, Integer, Integer, Integer, Integer, Integer> tupleSeven = ThreadPoolUtils.getThreadPoolInfo();
         summary.append(String.format(
                 "[ThreadPool] -> CorePoolSize=%-5s     | MaximumPoolSize=%-5s    | PoolSize=%-5s | Queue.size=%s ||-> TaskCount=%s | ActiveCount=%s |  CompletedTaskCount=%s",
-                Task.Task_Thread_Pool.getCorePoolSize(),
-                Task.Task_Thread_Pool.getMaximumPoolSize(),
-                Task.Task_Thread_Pool.getPoolSize(),
-                Task.Task_Thread_Pool.getQueue().size(),
-                Task.Task_Thread_Pool.getTaskCount(),
-                Task.Task_Thread_Pool.getActiveCount(),
-                Task.Task_Thread_Pool.getCompletedTaskCount()
+                tupleSeven.getValue1(),
+                tupleSeven.getValue2(),
+                tupleSeven.getValue3(),
+                tupleSeven.getValue4(),
+                tupleSeven.getValue5(),
+                tupleSeven.getValue6(),
+                tupleSeven.getValue7()
         )).append(enter);
         for (Map.Entry<String, Task> entry : TASK_MAP.entrySet()) {
             String taskId = entry.getKey();

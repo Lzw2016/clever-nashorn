@@ -8,16 +8,16 @@ import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.dto.response.ConsoleLogRes;
 import org.clever.nashorn.model.WebSocketTaskReq;
+import org.clever.nashorn.websocket.utils.ThreadPoolUtils;
+import org.clever.nashorn.websocket.utils.WebSocketCloseSessionUtils;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -31,37 +31,20 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("WeakerAccess")
 @Slf4j
 public abstract class Task<T extends WebSocketTaskReq> {
-
-    /**
-     * 执行WebSocket任务的线程池
-     */
-    public static final ThreadPoolExecutor Task_Thread_Pool = new ThreadPoolExecutor(
-            16,                         // 核心线程数，即使空闲也仍保留在池中的线程数
-            32,                     // 最大线程数
-            30, TimeUnit.SECONDS,      // 保持激活时间，当线程数大于核心数时，这是多余的空闲线程在终止之前等待新任务的最大时间
-            new ArrayBlockingQueue<>(512),  // 当线程池的任务缓存队列容量
-            new ThreadPoolExecutor.AbortPolicy()    // 当线程池的任务缓存队列已满，并且线程池中的线程数目达到最大线程数，如果还有任务到来就会采取任务拒绝策略
-    );
     /**
      * 响应数据序列化
      */
     public static final JacksonMapper Jackson_Mapper;
 
     static {
-        // 优雅关闭线程池
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                Task_Thread_Pool.shutdownNow();
-                log.debug("WebSocket任务线程池关闭成功");
-            } catch (Throwable e) {
-                log.warn("关闭WebSocket任务线程池异常", e);
-            }
-        }));
-
         ObjectMapper objectMapper = SpringContextHolder.getBean(ObjectMapper.class);
         Jackson_Mapper = new JacksonMapper(objectMapper);
     }
 
+    /**
+     * 执行WebSocket任务的线程池
+     */
+    public final ThreadPoolExecutor taskThreadPool;
     /**
      * 连接当前任务的Session集合<br />
      * 一个Task对应多个session，一个session只能对应一个Task
@@ -114,6 +97,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     public Task(String taskId, TaskType taskType) {
         this.taskId = taskId;
         this.taskType = taskType;
+        this.taskThreadPool = ThreadPoolUtils.getThreadPoolForTask(taskId);
     }
 
     /**
@@ -171,7 +155,9 @@ public abstract class Task<T extends WebSocketTaskReq> {
     private void sendMessage(WebSocketSession session, Object object) {
         TextMessage textMessage = new TextMessage(Jackson_Mapper.toJson(object));
         try {
-            session.sendMessage(textMessage);
+            if (session.isOpen()) {
+                session.sendMessage(textMessage);
+            }
         } catch (Throwable e) {
             log.error("[ContainerLogTask] 发送任务结束消息异常", e);
         }
@@ -255,7 +241,16 @@ public abstract class Task<T extends WebSocketTaskReq> {
      */
     public void stop() {
         stop = true;
-        closeAllSession();
+        try {
+            ThreadPoolUtils.shutdownNow(taskId);
+        } catch (Throwable e) {
+            log.error(String.format("任务[%s]关闭线程池失败", taskId), e);
+        }
+        try {
+            closeAllSession();
+        } catch (Throwable e) {
+            log.error(String.format("任务[%s]关闭WebSocketSession失败", taskId), e);
+        }
         doStop();
     }
 
@@ -268,7 +263,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     @SuppressWarnings("UnusedReturnValue")
     protected boolean execTask(DoTask task) {
         try {
-            Task_Thread_Pool.execute(() -> {
+            taskThreadPool.execute(() -> {
                 try {
                     runningTaskCount.incrementAndGet();
                     task.runTask();
