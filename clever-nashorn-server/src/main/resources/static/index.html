@@ -539,11 +539,11 @@
             // console.log(data.logs);
             if (data.type === "log") {
                 var _console;
-                // [2019-08-28  11:52:17.208] [INFO] index.js -
+                // 日志前缀 [2019-08-28  11:52:17.208] [INFO] index.js -
                 var logs = [
                     "[".concat(data.logTime, "] "),
                     "[".concat(data.level.toUpperCase(), "] "),
-                    data.filePath + data.fileName,
+                    data.fileName ? (data.filePath + data.fileName) : "",
                     " - "
                 ].concat(data.logs);
                 switch (data.level) {
