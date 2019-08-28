@@ -242,16 +242,20 @@ public abstract class Task<T extends WebSocketTaskReq> {
     public void stop() {
         stop = true;
         try {
-            ThreadPoolUtils.shutdownNow(taskId);
+            doStop();
         } catch (Throwable e) {
-            log.error(String.format("任务[%s]关闭线程池失败", taskId), e);
+            log.error(String.format("任务[%s]停止异常", taskId), e);
         }
         try {
             closeAllSession();
         } catch (Throwable e) {
             log.error(String.format("任务[%s]关闭WebSocketSession失败", taskId), e);
         }
-        doStop();
+        try {
+            ThreadPoolUtils.shutdownNow(taskId);
+        } catch (Throwable e) {
+            log.error(String.format("任务[%s]关闭线程池失败", taskId), e);
+        }
     }
 
     /**

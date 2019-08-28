@@ -32,6 +32,7 @@ public class WebSocketCloseSessionUtils {
             if (closeSession.isOpen()) {
                 try {
                     closeSession.close();
+                    log.debug("关闭WebSocketSession连接成功");
                 } catch (Throwable e) {
                     log.error("关闭WebSocketSession连接异常", e);
                     continue;

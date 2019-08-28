@@ -36,6 +36,8 @@ js加载数据库实现 OK
 
 实现logback或者log4j的log，需要把Java日志也打印到浏览器
 
+解决Java与JS互调的类型问题
+
 提供一个接口返回任务详情
 提供接口用于管理任务，关闭等操作。
 
@@ -44,6 +46,10 @@ js缓存debug层外壳
 js Folder debug层外壳
 执行临时js实现
 
+数据库操作工具
+    关系型数据库 MySql
+    Redis
+    MQ
 
 -- 增删查改
 JsCodeFile

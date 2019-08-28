@@ -110,10 +110,13 @@ Date.prototype.toJSON = function () {
 
 // 解除了循环依赖问题
 function inspect(object) {
-    if(isUndefined(object)) {
+    if (isUndefined(object)) {
         return "\"undefined\"";
     }
-    if (isNumber(object) || isString(object) || isBoolean(object) || isUndefined(object) || isNull(object)) {
+    if (isString(object)) {
+        return "\"" + object.toString() + "\"";
+    }
+    if (isNumber(object) || isBoolean(object) || isNull(object)) {
         return object;
     }
     if (isDate(object)) {
@@ -133,7 +136,7 @@ function inspect(object) {
         if (isFunction(value)) {
             return {"function ()": value.toString()};
         }
-        if(isUndefined(value)) {
+        if (isUndefined(value)) {
             return "undefined";
         }
         if (isString(value)) {

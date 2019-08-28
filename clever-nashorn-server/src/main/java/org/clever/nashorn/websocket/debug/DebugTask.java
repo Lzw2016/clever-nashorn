@@ -51,6 +51,7 @@ public class DebugTask extends Task<DebugReq> {
         execTask(() -> {
             ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs(message.getFileName());
             scriptObjectMirror.callMember(message.getFucName(), "DebugTask");
+            // Thread.sleep(50);
             stop();
         });
     }

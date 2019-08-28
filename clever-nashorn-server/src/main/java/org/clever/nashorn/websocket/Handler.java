@@ -60,6 +60,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                         try {
                             if (timeOut) {
                                 task.sendMessage(ConsoleLogRes.newError("[执行超时] - 服务端主动关闭", null));
+                                Thread.sleep(50);
                             }
                             task.stop();
                             rmList.add(key);
@@ -267,6 +268,10 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
         K task = getTaskBySession(session);
+        if (!session.isOpen()) {
+            log.error("[消息传输错误] SessionId={} | TaskId={}", session.getId(), task == null ? "" : task.getTaskId());
+            return;
+        }
         log.error("[消息传输错误] SessionId={} | TaskId={}", session.getId(), task == null ? "" : task.getTaskId(), exception);
     }
 

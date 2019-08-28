@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 日志写入数据库实现
+ * <p>
  * 作者：lizw <br/>
  * 创建时间：2019/08/27 11:12 <br/>
  */
