@@ -26,6 +26,11 @@ public class JsCodeFilePathUtils {
         }
     }
 
+    /**
+     * 上级路径，以“/”号结尾
+     *
+     * @param filePath 上级路径
+     */
     public static String getFilePath(String filePath) {
         if (filePath.endsWith(EnumConstant.File_Path_Separator)) {
             return filePath;

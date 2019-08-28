@@ -52,6 +52,16 @@ public class JsCodeFileService {
         if (list.size() <= 0) {
             return treeList;
         }
+        // 增加根路径
+        JsCodeFile root = new JsCodeFile();
+        root.setId(-1L);
+        root.setBizType(req.getBizType());
+        root.setGroupName(req.getGroupName());
+        root.setNodeType(EnumConstant.Node_Type_2);
+        root.setFilePath("");
+        root.setName(EnumConstant.File_Path_Separator);
+        treeList.add(new JsCodeFileNode(root));
+        // 增加子路径
         list.forEach(jsCodeFile -> {
             treeList.add(new JsCodeFileNode(jsCodeFile));
             jsCodeFileCache.put(jsCodeFile);
@@ -62,17 +72,6 @@ public class JsCodeFileService {
     @Transactional
     public JsCodeFile addJsCodeFile(JsCodeFileAddReq req) {
         JsCodeFile jsCodeFile = BeanMapper.mapper(req, JsCodeFile.class);
-        // 保证根路径存在
-        JsCodeFile root = jsCodeFileMapper.getJsCodeFile(req.getBizType(), req.getGroupName(), EnumConstant.Node_Type_2, EnumConstant.File_Path_Separator, "");
-        if (root == null) {
-            root = new JsCodeFile();
-            root.setBizType(req.getBizType());
-            root.setGroupName(req.getGroupName());
-            root.setNodeType(EnumConstant.Node_Type_2);
-            root.setFilePath(EnumConstant.File_Path_Separator);
-            root.setName("");
-            jsCodeFileMapper.insert(root);
-        }
         if (Objects.equals(EnumConstant.Node_Type_2, jsCodeFile.getNodeType())) {
             jsCodeFile.setJsCode(null);
         } else {
@@ -80,11 +79,13 @@ public class JsCodeFileService {
             jsCodeFile.setFilePath(JsCodeFilePathUtils.getFilePath(jsCodeFile.getFilePath()));
             jsCodeFile.setName(StringUtils.trim(jsCodeFile.getName()) + ".js");
         }
-        // 校验父路径存在
-        TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
-        JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(req.getBizType(), req.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
-        if (parent == null) {
-            throw new BusinessException("父路径不存在");
+        // 如果父路径不是根路径，校验父路径存在
+        if (!Objects.equals(EnumConstant.File_Path_Separator, jsCodeFile.getFilePath())) {
+            TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
+            JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(req.getBizType(), req.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
+            if (parent == null) {
+                throw new BusinessException("父路径不存在");
+            }
         }
         // 校验文件路径不重复
         JsCodeFile exists = jsCodeFileMapper.getByFullPath(req.getBizType(), req.getGroupName(), req.getFilePath(), req.getName());
@@ -108,7 +109,9 @@ public class JsCodeFileService {
         }
         boolean addHistory = true;
         // 如果更新 filePath 则校验
-        if (req.getFilePath() != null && !Objects.equals(req.getFilePath(), old.getFilePath())) {
+        if (req.getFilePath() != null
+                && !Objects.equals(req.getFilePath(), old.getFilePath())
+                && !Objects.equals(req.getFilePath(), EnumConstant.File_Path_Separator)) {
             addHistory = false;
             TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
             JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(old.getBizType(), old.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
