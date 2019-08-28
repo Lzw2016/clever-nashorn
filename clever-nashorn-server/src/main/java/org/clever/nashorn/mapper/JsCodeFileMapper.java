@@ -60,7 +60,10 @@ public interface JsCodeFileMapper extends BaseMapper<JsCodeFile> {
     @Select("select * from js_code_file")
     Set<JsCodeFile> findAll();
 
-    @Select("select * from js_code_file where biz_type=#{bizType} and group_name=#{groupName}")
+    @Select({
+            "select id, biz_type, group_name, node_type, file_path, name, description, create_at, update_at from js_code_file ",
+            "where biz_type=#{bizType} and group_name=#{groupName} "
+    })
     List<JsCodeFile> findByBizAndGroup(@Param("bizType") String bizType, @Param("groupName") String groupName);
 
     @Select("select count(1) from js_code_file where biz_type=#{bizType} and group_name=#{groupName}")

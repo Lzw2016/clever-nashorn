@@ -64,7 +64,6 @@ public class JsCodeFileService {
         // 增加子路径
         list.forEach(jsCodeFile -> {
             treeList.add(new JsCodeFileNode(jsCodeFile));
-            jsCodeFileCache.put(jsCodeFile);
         });
         return BuildTreeUtils.buildTree(treeList);
     }

@@ -17,7 +17,7 @@ public class CodeRunLog implements Serializable {
     /** 主键id */
     private Long id;
 
-    /** 系统JS代码ID(nashorn_js_code.id) */
+    /** 系统JS代码ID(js_code_file.id) */
     private Long jsCodeId;
 
     /** 脚本内容 */

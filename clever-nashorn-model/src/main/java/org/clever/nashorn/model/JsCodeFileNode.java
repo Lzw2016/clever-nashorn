@@ -3,10 +3,13 @@ package org.clever.nashorn.model;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Data;
 import org.clever.common.utils.tree.ITreeNode;
+import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
+import org.clever.nashorn.utils.JsCodeFilePathUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 作者：lizw <br/>
@@ -32,11 +35,28 @@ public class JsCodeFileNode implements ITreeNode {
         this.jsCodeFile = jsCodeFile;
     }
 
-    @Override
-    public Object getId() {
-        return jsCodeFile.getFilePath() + jsCodeFile.getName();
+    /**
+     * 得到当前全路径，文件夹不以“/”号结尾
+     */
+    public String getFullPath() {
+        return JsCodeFilePathUtils.concat(jsCodeFile.getFilePath(), jsCodeFile.getName());
     }
 
+    /**
+     * 全路径，文件夹以“/”号结尾
+     */
+    @Override
+    public Object getId() {
+        String id = JsCodeFilePathUtils.concat(jsCodeFile.getFilePath(), jsCodeFile.getName());
+        if (Objects.equals(EnumConstant.Node_Type_2, jsCodeFile.getNodeType())) {
+            id = JsCodeFilePathUtils.getFilePath(id);
+        }
+        return id;
+    }
+
+    /**
+     * 上级路径，以“/”号结尾
+     */
     @Override
     public Object getParentId() {
         return jsCodeFile.getFilePath();
