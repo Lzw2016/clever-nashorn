@@ -15,7 +15,7 @@
     </script>
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="codemirror/lib/codemirror.css">
-    <link rel="stylesheet" href="codemirror/theme/monokai.css">
+    <!--<link rel="stylesheet" href="codemirror/theme/monokai.css">-->
     <link rel="stylesheet" href="codemirror/addon/dialog/dialog.css">
     <link rel="stylesheet" href="codemirror/addon/fold/foldgutter.css">
     <link rel="stylesheet" href="codemirror/addon/scroll/simplescrollbars.css">
@@ -76,6 +76,10 @@
         .active[data-theme=light] {
             color: #111 !important;
             font-size: 18px;
+        }
+
+        .CodeMirror-cursor {
+            border-left-width: 2px !important;
         }
 
         .CodeMirror {

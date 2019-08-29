@@ -120,4 +120,36 @@ public class ThreadPoolExecutorTest {
         Thread.sleep(5000);
         log.info("-----> OK!");
     }
+
+
+//    public static void main(String[] args) {
+//        CountDownLatch countDownLatch = new CountDownLatch(1);
+//        ExecutorService pool = Executors.newFixedThreadPool(1);
+//        AtomicInteger counter = new AtomicInteger();
+//        pool.execute(() -> {
+//            while (true) {
+//                try {
+//                    counter.incrementAndGet();
+//                } catch (Exception e) {
+//
+//                }
+//            }
+//        });
+//        ExecutorService controlPool = Executors.newFixedThreadPool(1);
+//        controlPool.execute(() -> {
+//            while (true) {
+//                Scanner input = new Scanner(System.in);
+//                System.out.print("enter op: ");
+//                String opStr = input.next();
+//                if (opStr.equals("k")) {
+//                    pool.shutdownNow();
+//                    System.out.println("pool.isShutdown");
+//                }
+//                if (opStr.equals("c")) {
+//                    System.out.println(pool.isShutdown() + " " + counter.toString());
+//                }
+//            }
+//        });
+//        countDownLatch.await();
+//    }
 }
