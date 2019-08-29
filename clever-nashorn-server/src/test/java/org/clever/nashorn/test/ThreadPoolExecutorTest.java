@@ -29,4 +29,17 @@ public class ThreadPoolExecutorTest {
         Thread.sleep(5000);
         log.info("-----> OK!");
     }
+
+
+    @Test
+    public void t2() {
+        Thread thread = new Thread(() -> {
+            for (int i = 1; i < 1000; i++) {
+                HttpUtils.getInner().getStr("https://www.baidu.com/");
+                log.info("-----> {}", i);
+            }
+        });
+//        thread.start();
+//        thread.stop();
+    }
 }
