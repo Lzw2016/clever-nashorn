@@ -84,10 +84,11 @@ public class ThreadPoolUtils {
         threadPoolExecutor = new ThreadPoolExecutor(
                 4,                          // 核心线程数，即使空闲也仍保留在池中的线程数
                 4,                      // 最大线程数
-                30, TimeUnit.SECONDS,      // 保持激活时间，当线程数大于核心数时，这是多余的空闲线程在终止之前等待新任务的最大时间
+                10, TimeUnit.SECONDS,      // 保持激活时间，当线程数大于核心数时，这是多余的空闲线程在终止之前等待新任务的最大时间
                 new ArrayBlockingQueue<>(32),   // 当线程池的任务缓存队列容量
                 new ThreadPoolExecutor.AbortPolicy()    // 当线程池的任务缓存队列已满，并且线程池中的线程数目达到最大线程数，如果还有任务到来就会采取任务拒绝策略
         );
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
         Thread_Pool_Map.put(taskId, threadPoolExecutor);
         return threadPoolExecutor;
     }
