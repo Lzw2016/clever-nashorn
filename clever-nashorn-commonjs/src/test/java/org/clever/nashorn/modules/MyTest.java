@@ -107,4 +107,19 @@ public class MyTest {
     public void callBack() {
         log.info("### callBack");
     }
+
+    // ========================================================================================================================================================
+
+    @Test
+    public void test7() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test7");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t01");
+        final long start = System.currentTimeMillis();
+        Object res;
+        for (int i = 1; i <= 10000; i++) {
+            res = scriptObjectMirror.callMember("test7");
+        }
+        // 相同的脚本运行J2V8上10000次只需要1秒
+        log.info("----> {}", (System.currentTimeMillis() - start) / 1000.0);
+    }
 }

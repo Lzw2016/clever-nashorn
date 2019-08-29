@@ -21,7 +21,7 @@ public class JSTools {
      */
     public static final ScriptModuleInstance Instance;
 
-    public static final ScriptObjectMirror JSToolsCode;
+    public static final ScriptObjectMirror BaseUtils;
 
     static {
         Instance = new ScriptModuleInstance(
@@ -29,7 +29,7 @@ public class JSTools {
                 new MemoryModuleCache(1000 * 60),
                 new LogConsole("/resources")
         );
-        JSToolsCode = Instance.useJs("./JSToolsCode.js");
+        BaseUtils = Instance.useJs("./BaseUtils.js");
     }
 
     /**
@@ -38,7 +38,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String inspect(JSObject object) {
-        Object res = JSToolsCode.callMember("inspect", object);
+        Object res = BaseUtils.callMember("inspect", object);
         return String.valueOf(res);
     }
 
@@ -48,7 +48,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String inspect(Bindings object) {
-        Object res = JSToolsCode.callMember("inspect", object);
+        Object res = BaseUtils.callMember("inspect", object);
         return String.valueOf(res);
     }
 
@@ -58,7 +58,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String inspect(PropertyAccess object) {
-        Object res = JSToolsCode.callMember("inspect", object);
+        Object res = BaseUtils.callMember("inspect", object);
         return String.valueOf(res);
     }
 
@@ -68,7 +68,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String stringify(JSObject object) {
-        Object res = JSToolsCode.callMember("stringify", object);
+        Object res = BaseUtils.callMember("stringify", object);
         return String.valueOf(res);
     }
 
@@ -78,7 +78,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String stringify(Bindings object) {
-        Object res = JSToolsCode.callMember("stringify", object);
+        Object res = BaseUtils.callMember("stringify", object);
         return String.valueOf(res);
     }
 
@@ -88,7 +88,7 @@ public class JSTools {
      * @param object JS 对象
      */
     public static String stringify(PropertyAccess object) {
-        Object res = JSToolsCode.callMember("stringify", object);
+        Object res = BaseUtils.callMember("stringify", object);
         return String.valueOf(res);
     }
 }

@@ -113,11 +113,14 @@ function inspect(object) {
     if (isUndefined(object)) {
         return "\"undefined\"";
     }
+    if (isNull(object)) {
+        return "\"null\"";
+    }
     if (isString(object)) {
         return "\"" + object.toString() + "\"";
     }
-    if (isNumber(object) || isBoolean(object) || isNull(object)) {
-        return object;
+    if (isNumber(object) || isBoolean(object)) {
+        return object.toString();
     }
     if (isDate(object)) {
         return "\"" + dateToJSON(object) + "\"";
