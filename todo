@@ -51,6 +51,8 @@ js缓存debug层外壳
 js Folder debug层外壳
 执行临时js实现
 
+Java ThreadPoolExecutor无法有效的强制停止线程，需要强制关闭超时执行的线程
+
 -- 增删查改
 JsCodeFile
     新增 OK
