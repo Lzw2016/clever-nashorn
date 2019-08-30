@@ -76,6 +76,7 @@
 
 <script type="text/javascript" src="jquery/jquery-3.4.1.min.js"></script>
 <script type="text/javascript" src="lodash/lodash.min.js"></script>
+<script type="text/javascript" src="monaco-editor/nashorn-js.js"></script>
 <script type="text/javascript" src="monaco-editor/min/vs/loader.js"></script>
 <script type="text/javascript">
     // 初始化配置
@@ -88,25 +89,25 @@
         }
     });
 
-    // 全屏/取消全屏
-    function fullscreen(full) {
-        var node = $(".fullscreen");
-        if (full === true) {
-            node.addClass("active");
-        } else if (full === false) {
-            node.removeClass("active");
-        } else {
-            node.toggleClass("active");
-        }
-    }
+    // // 全屏/取消全屏
+    // function fullscreen(full) {
+    //     var node = $(".fullscreen");
+    //     if (full === true) {
+    //         node.addClass("active");
+    //     } else if (full === false) {
+    //         node.removeClass("active");
+    //     } else {
+    //         node.toggleClass("active");
+    //     }
+    // }
 
-    // 全屏事件
-    $(".fullscreen").on("click", function () {
-        if (fullscreenFunc) {
-            fullscreen();
-            fullscreenFunc();
-        }
-    });
+    // // 全屏事件
+    // $(".fullscreen").on("click", function () {
+    //     if (fullscreenFunc) {
+    //         fullscreen();
+    //         fullscreenFunc();
+    //     }
+    // });
 
     var editor;
     var fullscreenFunc;
@@ -117,6 +118,10 @@
             fullscreenFunc = config.fullscreen;
         }
         require(['vs/editor/editor.main'], function () {
+            // console.log(monaco.editor);
+            // 自定义编辑器 https://github.com/microsoft/monaco-editor-samples/blob/master/browser-amd-monarch/index.html
+            monaco.languages.register({id: 'nashorn-js'});
+            monaco.languages.setMonarchTokensProvider('nashorn-js', nashornJS);
             // 属性配置 https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.ieditorconstructionoptions.html
             var options = {
                 // 主题，三款：vs、vs-dark、hc-black
@@ -124,7 +129,7 @@
                 // 内容
                 value: '',
                 // 语言
-                language: 'javascript',
+                language: 'nashorn-js',
                 // 显示行号
                 lineNumbers: true,
                 // 只读属性
@@ -150,6 +155,26 @@
             }
             // 创建编辑器
             editor = monaco.editor.create(document.getElementById('container'), options);
+            // 增加快捷键(可覆盖默认快捷键)
+            editor.addCommand(
+                monaco.KeyMod.Alt | monaco.KeyCode.US_SLASH,
+                function () {
+                    editor.trigger(null, 'editor.action.triggerSuggest', {});
+                },
+                '!findWidgetVisible && !inReferenceSearchEditor && !editorHasSelection'
+            );
+            editor.addCommand(
+                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_U,
+                function () {
+                    editor.trigger(null, 'editor.action.transformToUppercase', {});
+                }
+            );
+            editor.addCommand(
+                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_I,
+                function () {
+                    editor.trigger(null, 'editor.action.transformToLowercase', {});
+                }
+            );
             if (setEditorFunc) setEditorFunc(editor);
         });
     }
@@ -256,7 +281,7 @@
 
     initEditor({
         width: "100%",
-        height: 300,
+        height: "100%",
         "last": "last"
     });
 
