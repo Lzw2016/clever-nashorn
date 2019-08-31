@@ -120,8 +120,8 @@
         require(['vs/editor/editor.main'], function () {
             // console.log(monaco.editor);
             // 自定义编辑器 https://github.com/microsoft/monaco-editor-samples/blob/master/browser-amd-monarch/index.html
-            monaco.languages.register({id: 'nashorn-js'});
-            monaco.languages.setMonarchTokensProvider('nashorn-js', nashornJS);
+            // monaco.languages.register({id: 'nashorn-js'});
+            // monaco.languages.setMonarchTokensProvider('nashorn-js', nashornJS);
             // 属性配置 https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.ieditorconstructionoptions.html
             var options = {
                 // 主题，三款：vs、vs-dark、hc-black
@@ -129,7 +129,7 @@
                 // 内容
                 value: '',
                 // 语言
-                language: 'nashorn-js',
+                language: 'javascript',
                 // 显示行号
                 lineNumbers: true,
                 // 只读属性
