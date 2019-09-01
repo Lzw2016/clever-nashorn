@@ -1,3 +1,7 @@
+//禁止鼠标右键菜单
+document.oncontextmenu = function () {
+    return false;
+};
 // 初始化编辑器
 initEditor({
     width: "100%",
