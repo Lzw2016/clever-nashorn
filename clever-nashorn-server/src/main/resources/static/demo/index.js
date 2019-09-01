@@ -99,3 +99,9 @@ $("#debugBtn").on("click", function () {
         }
     });
 });
+
+/*
+// 清除日志
+window.console.clear();
+
+*/
