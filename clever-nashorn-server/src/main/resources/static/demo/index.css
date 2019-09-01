@@ -8,6 +8,8 @@
     top: 0;
     overflow-x: hidden;
     overflow-y: hidden;
+    min-width: 1200px;
+    min-height: 500px;
 }
 
 .layout-left {
