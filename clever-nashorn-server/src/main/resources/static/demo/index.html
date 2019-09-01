@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--suppress SpellCheckingInspection, ES6ConvertVarToLetConst -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <!--vConsole-->
+    <script src="../vConsole/vconsole.min.js"></script>
+    <script>
+        // 初始化
+        var vConsole = new VConsole({
+            defaultPlugins: [],
+            disableLogScrolling: false,
+            onReady: function () {
+                vConsole.show();
+                // $("#__vconsole .vc-panel").css({"min-height": "55%"});
+            }
+        });
+    </script>
+    <!--index-->
+    <link rel="stylesheet" type="text/css" href="./index.css">
+    <!--lib-->
+    <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css"/>
+</head>
+<body>
+<div class="layout-root">
+    <div class="layout-left horizontal">
+        代码文件夹
+    </div>
+    <div class="layout-right horizontal">
+        <div class="layout-top vertical">
+            <!--打开文件多叶签，工具按钮栏-->
+            <div class="fullscreen" data-theme="dark">
+                <i id="debugBtn" title="调试" class="monaco-editor-background fa fa-bug" data-theme="vs"></i>
+            </div>
+            <!--代码编辑器-->
+            <div id="container" class="monaco-editor"></div>
+        </div>
+        <div class="layout-bottom vertical" id="vConsoleByDebug">
+            <!--debug日志-->
+        </div>
+    </div>
+</div>
+</body>
+<!--layout-->
+<script type="text/javascript" src="../split/split.min.js"></script>
+<script type="text/javascript" src="./layout.js"></script>
+<!--lib-->
+<script type="text/javascript" src="../jquery/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="../lodash/lodash.min.js"></script>
+<!--editor-->
+<script type="text/javascript" src="../monaco-editor/nashorn-js.js"></script>
+<script type="text/javascript" src="../monaco-editor/min/vs/loader.js"></script>
+<script type="text/javascript" src="./editor.js"></script>
+<!--index-->
+<script type="text/javascript" src="./index.js"></script>
+</html>

@@ -1,0 +1,98 @@
+/*----------------------------------------------------------------------------------------------------------------------------------- layout*/
+.layout-root {
+    border-top: 1px solid #ccc;
+    width: 100%;
+    height: calc(100% - 1px);
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.layout-left {
+    height: 100%;
+}
+
+.layout-right {
+    height: 100%;
+}
+
+.layout-top {
+    width: 100%;
+}
+
+.layout-bottom {
+    width: 100%;
+}
+
+.horizontal {
+    height: 100%;
+}
+
+.vertical {
+    width: 100%;
+}
+
+.horizontal, .gutter.gutter-horizontal {
+    float: left;
+}
+
+.gutter.gutter-horizontal {
+    height: 100%;
+    background-color: #ccc;
+    cursor: ew-resize;
+}
+
+.gutter.gutter-vertical {
+    width: 100%;
+    background-color: #ccc;
+    cursor: ns-resize;
+}
+
+/*----------------------------------------------------------------------------------------------------------------------------------- editor*/
+.monaco-editor {
+    width: 100%;
+    height: 100%;
+    /*position: absolute;*/
+    /*left: 0;*/
+    /*top: 0;*/
+}
+
+.fullscreen[data-theme=vs-dark] {
+    z-index: 5;
+    position: absolute;
+    top: 8px;
+    right: 24px;
+    padding: 5px;
+    color: #999;
+}
+
+.fullscreen[data-theme=vs-dark]:hover {
+    cursor: pointer;
+    color: #ddd;
+}
+
+.active[data-theme=vs-dark] {
+    color: #fff !important;
+    font-size: 18px;
+}
+
+.fullscreen[data-theme=vs] {
+    z-index: 5;
+    position: absolute;
+    top: 8px;
+    right: 24px;
+    padding: 5px;
+    color: #888;
+}
+
+.fullscreen[data-theme=vs]:hover {
+    cursor: pointer;
+    color: #555;
+}
+
+.active[data-theme=vs] {
+    color: #111 !important;
+    font-size: 18px;
+}
