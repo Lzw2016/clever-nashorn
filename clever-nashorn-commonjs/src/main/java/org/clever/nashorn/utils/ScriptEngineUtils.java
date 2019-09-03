@@ -39,6 +39,17 @@ public class ScriptEngineUtils {
     public static NashornScriptEngine creatEngine() {
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
         return (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
+        // 支持ES6语法的 NashornScriptEngine
+        // ScriptEngineManager sm = new ScriptEngineManager();
+        // NashornScriptEngineFactory factory = null;
+        // for (ScriptEngineFactory f : sm.getEngineFactories()) {
+        //     if (f.getEngineName().equalsIgnoreCase("Oracle Nashorn")) {
+        //         factory = (NashornScriptEngineFactory) f;
+        //         break;
+        //     }
+        // }
+        // String[] stringArray = new String[]{"-doe", "--language=es6"};
+        // return factory.getScriptEngine(stringArray);
     }
 
     /**
