@@ -3,15 +3,11 @@ package org.clever.nashorn.module;
 import jdk.nashorn.api.scripting.NashornException;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.internal.runtime.ECMAException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.ModuleCache;
-import org.clever.nashorn.utils.Paths;
-import org.clever.nashorn.utils.ScriptEngineUtils;
 
 import javax.script.*;
 import java.util.*;
@@ -98,11 +94,11 @@ public class Module extends SimpleBindings implements RequireFunction {
         this.moduleCache = parent.moduleCache;
         this.folder = folder;
         // 初始化 module
-        this.module = createSafeBindings();
+        this.module = InnerUtils.createSafeBindings();
         // 初始化 exports
         this.exports = refCache.get() != null ? refCache.get().get(this.folder.getFilePath(filename)) : null;
         if (this.exports == null) {
-            this.exports = createSafeBindings();
+            this.exports = InnerUtils.createSafeBindings();
         }
         // 设置根Module
         this.main = parent.main;
@@ -122,19 +118,12 @@ public class Module extends SimpleBindings implements RequireFunction {
 
     @Override
     public ScriptObjectMirror require(String module) throws ScriptException, NashornException {
-        if (module == null) {
-            throwModuleNotFoundException("<null>");
-        }
-        assert module != null;
-
+        InnerUtils.checkNullModuleName(module);
         // 解析module得到“文件名称”和“文件所在文件夹”
-        String[] parts = Paths.splitPath(module);
-        if (parts.length == 0) {
-            throwModuleNotFoundException(module);
-        }
+        String[] parts = InnerUtils.splitPath(module);
         String[] folderParts = Arrays.copyOfRange(parts, 0, parts.length - 1);
         String filename = parts[parts.length - 1];
-        Folder resolvedFolder = resolveFolder(folder, folderParts);
+        Folder resolvedFolder = InnerUtils.resolveFolder(folder, folderParts);
         // 让我们确保每个线程都有自己的refCache
         boolean needRemove = false;
         if (refCache.get() == null) {
@@ -151,7 +140,7 @@ public class Module extends SimpleBindings implements RequireFunction {
             } else {
                 // 我们必须存储对当前加载模块的引用，以避免循环require
                 log.debug("# RefCache 加入缓存 -> {}", requestedFullPath);
-                refCache.get().put(requestedFullPath, createSafeBindings());
+                refCache.get().put(requestedFullPath, InnerUtils.createSafeBindings());
             }
         }
 
@@ -159,16 +148,16 @@ public class Module extends SimpleBindings implements RequireFunction {
         Module found = null;
         try {
             // 寻找并加载 Module
-            if (isPrefixedModuleName(module)) {
-                found = attemptToLoadFromThisFolder(resolvedFolder, filename);
+            if (InnerUtils.isPrefixedModuleName(module)) {
+                found = InnerUtils.attemptToLoadFromThisFolder(resolvedFolder, filename, moduleCache);
             }
             // 未加载成功则从 node_modules 中搜索加载 Module
             if (found == null) {
-                found = searchForModuleInNodeModules(folder, folderParts, filename);
+                found = InnerUtils.searchForModuleInNodeModules(folder, folderParts, filename);
             }
             // 还未加载成功则抛出异常
             if (found == null) {
-                throwModuleNotFoundException(module);
+                InnerUtils.throwModuleNotFoundException(module);
             }
             assert found != null;
             children.add(found.module);
@@ -211,119 +200,22 @@ public class Module extends SimpleBindings implements RequireFunction {
         put(Module_Console, console);
     }
 
-    // 抛出Module找不到异常
-    private void throwModuleNotFoundException(String module) {
-        Bindings error = ScriptEngineUtils.newError("Module not found: " + module);
-        error.put("code", "MODULE_NOT_FOUND");
-        throw new ECMAException(error, null);
-    }
 
-    // 定位得到对应文件夹对象
-    private Folder resolveFolder(Folder from, String[] folders) {
-        Folder current = from;
-        for (String name : folders) {
-            switch (name) {
-                case "":
-                    throw new IllegalArgumentException();
-                case ".":
-                    continue;
-                case "..":
-                    current = current.getParent();
-                    break;
-                default:
-                    current = current.getFolder(name);
-                    break;
-            }
-            if (current == null) {
-                return null;
-            }
+    // 设置加载成功
+    private void setLoaded() {
+        // 修改加载状态
+        module.put(Module_Loaded, true);
+        put(Module_Loaded, true);
+        // JS加载初始化生命周期
+        if (!exports.hasMember(Module_Fuc_Init)) {
+            return;
         }
-        return current;
-    }
-
-    // 创建一个安全的Bindings对象
-    private ScriptObjectMirror createSafeBindings() {
-        return ScriptEngineUtils.newObject();
-    }
-
-    // 前缀是固定的 “/” 或 “../” 或 “./”
-    private static boolean isPrefixedModuleName(String module) {
-        return module.startsWith("/") || module.startsWith("../") || module.startsWith("./");
-    }
-
-    // 尝试根据filename从文件夹中加载Module
-    private Module attemptToLoadFromThisFolder(Folder resolvedFolder, String filename) throws ScriptException {
-        if (resolvedFolder == null) {
-            return null;
+        Object init = exports.getMember(Module_Fuc_Init);
+        if (init instanceof ScriptObjectMirror) {
+            ScriptObjectMirror initFuc = (ScriptObjectMirror) init;
+            Object res = initFuc.call(this);
+            log.debug("[{}] [{}] -> {}", Module_Fuc_Init, this.module.get(Module_Id), res);
         }
-        // 从文件加载Module - 尝试各种文件后缀变化
-        Module module = loadModuleAsFileAndPutInCache(resolvedFolder, filename);
-        // 从文件夹加载 (寻找对应的 package.json | index.js | index.json)
-        if (module == null) {
-            module = loadModuleAsFolder(resolvedFolder, filename);
-        }
-        return module;
-    }
-
-    // 从文件加载Module
-    private Module loadModuleAsFileAndPutInCache(Folder path, String filename) throws ScriptException {
-        // 获取可能的文件名
-        String[] filenamesToAttempt = getFilenamesToAttempt(filename);
-        for (String tentativeFilename : filenamesToAttempt) {
-            String requestedFullPath = path.getFilePath(tentativeFilename);
-            Module found = moduleCache.get(requestedFullPath);
-            if (found != null) {
-                log.debug("# ModuleCache 命中缓存 -> {}", requestedFullPath);
-                return found;
-            }
-            String scriptCode = path.getFileContent(tentativeFilename);
-            if (scriptCode != null) {
-                Module module = compileModule(path, tentativeFilename, scriptCode);
-                if (module != null) {
-                    // 缓存当前加载的 Module
-                    log.debug("# ModuleCache 加入缓存 -> {}", requestedFullPath);
-                    moduleCache.put(requestedFullPath, module);
-                    return module;
-                }
-            }
-        }
-        return null;
-    }
-
-    // 获取需要尝试的文件名
-    private static String[] getFilenamesToAttempt(String filename) {
-        if (StringUtils.isBlank(filename)) {
-            return new String[]{};
-        }
-        List<String> filenameList = new ArrayList<String>() {{
-            add(filename);
-        }};
-        String[] suffixArray = new String[]{".js", ".json"};
-        for (String suffix : suffixArray) {
-            if (!filename.toLowerCase().endsWith(suffix)) {
-                filenameList.add(filename + suffix);
-            }
-        }
-        return filenameList.toArray(new String[]{});
-    }
-
-    // 编译 Module (.js 和 .json)
-    private Module compileModule(Folder path, String filename, String scriptCode) throws ScriptException {
-        Module created;
-        // 编译 Module
-        if (filename.endsWith(".js")) {
-            // 编译 js
-            created = compileJavaScriptModule(path, filename, scriptCode);
-        } else if (filename.endsWith(".json")) {
-            // 编译 json
-            created = compileJsonModule(path, filename, scriptCode);
-        } else {
-            // 不支持的 module 类型
-            Bindings error = ScriptEngineUtils.newError("not support file type:" + filename);
-            error.put("code", "MODULE_NOT_SUPPORT");
-            throw new ECMAException(error, null);
-        }
-        return created;
     }
 
     // 编译 JavaScript Module
@@ -359,112 +251,8 @@ public class Module extends SimpleBindings implements RequireFunction {
     // 编译 Json Module
     private Module compileJsonModule(Folder path, String filename, String scriptCode) {
         Module created = new Module(path, filename, this);
-        created.exports = parseJson(scriptCode);
+        created.exports = InnerUtils.parseJson(scriptCode);
         created.setLoaded();
         return created;
-    }
-
-    // 设置加载成功
-    private void setLoaded() {
-        // 修改加载状态
-        module.put(Module_Loaded, true);
-        put(Module_Loaded, true);
-        // JS加载初始化生命周期
-        if (!exports.hasMember(Module_Fuc_Init)) {
-            return;
-        }
-        Object init = exports.getMember(Module_Fuc_Init);
-        if (init instanceof ScriptObjectMirror) {
-            ScriptObjectMirror initFuc = (ScriptObjectMirror) init;
-            Object res = initFuc.call(this);
-            log.debug("[{}] [{}] -> {}", Module_Fuc_Init, this.module.get(Module_Id), res);
-        }
-    }
-
-    // 解析Json成为 ScriptObjectMirror 对象
-    private ScriptObjectMirror parseJson(String json) {
-        return ScriptEngineUtils.parseJson(json);
-    }
-
-    // 从文件夹加载 Module
-    private Module loadModuleAsFolder(Folder path, String filename) throws ScriptException {
-        Folder fileAsFolder = path.getFolder(filename);
-        if (fileAsFolder == null) {
-            return null;
-        }
-        Module found = loadModuleThroughPackageJson(fileAsFolder);
-        if (found == null) {
-            found = loadModuleThroughIndexJs(fileAsFolder);
-        }
-        if (found == null) {
-            found = loadModuleThroughIndexJson(fileAsFolder);
-        }
-        return found;
-    }
-
-    // 通过 package.json 文件加载 Module
-    private Module loadModuleThroughPackageJson(Folder parent) throws ScriptException {
-        String packageJson = parent.getFileContent("package.json");
-        if (packageJson == null) {
-            return null;
-        }
-        String mainFile = getMainFileFromPackageJson(packageJson);
-        if (mainFile == null) {
-            return null;
-        }
-        String[] parts = Paths.splitPath(mainFile);
-        String[] folders = Arrays.copyOfRange(parts, 0, parts.length - 1);
-        String filename = parts[parts.length - 1];
-        Folder folder = resolveFolder(parent, folders);
-        if (folder == null) {
-            return null;
-        }
-        Module module = loadModuleAsFileAndPutInCache(folder, filename);
-        if (module == null) {
-            folder = resolveFolder(parent, parts);
-            if (folder != null) {
-                module = loadModuleThroughIndexJs(folder);
-            }
-        }
-        return module;
-    }
-
-    private String getMainFileFromPackageJson(String packageJson) {
-        Bindings parsed = parseJson(packageJson);
-        return (String) parsed.get("main");
-    }
-
-    // 从 index.js 文件加载 Module
-    private Module loadModuleThroughIndexJs(Folder parent) throws ScriptException {
-        String code = parent.getFileContent("index.js");
-        if (code == null) {
-            return null;
-        }
-        return compileModule(parent, parent.getPath() + "index.js", code);
-    }
-
-    // 从 index.json 文件加载 Module
-    private Module loadModuleThroughIndexJson(Folder parent) throws ScriptException {
-        String code = parent.getFileContent("index.json");
-        if (code == null) {
-            return null;
-        }
-        return compileModule(parent, parent.getPath() + "index.json", code);
-    }
-
-    // 寻找 node_modules 文件夹，从node_modules中加载 Module
-    private Module searchForModuleInNodeModules(Folder resolvedFolder, String[] folderParts, String filename) throws ScriptException {
-        Folder current = resolvedFolder;
-        while (current != null) {
-            Folder nodeModules = current.getFolder("node_modules");
-            if (nodeModules != null) {
-                Module found = attemptToLoadFromThisFolder(resolveFolder(nodeModules, folderParts), filename);
-                if (found != null) {
-                    return found;
-                }
-            }
-            current = current.getParent();
-        }
-        return null;
     }
 }

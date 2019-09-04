@@ -7,14 +7,14 @@ import javax.script.ScriptException;
 
 /**
  * 作者： lzw<br/>
- * 创建时间：2019-01-14 17:23 <br/>
+ * 创建时间：2019-09-04 20:54 <br/>
  */
 @FunctionalInterface
-public interface RequireFunction {
+public interface RequireLibFunction {
     /**
-     * 加载内部依赖模块
+     * 加载第三方依赖模块
      *
      * @param name 模块全路径
      */
-    ScriptObjectMirror require(String name) throws ScriptException, NashornException;
+    ScriptObjectMirror requireLib(String name) throws ScriptException, NashornException;
 }
