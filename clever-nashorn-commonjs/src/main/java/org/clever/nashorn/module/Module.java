@@ -8,12 +8,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.ModuleCache;
+import org.clever.nashorn.module.tuples.Tuple3;
 
 import javax.script.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * js 代码模块实现，实现模块之间的加载和依赖
+ */
 @Slf4j
-public class Module extends SimpleBindings implements RequireFunction {
+public class Module extends SimpleBindings implements RequireFunction, CompileModule {
 
     public static final String Root_Filename = "<main>";
 
@@ -118,12 +125,11 @@ public class Module extends SimpleBindings implements RequireFunction {
 
     @Override
     public ScriptObjectMirror require(String module) throws ScriptException, NashornException {
-        InnerUtils.checkNullModuleName(module);
-        // 解析module得到“文件名称”和“文件所在文件夹”
-        String[] parts = InnerUtils.splitPath(module);
-        String[] folderParts = Arrays.copyOfRange(parts, 0, parts.length - 1);
-        String filename = parts[parts.length - 1];
-        Folder resolvedFolder = InnerUtils.resolveFolder(folder, folderParts);
+        Tuple3<String[], String, Folder> tuple3 = InnerUtils.resolvedFolder(module, folder);
+        String[] folderParts = tuple3.getValue1();
+        String filename = tuple3.getValue2();
+        Folder resolvedFolder = tuple3.getValue3();
+
         // 让我们确保每个线程都有自己的refCache
         boolean needRemove = false;
         if (refCache.get() == null) {
@@ -145,21 +151,10 @@ public class Module extends SimpleBindings implements RequireFunction {
         }
 
         // 加载 Module
-        Module found = null;
+        Module found;
         try {
             // 寻找并加载 Module
-            if (InnerUtils.isPrefixedModuleName(module)) {
-                found = InnerUtils.attemptToLoadFromThisFolder(resolvedFolder, filename, moduleCache);
-            }
-            // 未加载成功则从 node_modules 中搜索加载 Module
-            if (found == null) {
-                found = InnerUtils.searchForModuleInNodeModules(folder, folderParts, filename);
-            }
-            // 还未加载成功则抛出异常
-            if (found == null) {
-                InnerUtils.throwModuleNotFoundException(module);
-            }
-            assert found != null;
+            found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, resolvedFolder, moduleCache, this);
             children.add(found.module);
             return found.exports;
         } finally {
@@ -200,7 +195,6 @@ public class Module extends SimpleBindings implements RequireFunction {
         put(Module_Console, console);
     }
 
-
     // 设置加载成功
     private void setLoaded() {
         // 修改加载状态
@@ -218,8 +212,8 @@ public class Module extends SimpleBindings implements RequireFunction {
         }
     }
 
-    // 编译 JavaScript Module
-    private Module compileJavaScriptModule(Folder path, String filename, String scriptCode) throws ScriptException {
+    @Override
+    public Module compileJavaScriptModule(Folder path, String filename, String scriptCode) throws ScriptException {
         String fullPath = path.getFilePath(filename);
         // 创建 Module
         Module created = new Module(path, filename, this);
@@ -248,8 +242,8 @@ public class Module extends SimpleBindings implements RequireFunction {
         return created;
     }
 
-    // 编译 Json Module
-    private Module compileJsonModule(Folder path, String filename, String scriptCode) {
+    @Override
+    public Module compileJsonModule(Folder path, String filename, String scriptCode) {
         Module created = new Module(path, filename, this);
         created.exports = InnerUtils.parseJson(scriptCode);
         created.setLoaded();
