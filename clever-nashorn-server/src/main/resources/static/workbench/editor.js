@@ -1,6 +1,7 @@
 // 初始化配置
+// noinspection JSFileReferences
 require.config({
-    paths: {'vs': '../monaco-editor/min/vs'},
+    paths: {'vs': '../lib/monaco-editor/min/vs'},
     'vs/nls': {
         availableLanguages: {
             '*': 'zh-cn'
@@ -92,6 +93,33 @@ function initEditor(config, setEditorFunc) {
             monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_I,
             function () {
                 editor.trigger(null, 'editor.action.transformToLowercase', {});
+            }
+        );
+        editor.addCommand(
+            monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KEY_L,
+            function () {
+                editor.trigger(null, 'editor.action.formatDocument', {});
+            },
+            'editorHasDocumentFormattingProvider && editorTextFocus && !editorReadonly'
+        );
+        editor.addCommand(
+            monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KEY_L,
+            function () {
+                editor.trigger(null, 'editor.action.formatSelection', {});
+            },
+            'editorHasDocumentFormattingProvider && editorHasSelection && editorTextFocus && !editorReadonly'
+        );
+        editor.addCommand(
+            monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KEY_O,
+            function () {
+                editor.trigger(null, 'editor.action.organizeImports', {});
+            },
+            'editorTextFocus && !editorReadonly && supportedCodeAction =~ /(\\s|^)source\\.organizeImports\\b/'
+        );
+        editor.addCommand(
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S,
+            function () {
+                console.log("保存");
             }
         );
         if (setEditorFunc) setEditorFunc(editor);

@@ -48,7 +48,7 @@ public class WebSocketConsole extends AbstractConsole {
 
     @Override
     public void log(Object... args) {
-        task.sendMessage(DebugConsoleRes.newInfo(this.getFilePath(), this.getFileName(), logString(args), Arrays.asList(args)));
+        task.sendMessage(DebugConsoleRes.newLog(this.getFilePath(), this.getFileName(), logString(args), Arrays.asList(args)));
     }
 
     @Override

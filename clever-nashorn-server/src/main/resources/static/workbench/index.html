@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>首页</title>
     <!--vConsole-->
-    <script src="../vConsole/vconsole.min.js"></script>
+    <script src="../lib/vConsole/vconsole.min.js"></script>
     <script>
         // 初始化
         var vConsole = new VConsole({
@@ -17,15 +17,18 @@
             }
         });
     </script>
+    <!--lib-->
+    <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css"/>
+    <!--zTree-->
+    <link rel="stylesheet" href="../lib/zTree/css/zTreeStyle/zTreeStyle.css"/>
     <!--index-->
     <link rel="stylesheet" type="text/css" href="./index.css">
-    <!--lib-->
-    <link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css"/>
 </head>
 <body>
 <div class="layout-root">
     <div class="layout-left horizontal">
-        代码文件夹
+        <!--代码文件树-->
+        <ul id="codeTree" class="ztree"></ul>
     </div>
     <div class="layout-right horizontal">
         <div class="layout-top vertical">
@@ -43,15 +46,19 @@
 </div>
 </body>
 <!--layout-->
-<script type="text/javascript" src="../split/split.min.js"></script>
+<script type="text/javascript" src="../lib/split/split.min.js"></script>
 <script type="text/javascript" src="./layout.js"></script>
 <!--lib-->
-<script type="text/javascript" src="../jquery/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="../lodash/lodash.min.js"></script>
+<script type="text/javascript" src="../lib/jquery/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="../lib/lodash/lodash.min.js"></script>
+<script type="text/javascript" src="../lib/qs/qs.js"></script>
+<!--zTree-->
+<script type="text/javascript" src="../lib/zTree/js/jquery.ztree.all.min.js"></script>
 <!--editor-->
-<script type="text/javascript" src="../monaco-editor/nashorn-js.js"></script>
-<script type="text/javascript" src="../monaco-editor/min/vs/loader.js"></script>
+<script type="text/javascript" src="../lib/monaco-editor/nashorn-js.js"></script>
+<script type="text/javascript" src="../lib/monaco-editor/min/vs/loader.js"></script>
 <script type="text/javascript" src="./editor.js"></script>
 <!--index-->
+<script type="text/javascript" src="./debug.js"></script>
 <script type="text/javascript" src="./index.js"></script>
 </html>

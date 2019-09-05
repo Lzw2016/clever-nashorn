@@ -45,10 +45,10 @@ spring:
 
   resources: #------------------------------------------------ html、js、css 静态资源
     chain:
-      cache: true
+      cache: false
       compressed: true
     cache:
-      period: 31536000s
+      period: 0s
     static-locations: ['classpath:/static/']
 
   redis: #---------------------------------------------------------------- Redis配置

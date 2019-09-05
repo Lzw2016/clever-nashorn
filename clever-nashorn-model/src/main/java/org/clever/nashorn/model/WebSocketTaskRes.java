@@ -13,6 +13,7 @@ import java.util.Date;
  */
 @Data
 public abstract class WebSocketTaskRes implements Serializable {
+    public static final String Level_Log = "log";
     public static final String Level_Trace = "trace";
     public static final String Level_Debug = "debug";
     public static final String Level_Info = "info";

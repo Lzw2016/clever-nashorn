@@ -52,15 +52,15 @@ public class JsCodeFileService {
         if (list.size() <= 0) {
             return treeList;
         }
-        // 增加根路径
-        JsCodeFile root = new JsCodeFile();
-        root.setId(-1L);
-        root.setBizType(req.getBizType());
-        root.setGroupName(req.getGroupName());
-        root.setNodeType(EnumConstant.Node_Type_2);
-        root.setFilePath("");
-        root.setName(EnumConstant.File_Path_Separator);
-        treeList.add(new JsCodeFileNode(root));
+//        // 增加根路径
+//        JsCodeFile root = new JsCodeFile();
+//        root.setId(-1L);
+//        root.setBizType(req.getBizType());
+//        root.setGroupName(req.getGroupName());
+//        root.setNodeType(EnumConstant.Node_Type_2);
+//        root.setFilePath("");
+//        root.setName(EnumConstant.File_Path_Separator);
+//        treeList.add(new JsCodeFileNode(root));
         // 增加子路径
         list.forEach(jsCodeFile -> {
             treeList.add(new JsCodeFileNode(jsCodeFile));

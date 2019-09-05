@@ -32,6 +32,10 @@ public class DebugConsoleRes extends ConsoleLogRes {
         this.setType(Type_Log);
     }
 
+    public static DebugConsoleRes newLog(String filePath, String fileName, String log, List<Object> logs) {
+        return new DebugConsoleRes(filePath, fileName, Level_Log, log, logs);
+    }
+
     public static DebugConsoleRes newTrace(String filePath, String fileName, String log, List<Object> logs) {
         return new DebugConsoleRes(filePath, fileName, Level_Trace, log, logs);
     }
