@@ -1,7 +1,9 @@
-package org.clever.nashorn.module.tuples;
+package org.clever.nashorn.tuples;
 
 
 /**
+ * 简单元组
+ * <p>
  * 作者： lzw<br/>
  * 创建时间：2019-09-04 22:37 <br/>
  */

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.ModuleCache;
-import org.clever.nashorn.module.tuples.Tuple3;
+import org.clever.nashorn.tuples.Tuple3;
 import org.clever.nashorn.utils.ScriptEngineUtils;
 
 import javax.script.*;
@@ -61,7 +61,9 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
     private final Bindings module;
     // 当前Module依赖(require)的 module 对象
     @Getter
-    private final List<Bindings> children = new ArrayList<>();
+    private final List<Bindings> children = new ArrayList<>(1);
+    @Getter
+    private final RequireLib requireLib;
     // JS Module 定义的导出对象
     @Getter
     private ScriptObjectMirror exports;
@@ -82,6 +84,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         this.moduleCache = moduleCache;
         this.folder = rootFolder;
         this.module = module;
+        this.requireLib = new RequireLib(rootFolder, moduleCache);
         this.exports = exports;
         // 设置根Module
         this.main = this;
@@ -103,6 +106,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         this.folder = folder;
         // 初始化 module
         this.module = ScriptEngineUtils.newObject();
+        this.requireLib = new RequireLib(folder, moduleCache);
         // 初始化 exports
         this.exports = refCache.get() != null ? refCache.get().get(this.folder.getFilePath(filename)) : null;
         if (this.exports == null) {
@@ -114,13 +118,76 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
     }
 
     /**
-     * 使用 require 得到 JS 对象
+     * 创建一个第三方模块的Module
+     *
+     * @param exports 导出对象
      */
-    public ScriptObjectMirror useJs(String name) {
-        try {
-            return require(name);
-        } catch (ScriptException e) {
-            throw new RuntimeException("require js failure", e);
+    private Module(ScriptObjectMirror exports) {
+        engine = null;
+        console = null;
+        moduleCache = null;
+        main = null;
+        folder = null;
+        module = null;
+        requireLib = null;
+        this.exports = exports;
+    }
+
+    /**
+     * 创建一个第三方模块的Module
+     *
+     * @param exports 导出对象
+     */
+    static Module creatLibModule(ScriptObjectMirror exports) {
+        return new Module(exports);
+    }
+
+    /**
+     * 自定义注入对象名(module、this)
+     *
+     * @param filename 当前Module文件名
+     * @param parent   当前Module的父Module
+     */
+    private void inject(String filename, Module parent) {
+        // 当前模块module对象内容
+        module.putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
+        module.put(Module_Exports, exports);
+        module.put(Module_Children, children);
+        module.put(Module_Filepath, folder.getPath());
+        module.put(Module_Filename, filename);
+        module.put(Module_Id, folder.getFilePath(filename));
+        module.put(Module_Loaded, false);
+        module.put(Module_Parent, parent == null ? null : parent.module);
+        module.put(Module_Console, console);
+        // 当前模块内容
+        putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
+        put(Module_Main, this.main.module);
+        put(Module_Exports, exports);
+        put(Module_Children, children);
+        put(Module_Filepath, folder.getPath());
+        put(Module_Filename, filename);
+        put(Module_Id, folder.getFilePath(filename));
+        put(Module_Loaded, false);
+        put(Module_Parent, parent == null ? null : parent.module);
+        put(Module_Console, console);
+    }
+
+    /**
+     * 设置加载成功
+     */
+    private void setLoaded() {
+        // 修改加载状态
+        module.put(Module_Loaded, true);
+        put(Module_Loaded, true);
+        // JS加载初始化生命周期
+        if (!exports.hasMember(Module_Fuc_Init)) {
+            return;
+        }
+        Object init = exports.getMember(Module_Fuc_Init);
+        if (init instanceof ScriptObjectMirror) {
+            ScriptObjectMirror initFuc = (ScriptObjectMirror) init;
+            Object res = initFuc.call(this);
+            log.debug("[{}] [{}] -> {}", Module_Fuc_Init, this.module.get(Module_Id), res);
         }
     }
 
@@ -155,7 +222,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         Module found;
         try {
             // 寻找并加载 Module
-            found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, folder, moduleCache, this);
+            found = InnerUtils.loadModule(module, folderParts, filename, resolvedFolder, folder, moduleCache, this);
             children.add(found.module);
             return found.exports;
         } finally {
@@ -163,53 +230,6 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
             if (needRemove && refCache.get() != null) {
                 refCache.remove();
             }
-        }
-    }
-
-    /**
-     * 自定义注入对象名(module、this)
-     *
-     * @param filename 当前Module文件名
-     * @param parent   当前Module的父Module
-     */
-    private void inject(String filename, Module parent) {
-        // 当前模块module对象内容
-        module.putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
-        module.put(Module_Exports, exports);
-        module.put(Module_Children, children);
-        module.put(Module_Filepath, folder.getPath());
-        module.put(Module_Filename, filename);
-        module.put(Module_Id, folder.getFilePath(filename));
-        module.put(Module_Loaded, false);
-        module.put(Module_Parent, parent == null ? null : parent.module);
-        module.put(Module_Console, console);
-        // 当前模块内容
-        putAll(engine.getBindings(ScriptContext.ENGINE_SCOPE));
-        put(Module_Main, this.main.module);
-        put(Module_Exports, exports);
-        put(Module_Children, children);
-        put(Module_Filepath, folder.getPath());
-        put(Module_Filename, filename);
-        put(Module_Id, folder.getFilePath(filename));
-        put(Module_Loaded, false);
-        put(Module_Parent, parent == null ? null : parent.module);
-        put(Module_Console, console);
-    }
-
-    // 设置加载成功
-    private void setLoaded() {
-        // 修改加载状态
-        module.put(Module_Loaded, true);
-        put(Module_Loaded, true);
-        // JS加载初始化生命周期
-        if (!exports.hasMember(Module_Fuc_Init)) {
-            return;
-        }
-        Object init = exports.getMember(Module_Fuc_Init);
-        if (init instanceof ScriptObjectMirror) {
-            ScriptObjectMirror initFuc = (ScriptObjectMirror) init;
-            Object res = initFuc.call(this);
-            log.debug("[{}] [{}] -> {}", Module_Fuc_Init, this.module.get(Module_Id), res);
         }
     }
 
@@ -224,15 +244,16 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         // 设置文件名
         engine.put(ScriptEngine.FILENAME, fullPath);
         try {
-            scriptCode = String.format("(function (exports, require, module, __filename, __dirname) {\n %s \n})", scriptCode);
+            scriptCode = String.format("(function (exports, require, requireLib, module, __filename, __dirname) {\n %s \n})", scriptCode);
             ScriptObjectMirror function = (ScriptObjectMirror) engine.eval(scriptCode, created.module);
             // this         --> created
             // exports      --> created.exports
             // require      --> created (Module 对象实现了RequireFunction接口)
+            // requireLib   --> created.requireLib (加载第三方依赖实现了RequireLibFunction接口)
             // module       --> created.module
             // __filename   --> filename
             // __dirname    --> dirname
-            function.call(created, created.exports, created, created.module, filename, dirname);
+            function.call(created, created.exports, created, created.requireLib, created.module, filename, dirname);
         } finally {
             engine.put(ScriptEngine.FILENAME, previousFilename);
         }
@@ -249,5 +270,33 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         created.exports = ScriptEngineUtils.parseJson(scriptCode);
         created.setLoaded();
         return created;
+    }
+
+    /**
+     * 使用 require 得到 JS 对象
+     */
+    public ScriptObjectMirror useJs(String name) {
+        return useJs(name, false);
+    }
+
+    /**
+     * 使用 require 得到 JS 对象
+     */
+    public ScriptObjectMirror useLibJs(String name) {
+        return useJs(name, true);
+    }
+
+    /**
+     * 使用 require 得到 JS 对象
+     *
+     * @param name  文件全路径
+     * @param isLib 是否使用第三方依赖库加载模式
+     */
+    private ScriptObjectMirror useJs(String name, boolean isLib) {
+        try {
+            return isLib ? requireLib.requireLib(name) : require(name);
+        } catch (ScriptException e) {
+            throw new RuntimeException("require js failure", e);
+        }
     }
 }
