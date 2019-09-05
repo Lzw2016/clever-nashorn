@@ -9,6 +9,7 @@ import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.ModuleCache;
 import org.clever.nashorn.module.tuples.Tuple3;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 
 import javax.script.*;
 import java.util.ArrayList;
@@ -101,11 +102,11 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         this.moduleCache = parent.moduleCache;
         this.folder = folder;
         // 初始化 module
-        this.module = InnerUtils.createSafeBindings();
+        this.module = ScriptEngineUtils.newObject();
         // 初始化 exports
         this.exports = refCache.get() != null ? refCache.get().get(this.folder.getFilePath(filename)) : null;
         if (this.exports == null) {
-            this.exports = InnerUtils.createSafeBindings();
+            this.exports = ScriptEngineUtils.newObject();
         }
         // 设置根Module
         this.main = parent.main;
@@ -146,7 +147,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
             } else {
                 // 我们必须存储对当前加载模块的引用，以避免循环require
                 log.debug("# RefCache 加入缓存 -> {}", requestedFullPath);
-                refCache.get().put(requestedFullPath, InnerUtils.createSafeBindings());
+                refCache.get().put(requestedFullPath, ScriptEngineUtils.newObject());
             }
         }
 
@@ -154,7 +155,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
         Module found;
         try {
             // 寻找并加载 Module
-            found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, resolvedFolder, moduleCache, this);
+            found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, folder, moduleCache, this);
             children.add(found.module);
             return found.exports;
         } finally {
@@ -245,7 +246,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
     @Override
     public Module compileJsonModule(Folder path, String filename, String scriptCode) {
         Module created = new Module(path, filename, this);
-        created.exports = InnerUtils.parseJson(scriptCode);
+        created.exports = ScriptEngineUtils.parseJson(scriptCode);
         created.setLoaded();
         return created;
     }

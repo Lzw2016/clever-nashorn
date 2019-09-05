@@ -1,6 +1,5 @@
 package org.clever.nashorn.module;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.ECMAException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -23,21 +22,12 @@ import java.util.List;
 @Slf4j
 class InnerUtils {
     /**
-     * 创建一个安全的Bindings对象
-     */
-    static ScriptObjectMirror createSafeBindings() {
-        return ScriptEngineUtils.newObject();
-    }
-
-    /**
-     * 解析Json成为 ScriptObjectMirror 对象
-     */
-    static ScriptObjectMirror parseJson(String json) {
-        return ScriptEngineUtils.parseJson(json);
-    }
-
-    /**
-     * 解析module得到“文件名称”和“文件所在文件夹”
+     * 解析module得到“文件名称”和“文件所在文件夹”<br />
+     * <pre>
+     *     Tuple3 - String[] - folderParts      - 文件夹路径数组
+     *     Tuple3 - String   - filename         - 文件名称
+     *     Tuple3 - Folder   - resolvedFolder   - 文件所在文件夹对象
+     * </pre>
      */
     static Tuple3<String[], String, Folder> resolvedFolder(String module, Folder folder) {
         if (module == null) {
@@ -53,6 +43,14 @@ class InnerUtils {
 
     /**
      * 寻找并加载 Module
+     *
+     * @param module         模块全路径
+     * @param folderParts    模块文件夹路径数组
+     * @param filename       模块文件名称
+     * @param resolvedFolder 模块文件所在文件夹对象
+     * @param folder         当前Module所在文件夹对象
+     * @param moduleCache    Module缓存
+     * @param compileModule  编译Js对象接口
      */
     static Module requireModule(String module, String[] folderParts, String filename, Folder resolvedFolder, Folder folder, ModuleCache moduleCache, CompileModule compileModule) throws ScriptException {
         Module found = null;
@@ -261,7 +259,7 @@ class InnerUtils {
     }
 
     private static String getMainFileFromPackageJson(String packageJson) {
-        Bindings parsed = parseJson(packageJson);
+        Bindings parsed = ScriptEngineUtils.parseJson(packageJson);
         return (String) parsed.get("main");
     }
 

@@ -31,7 +31,7 @@ public class RequireLib implements RequireLibFunction, CompileModule {
         String filename = tuple3.getValue2();
         Folder resolvedFolder = tuple3.getValue3();
         // 寻找并加载 Module
-        Module found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, resolvedFolder, moduleCache, this);
+        Module found = InnerUtils.requireModule(module, folderParts, filename, resolvedFolder, folder, moduleCache, this);
         return found.getExports();
     }
 

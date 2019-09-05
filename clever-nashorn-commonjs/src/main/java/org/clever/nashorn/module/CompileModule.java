@@ -5,6 +5,8 @@ import org.clever.nashorn.folder.Folder;
 import javax.script.ScriptException;
 
 /**
+ * 编译Js对象接口
+ *
  * 作者： lzw<br/>
  * 创建时间：2019-09-04 21:58 <br/>
  */

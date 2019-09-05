@@ -6,6 +6,8 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import javax.script.ScriptException;
 
 /**
+ * 加载内部依赖模块
+ * <p>
  * 作者： lzw<br/>
  * 创建时间：2019-01-14 17:23 <br/>
  */
