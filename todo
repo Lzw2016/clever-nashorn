@@ -61,6 +61,11 @@ js Folder debug层外壳
 Java ThreadPoolExecutor无法有效的强制停止线程，需要强制关闭超时执行的线程
     实现方式 - 使用esprima等库，做AST语法树，判断有死循环就不让保存到数据库
 
+-- 数据库设计
+js_code_file 增加tag字段，支持自定义扩展脚本分组隔离
+js_code_file 增加read_only字段，一旦设置成只读的js就不允许修改了，只能删了重新创建
+
+
 -- 增删查改
 JsCodeFile
     新增 OK
