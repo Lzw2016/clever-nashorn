@@ -20,6 +20,10 @@ public class JsCodeFileNode implements ITreeNode {
 
     @JsonUnwrapped
     private JsCodeFile jsCodeFile;
+    /**
+     * 数据库数据ID
+     */
+    private Long dataId;
 
     // ----------------------------------------------------------------------------------
     /**
@@ -33,6 +37,7 @@ public class JsCodeFileNode implements ITreeNode {
 
     public JsCodeFileNode(JsCodeFile jsCodeFile) {
         this.jsCodeFile = jsCodeFile;
+        this.dataId = jsCodeFile.getId();
     }
 
     /**
