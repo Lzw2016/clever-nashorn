@@ -62,9 +62,7 @@ public class JsCodeFileService {
 //        root.setName(EnumConstant.File_Path_Separator);
 //        treeList.add(new JsCodeFileNode(root));
         // 增加子路径
-        list.forEach(jsCodeFile -> {
-            treeList.add(new JsCodeFileNode(jsCodeFile));
-        });
+        list.forEach(jsCodeFile -> treeList.add(new JsCodeFileNode(jsCodeFile)));
         return BuildTreeUtils.buildTree(treeList);
     }
 
@@ -93,6 +91,10 @@ public class JsCodeFileService {
         }
         // 保存数据
         jsCodeFileMapper.insert(jsCodeFile);
+        // 新增文件保存历史记录
+        if (Objects.equals(EnumConstant.Node_Type_1, jsCodeFile.getNodeType())) {
+            addHistory(jsCodeFile);
+        }
         return jsCodeFile;
     }
 
@@ -106,44 +108,49 @@ public class JsCodeFileService {
         if (Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
             req.setJsCode(null);
         }
-        boolean addHistory = true;
+        boolean addHistory = false;
         // 如果更新 filePath 则校验
         if (req.getFilePath() != null
                 && !Objects.equals(req.getFilePath(), old.getFilePath())
                 && !Objects.equals(req.getFilePath(), EnumConstant.File_Path_Separator)) {
-            addHistory = false;
+            addHistory = true;
             TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
             JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(old.getBizType(), old.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
             if (parent == null) {
                 throw new BusinessException("父路径不存在");
             }
+            // TODO 文件夹更新filePath??
         }
         // 如果更新 name 则校验
         if (req.getName() != null && !Objects.equals(req.getName(), old.getName())) {
-            addHistory = false;
+            addHistory = true;
             String filePath = req.getFilePath() != null ? req.getFilePath() : old.getFilePath();
             JsCodeFile exists = jsCodeFileMapper.getByFullPath(old.getBizType(), old.getGroupName(), filePath, req.getName());
             if (exists != null) {
                 throw new BusinessException("与已经存在的文件" + (Objects.equals(EnumConstant.Node_Type_2, exists.getNodeType()) ? "夹" : "") + "同名，请重新指定名称");
             }
+            // TODO 文件夹更新name??
         }
         // 记录历史记录
-        if (addHistory
-                && Objects.equals(EnumConstant.Node_Type_1, old.getNodeType())
-                && !Objects.equals(StringUtils.trim(req.getJsCode()), StringUtils.trim(old.getJsCode()))) {
-            CodeFileHistory codeFileHistory = new CodeFileHistory();
-            codeFileHistory.setBizType(old.getBizType());
-            codeFileHistory.setGroupName(old.getGroupName());
-            codeFileHistory.setFilePath(old.getFilePath());
-            codeFileHistory.setName(old.getName());
-            codeFileHistory.setJsCode(old.getJsCode());
-            codeFileHistory.setDescription(old.getDescription());
-            codeFileHistoryMapper.insert(codeFileHistory);
+        if (Objects.equals(EnumConstant.Node_Type_1, old.getNodeType()) && (!Objects.equals(StringUtils.trim(req.getJsCode()), StringUtils.trim(old.getJsCode())) || addHistory)) {
+            addHistory(old);
         }
         // 更新数据
         JsCodeFile update = BeanMapper.mapper(req, JsCodeFile.class);
         update.setId(old.getId());
         jsCodeFileMapper.updateById(update);
         return jsCodeFileMapper.selectById(id);
+    }
+
+    @Transactional
+    protected void addHistory(JsCodeFile jsCodeFile) {
+        CodeFileHistory codeFileHistory = new CodeFileHistory();
+        codeFileHistory.setBizType(jsCodeFile.getBizType());
+        codeFileHistory.setGroupName(jsCodeFile.getGroupName());
+        codeFileHistory.setFilePath(jsCodeFile.getFilePath());
+        codeFileHistory.setName(jsCodeFile.getName());
+        codeFileHistory.setJsCode(jsCodeFile.getJsCode());
+        codeFileHistory.setDescription(jsCodeFile.getDescription());
+        codeFileHistoryMapper.insert(codeFileHistory);
     }
 }
