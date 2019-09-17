@@ -108,12 +108,10 @@ public class JsCodeFileService {
         if (Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
             req.setJsCode(null);
         }
-        boolean addHistory = false;
         // 如果更新 filePath 则校验
         if (req.getFilePath() != null
                 && !Objects.equals(req.getFilePath(), old.getFilePath())
                 && !Objects.equals(req.getFilePath(), EnumConstant.File_Path_Separator)) {
-            addHistory = true;
             TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
             JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(old.getBizType(), old.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
             if (parent == null) {
@@ -123,7 +121,6 @@ public class JsCodeFileService {
         }
         // 如果更新 name 则校验
         if (req.getName() != null && !Objects.equals(req.getName(), old.getName())) {
-            addHistory = true;
             String filePath = req.getFilePath() != null ? req.getFilePath() : old.getFilePath();
             JsCodeFile exists = jsCodeFileMapper.getByFullPath(old.getBizType(), old.getGroupName(), filePath, req.getName());
             if (exists != null) {
@@ -132,7 +129,7 @@ public class JsCodeFileService {
             // TODO 文件夹更新name??
         }
         // 记录历史记录
-        if (Objects.equals(EnumConstant.Node_Type_1, old.getNodeType()) && (!Objects.equals(StringUtils.trim(req.getJsCode()), StringUtils.trim(old.getJsCode())) || addHistory)) {
+        if (Objects.equals(EnumConstant.Node_Type_1, old.getNodeType())) {
             addHistory(old);
         }
         // 更新数据
@@ -144,6 +141,10 @@ public class JsCodeFileService {
 
     @Transactional
     protected void addHistory(JsCodeFile jsCodeFile) {
+        CodeFileHistory old = codeFileHistoryMapper.getLastHistory(jsCodeFile.getBizType(), jsCodeFile.getGroupName(), jsCodeFile.getFilePath(), jsCodeFile.getName());
+        if (old != null && Objects.equals(StringUtils.trim(jsCodeFile.getJsCode()), StringUtils.trim(old.getJsCode()))) {
+            return;
+        }
         CodeFileHistory codeFileHistory = new CodeFileHistory();
         codeFileHistory.setBizType(jsCodeFile.getBizType());
         codeFileHistory.setGroupName(jsCodeFile.getGroupName());
