@@ -43,6 +43,11 @@ function initEditor(config, setEditorFunc) {
         // monaco.languages.register({id: 'nashorn-js'});
         // monaco.languages.setMonarchTokensProvider('nashorn-js', nashornJS);
         // 属性配置 https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.ieditorconstructionoptions.html
+        // compiler options(编译配置)
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.ES5,
+            allowNonTsExtensions: true
+        });
         var options = {
             // 主题，三款：vs、vs-dark、hc-black
             theme: 'vs',
