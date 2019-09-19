@@ -2,7 +2,6 @@ package org.clever.nashorn.websocket.debug;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 import org.clever.common.utils.IDCreateUtils;
 import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.ScriptModuleInstance;
@@ -33,13 +32,13 @@ public class DebugTask extends Task<DebugReq> {
 
     public DebugTask(DebugReq debugReq) {
         // (uuid)path
-        super(String.format("(%s)%s", IDCreateUtils.uuid(), FilenameUtils.concat(debugReq.getFilePath(), debugReq.getFileName())), TaskType.DebugJs);
+        super(String.format("(%s)%s", IDCreateUtils.uuid(), debugReq.getFileFullPath()), TaskType.DebugJs);
         // Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
         JsCodeFileCache jsCodeFileCache = SpringContextHolder.getBean(JsCodeFileCache.class);
         jsCodeFileCache.clear();
         Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, jsCodeFileCache);
         MemoryModuleCache cache = new MemoryModuleCache();
-        Console console = new WebSocketConsole(debugReq.getFilePath(), this);
+        Console console = new WebSocketConsole(debugReq.getFileFullPath(), this);
         Map<String, Object> context = new HashMap<>(1);
         context.put("CommonUtils", CommonUtils.Instance);
         scriptModuleInstance = new ScriptModuleInstance(rootFolder, cache, console, context);
@@ -49,8 +48,8 @@ public class DebugTask extends Task<DebugReq> {
     @Override
     protected void doStart(DebugReq message, boolean verify) {
         execTask(() -> {
-            ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs(message.getFileName());
-            scriptObjectMirror.callMember(message.getFucName(), "DebugTask");
+            ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs(message.getFileFullPath());
+            scriptObjectMirror.callMember(message.getFucName());
             // Thread.sleep(50);
             stop();
         });

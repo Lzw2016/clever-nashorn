@@ -27,7 +27,7 @@ public class JsCodeFileUpdateReq extends BaseRequest {
 
     @ApiModelProperty("文件或文件夹名称")
     @StringNotBlank
-    @Pattern(regexp = PatternConstant.Name_Pattern + "{0,255}")
+    @Pattern(regexp = PatternConstant.Name_Pattern + "{0,255}\\.js")
     private String name;
 
     @ApiModelProperty("脚本内容")

@@ -12,16 +12,10 @@ import org.clever.nashorn.model.WebSocketTaskReq;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class DebugReq extends WebSocketTaskReq {
-
     /**
-     * 调用文件路径
+     * 调用文件名(全路径)
      */
-    private String filePath;
-
-    /**
-     * 调用文件名
-     */
-    private String fileName;
+    private String fileFullPath;
 
     /**
      * 调用方法

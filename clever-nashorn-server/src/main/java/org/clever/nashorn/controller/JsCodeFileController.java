@@ -37,13 +37,13 @@ public class JsCodeFileController {
         return jsCodeFileService.findJsCodeFileTree(req);
     }
 
-    @ApiOperation("新增")
+    @ApiOperation("新增(文件或者文件夹)")
     @PostMapping("/add")
     public JsCodeFile addJsCodeFile(@RequestBody @Validated JsCodeFileAddReq req) {
         return jsCodeFileService.addJsCodeFile(req);
     }
 
-    @ApiOperation("更新")
+    @ApiOperation("更新(文件或者文件夹)")
     @PutMapping("/{id}")
     public JsCodeFile updateJsCodeFile(@PathVariable("id") Long id, @RequestBody @Validated JsCodeFileUpdateReq req) {
         return jsCodeFileService.updateJsCodeFile(id, req);
