@@ -85,6 +85,13 @@ public class MyTest {
         log.info(" # --- {}", scriptModuleInstance);
     }
 
+    @Test
+    public void testLib() {
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/lib");
+        ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./index");
+        log.info(" # --- {}", scriptObjectMirror);
+    }
+
     // ========================================================================================================================================================
 
     @Test
