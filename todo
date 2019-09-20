@@ -30,6 +30,10 @@ js加载数据库实现 OK
 一个Task实例分配一个线程池 OK
     任务超时只是关闭了连接任务还在线程池中执行 OK
 
+ScriptEngine Module 需要支持直接加载第三方开源库(如：lodash、Underscore、等等) OK
+    实现方式 Module.require 重载或者加一个参数，使用不同方式加载js code-- scriptEngine.eval('load({script: "", name: ""})') OK
+    关于Nashorn的 load 函数 - https://stackoverflow.com/questions/29051472/java-nashorn-accessing-another-js-file OK
+
 解决Java与JS互调的类型问题(Java对象转成Js对象)
     Java对象转成Js对象 OK - 80%
 
@@ -41,12 +45,59 @@ js加载数据库实现 OK
 前端页面基本布局完成 -- OK
 
 ---------------------------------------------------------------------------------------------------------------------------- TODO
+——————Handler
+处理函数
+settings
+  是否开启事物
+  数据库的数据源
+  是否开启登录认证
+  是否开启授权验证
 
-ScriptEngine Module 需要支持直接加载第三方开源库(如：lodash、Underscore、等等)
-    实现方式 Module.require 重载或者加一个参数，使用不同方式加载js code-- scriptEngine.eval('load({script: "", name: ""})')
-    关于Nashorn的 load 函数 - https://stackoverflow.com/questions/29051472/java-nashorn-accessing-another-js-file
+——————Context
+ctx.req－request 对象
+ctx.res－response 对象
+ctx.session－session 对象
+ctx.currentUser－当前登录用户
+——————Request/req
+method
+href－包括 protocol，host 和 url，querystring
+url
+originalUrl
+origin－包括 protocol 和 host
+protocol
+host/hostname/ip
+port
+path
+pathVariables
+querystring/query
+form?parameter
+header
+length－Content-Length
+type－请求 Content-Type 不含参数 "charset"
+charset－请求字符集
+cookies
+getCookies(name, [options])
+body?Content
+——————Response/res
+status
+header
+length－响应的 Content-Length
+type－请求 Content-Type 不含参数 "charset"
+charset－请求字符集
+lastModified－ Last-Modified 标头
+cookies
+body
+redirect(url)
+forward(url)
+setCookies(name, value, [options])
+write(body)
+flush()
+close()
+——————
 
-正式运行任务的管理（一张表?CodeRunLog就行），及时远程动态查看运行日志
+
+
+正在运行任务的管理（一张表?CodeRunLog就行），及时远程动态查看运行日志
 
 实现logback或者log4j的log，需要把Java日志也打印到浏览器
 
