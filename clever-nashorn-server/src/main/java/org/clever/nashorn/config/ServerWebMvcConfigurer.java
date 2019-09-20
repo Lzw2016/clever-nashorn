@@ -1,5 +1,6 @@
 package org.clever.nashorn.config;
 
+import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.intercept.HttpRequestJsHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -25,6 +26,7 @@ public class ServerWebMvcConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new HttpRequestJsHandler()).addPathPatterns("/**");
+        HttpRequestJsHandler httpRequestJsHandler = new HttpRequestJsHandler(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName);
+        registry.addInterceptor(httpRequestJsHandler).addPathPatterns("/**");
     }
 }

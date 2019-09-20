@@ -29,23 +29,23 @@ public class ScriptModuleInstance {
      * 脚本资源获取
      */
     @Getter
-    private Folder folder;
+    private final Folder folder;
     /**
      * 模块缓存
      */
     @Getter
-    private ModuleCache moduleCache;
+    private final ModuleCache moduleCache;
     /**
      * NashornScriptEngine
      */
     @Getter
-    private NashornScriptEngine engine;
+    private final NashornScriptEngine engine;
 
     /**
      * root Module
      */
     @Getter
-    private Module rootModule;
+    private final Module rootModule;
 
     /**
      * @param folder      脚本资源获取实现

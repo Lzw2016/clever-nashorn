@@ -18,4 +18,12 @@ public class JsCodeFilePathUtilsTest {
         log.info("{}", JsCodeFilePathUtils.getParentPath("/public"));
         log.info("{}", JsCodeFilePathUtils.getParentPath("/public/tmp.js"));
     }
+
+    @Test
+    public void to2() {
+        String requestUri = "/aaa/bbb/ccc/ddd/eee/fff1.json";
+        String suffix = ".json";
+        requestUri = requestUri.substring(0, requestUri.length() - suffix.length());
+        log.info("{}", requestUri);
+    }
 }

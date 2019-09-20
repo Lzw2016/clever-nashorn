@@ -3,9 +3,9 @@ package org.clever.nashorn.websocket.debug;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.IDCreateUtils;
-import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
+import org.clever.nashorn.cache.MemoryJsCodeFileCache;
 import org.clever.nashorn.dto.request.DebugReq;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.folder.DatabaseFolder;
@@ -34,8 +34,7 @@ public class DebugTask extends Task<DebugReq> {
         // (uuid)path
         super(String.format("(%s)%s", IDCreateUtils.uuid(), debugReq.getFileFullPath()), TaskType.DebugJs);
         // Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
-        JsCodeFileCache jsCodeFileCache = SpringContextHolder.getBean(JsCodeFileCache.class);
-        jsCodeFileCache.clear();
+        JsCodeFileCache jsCodeFileCache = MemoryJsCodeFileCache.getInstance();
         Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, jsCodeFileCache);
         MemoryModuleCache cache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFileFullPath(), this);

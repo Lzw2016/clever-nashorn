@@ -1,5 +1,6 @@
 package org.clever.nashorn.cache;
 
+import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.mapper.JsCodeFileMapper;
@@ -18,12 +19,39 @@ import java.util.Set;
 @Transactional(readOnly = true)
 @Service
 public class MemoryJsCodeFileCache implements JsCodeFileCache {
+
+    /**
+     * 获取实例
+     */
+    public static MemoryJsCodeFileCache getInstance() {
+        return SpringContextHolder.getBean(MemoryJsCodeFileCache.class);
+    }
+
     /**
      * 内存缓存 Map<bizType|groupName|nodeType|filePath|name, JsCodeFile>
      */
     private static final Map<String, JsCodeFile> Js_Code_File_Map = new HashMap<>();
     @Autowired
     private JsCodeFileMapper jsCodeFileMapper;
+    /**
+     * 定时清除缓存的时间间隔,毫秒(小于等于0表示不清除)
+     */
+    @SuppressWarnings("FieldCanBeLocal")
+    private final long clearTimeInterval = 1000 * 3600 * 3;
+    /**
+     * 最后一次清除缓存时间
+     */
+    private long lastClearTime = System.currentTimeMillis();
+
+    private void intervalClear() {
+        //noinspection ConstantConditions
+        if (clearTimeInterval <= 0) {
+            return;
+        }
+        if ((System.currentTimeMillis() - lastClearTime) >= clearTimeInterval) {
+            clear();
+        }
+    }
 
     /**
      * 得到缓存 key
@@ -47,6 +75,7 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
 
     @Override
     public JsCodeFile getFolder(String bizType, String groupName, String filePath, String name) {
+        intervalClear();
         String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
@@ -57,6 +86,7 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
 
     @Override
     public JsCodeFile getFile(String bizType, String groupName, String filePath, String name) {
+        intervalClear();
         String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
@@ -67,12 +97,14 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
 
     @Override
     public void put(JsCodeFile jsCodeFile) {
+        intervalClear();
         String key = getCacheKey(jsCodeFile);
         Js_Code_File_Map.put(key, jsCodeFile);
     }
 
     @Override
     public void remove(JsCodeFile jsCodeFile) {
+        intervalClear();
         String key = getCacheKey(jsCodeFile);
         Js_Code_File_Map.remove(key);
     }
