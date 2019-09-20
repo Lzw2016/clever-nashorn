@@ -12,7 +12,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
  * 作者： lzw<br/>
  * 创建时间：2017-12-05 21:37 <br/>
  */
-@SuppressWarnings("ALL")
 @Configuration
 @EnableWebSocket
 @Slf4j
