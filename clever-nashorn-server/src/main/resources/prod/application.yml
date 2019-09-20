@@ -2,7 +2,7 @@
 ### Web服务器配置
 ###################################################################################
 server:
-  port: 18080
+  port: 18081
   servlet:
     context-path: /
 
@@ -45,10 +45,10 @@ spring:
 
   resources: #------------------------------------------------ html、js、css 静态资源
     chain:
-      cache: true
+      cache: false
       compressed: true
     cache:
-      period: 31536000s
+      period: 0s
     static-locations: ['classpath:/static/']
 
   redis: #---------------------------------------------------------------- Redis配置
@@ -69,8 +69,8 @@ spring:
   datasource: #----------------------------------------------------------- 数据库配置
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://172.18.1.1:3306/clever-template
-    username: clever-template
+    url: jdbc:mysql://172.18.1.1:3306/clever-nashorn
+    username: clever-nashorn
     password: lizhiwei1993
     hikari:
       data-source-properties:
@@ -87,9 +87,9 @@ spring:
 
   cloud: #------------------------------------------------------------ Spring Cloud
     consul:
-      enabled: true
-      host: 172.18.1.1
-      port: 18500
+      enabled: false
+      host: consul.msvc.top
+      port: 80
       discovery:
         enabled: true
         instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
@@ -150,7 +150,9 @@ mybatis-plus:
     banner: true
     db-config:
       id-type: auto
-      field-strategy: not_null
+      select-strategy: not_null
+      insert-strategy: not_null
+      update-strategy: not_null
 
 ###################################################################################
 ### clever security配置
@@ -183,11 +185,17 @@ clever:
       - '/'
       - '/login/captcha.png'
       - '/login/refresh_token.json'
+      - '/ws/**'
       - '/api/**'
+      - '/vConsole/**'
+      - '/**'
     default-need-authorization: true
     ignore-authorization-urls:
       - '/login/user_info.json'
+      - '/ws/**'
       - '/api/**'
+      - '/vConsole/**'
+      - '/**'
     hide-user-not-found-exceptions: true
     not-login-need-forward: false
     forbidden-need-forward: false
@@ -226,14 +234,15 @@ clever:
       token-validity-for-remember-me: 15d
       refresh-token-validity: 30d
       hours-in-day: '03:45:00'
+      use-cookie: true
     access-token-heads:
       ServerApiToken: '12893489iu34yqw2edwerdsiohf89ij23iorhiu3jkfgriouy3hnio3489gt4iuhkoerniou45y89gertikoiofehr89gyiodfgklnio'
     server-api-access-token:
       token-name: 'ServerApiToken'
       token-value: 'uheduifhiuewjeihuhbgr89489y458ojhas9yd78wnajxioqjw893urax23er3fxcasx2wt56ujyjnva2e32taxaE1R3R'
   config:
-    upload-speed-limit: 10240
-    download-speed-limit: 10240
+    upload-speed-limit: 102400
+    download-speed-limit: 102400
     local-storage-config:
       disk-base-path: 'data/'
       stored-node: '127.0.0.1'
@@ -243,11 +252,11 @@ clever:
 ###################################################################################
 #spring.main.allow-bean-definition-overriding: true
 # DefaultClientConfigImpl.loadProperties(restClientName)加载配置,配置定义位置CommonClientConfigKey
-#clever-security-server:
-#  ribbon:
-#    listOfServers: 'http://security.msvc.top'
-#    ConnectTimeout: 5000
-#    ReadTimeout: 5000
+clever-security-server:
+  ribbon:
+    listOfServers: 'http://security.msvc.top'
+    ConnectTimeout: 5000
+    ReadTimeout: 5000
 
 ribbon:
   okhttp.enabled: true
