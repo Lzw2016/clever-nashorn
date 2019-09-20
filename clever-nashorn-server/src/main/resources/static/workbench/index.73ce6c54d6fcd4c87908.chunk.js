@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([["workbench/index"],{"2FM5":function(n,o){n.exports=VConsole},SiQ7:function(n,o){n.exports=layer},W6K4:function(n,o){n.exports=require},uym6:function(n,o){n.exports=monaco}},[["2nRM","manifest","vendor","commons"]]]);
