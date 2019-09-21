@@ -112,7 +112,7 @@ public class HttpRequestWrapper extends HashMap<String, Object> {
         wrapper.put("serverName", serverName);
         wrapper.put("ip", localAddr);
         wrapper.put("localAddr", localAddr);
-        wrapper.put("port", serverPort);
+        wrapper.put("port", localPort);
         wrapper.put("serverPort", serverPort);
         wrapper.put("localPort", localPort);
         wrapper.put("path", servletPath);
