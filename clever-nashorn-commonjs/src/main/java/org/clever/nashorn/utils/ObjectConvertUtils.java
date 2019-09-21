@@ -22,7 +22,7 @@ public class ObjectConvertUtils {
     /**
      * 递归深度 256；集合大小 10000
      */
-    public static final ObjectConvertUtils Instance = new ObjectConvertUtils(256, 1000);
+    public static final ObjectConvertUtils Instance = new ObjectConvertUtils(256, 1001);
 
     private static final NumberFormat Number_Format;
 
@@ -58,7 +58,7 @@ public class ObjectConvertUtils {
         deepSlot.set(0);
         deepMaxSlot.set(0);
         Object res = doJavaToJSObject(obj);
-        log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}", deepMaxSlot.get(), (System.currentTimeMillis() - startTime) / 1000.0);
+        log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}ms", deepMaxSlot.get(), System.currentTimeMillis() - startTime);
         deepSlot.remove();
         deepMaxSlot.remove();
         return res;
@@ -154,16 +154,21 @@ public class ObjectConvertUtils {
             // result = ScriptEngineUtils.newObject(nativeArray);
             result = nativeArray;
         } else if (obj instanceof Map) {// ------------------------------------------------------------ Object
+            Map<?, ?> map = (Map) obj;
+            boolean flag = map.size() < collectionMaxSize;
             ScriptObjectMirror scriptObjectMirror = ScriptEngineUtils.newObject();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> map = (Map<String, Object>) obj;
-            // TODO 判断 map key是String类型
-            if (map.size() < collectionMaxSize) {
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    scriptObjectMirror.put(entry.getKey(), doJavaToJSObject(entry.getValue()));
+            int index = 0;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                String key;
+                if (entry.getKey() instanceof String) {
+                    key = (String) entry.getKey();
+                } else if (entry.getKey() == null) {
+                    key = String.valueOf(index);
+                } else {
+                    key = entry.getKey().getClass().getName() + "@" + Integer.toHexString(entry.getKey().hashCode());
                 }
-            } else {
-                scriptObjectMirror.putAll(map);
+                scriptObjectMirror.put(key, flag ? doJavaToJSObject(entry.getValue()) : entry.getValue());
+                index++;
             }
             result = scriptObjectMirror;
         } else {

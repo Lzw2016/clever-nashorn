@@ -136,7 +136,10 @@ public class JsCodeFileService {
         JsCodeFile update = BeanMapper.mapper(req, JsCodeFile.class);
         update.setId(old.getId());
         jsCodeFileMapper.updateById(update);
-        return jsCodeFileMapper.selectById(id);
+        update = jsCodeFileMapper.selectById(id);
+        // 更新缓存
+        jsCodeFileCache.put(update);
+        return update;
     }
 
     @Transactional
