@@ -158,8 +158,8 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
             return true;
         }
         // 使用js代码处理请求
-        response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
         final long startTime3 = System.currentTimeMillis();
+        response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
         ScriptObjectMirror ctx = getCtx(request, response);
         Object result = jsHandler.callMember(Handler_Method, ctx);
         long startTime4 = -1;
