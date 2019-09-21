@@ -89,7 +89,8 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     private ScriptObjectMirror getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ScriptObjectMirror ctx = ScriptEngineUtils.newObject();
         HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
-        ctx.put("req", requestWrapper.getWrapper());
+        // ctx.put("req", requestWrapper.getWrapper());
+        ctx.put("req", requestWrapper);
         return ctx;
     }
 

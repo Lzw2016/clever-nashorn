@@ -1,7 +1,6 @@
 package org.clever.nashorn.intercept;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,17 +12,14 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 作者：lizw <br/>
  * 创建时间：2019/09/20 17:27 <br/>
  */
 @Slf4j
-public class HttpRequestWrapper {
+public class HttpRequestWrapper extends HashMap<String, Object> {
     /**
      * Cookie的默认编码格式
      */
@@ -32,8 +28,8 @@ public class HttpRequestWrapper {
      * Http请求对象
      */
     private final HttpServletRequest request;
-    @Getter
-    private final ScriptObjectMirror wrapper = ScriptEngineUtils.newObject();
+    // @Getter
+    // private final ScriptObjectMirror wrapper = ScriptEngineUtils.newObject();
 
     public HttpRequestWrapper(HttpServletRequest request) throws IOException {
         this.request = request;
@@ -83,6 +79,7 @@ public class HttpRequestWrapper {
      * </pre>
      */
     private void init() throws IOException {
+        HashMap<String, Object> wrapper = this;
         String method = request.getMethod();
         String url = request.getRequestURL().toString();
         String uri = request.getRequestURI();
