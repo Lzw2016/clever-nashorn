@@ -30,6 +30,7 @@ public class HttpRequestWrapper extends HashMap<String, Object> {
     private final HttpServletRequest request;
     // @Getter
     // private final ScriptObjectMirror wrapper = ScriptEngineUtils.newObject();
+    private final HashMap<String, Object> wrapper = this;
 
     public HttpRequestWrapper(HttpServletRequest request) throws IOException {
         this.request = request;
@@ -79,7 +80,6 @@ public class HttpRequestWrapper extends HashMap<String, Object> {
      * </pre>
      */
     private void init() throws IOException {
-        HashMap<String, Object> wrapper = this;
         String method = request.getMethod();
         String url = request.getRequestURL().toString();
         String uri = request.getRequestURI();
