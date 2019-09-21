@@ -87,6 +87,9 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
             jsCodeFile = cacheService.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
+            if (jsCodeFile != null) {
+                put(jsCodeFile);
+            }
         }
         return jsCodeFile;
     }
@@ -98,6 +101,9 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
             jsCodeFile = cacheService.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
+            if (jsCodeFile != null) {
+                put(jsCodeFile);
+            }
         }
         return jsCodeFile;
     }
