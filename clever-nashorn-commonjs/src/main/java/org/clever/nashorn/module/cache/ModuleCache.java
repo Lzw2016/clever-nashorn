@@ -12,4 +12,6 @@ public interface ModuleCache {
     void put(String fullPath, Module module);
 
     void clear();
+
+    void remove(String fullPath);
 }

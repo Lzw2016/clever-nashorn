@@ -4,7 +4,6 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.IDCreateUtils;
 import org.clever.nashorn.ScriptModuleInstance;
-import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.cache.MemoryJsCodeFileCache;
 import org.clever.nashorn.dto.request.DebugReq;
 import org.clever.nashorn.entity.EnumConstant;
@@ -13,6 +12,7 @@ import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
+import org.clever.nashorn.module.cache.ModuleCache;
 import org.clever.nashorn.websocket.Task;
 import org.clever.nashorn.websocket.TaskType;
 import org.clever.nashorn.websocket.WebSocketConsole;
@@ -34,13 +34,13 @@ public class DebugTask extends Task<DebugReq> {
         // (uuid)path
         super(String.format("(%s)%s", IDCreateUtils.uuid(), debugReq.getFileFullPath()), TaskType.DebugJs);
         // Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
-        JsCodeFileCache jsCodeFileCache = MemoryJsCodeFileCache.getInstance();
+        MemoryJsCodeFileCache jsCodeFileCache = new MemoryJsCodeFileCache();
         Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, jsCodeFileCache);
-        MemoryModuleCache cache = new MemoryModuleCache();
+        ModuleCache moduleCache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFileFullPath(), this);
         Map<String, Object> context = new HashMap<>(1);
         context.put("CommonUtils", CommonUtils.Instance);
-        scriptModuleInstance = new ScriptModuleInstance(rootFolder, cache, console, context);
+        scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         this.runTimeOut = 5;
     }
 

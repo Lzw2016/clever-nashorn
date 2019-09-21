@@ -27,6 +27,7 @@ public abstract class AbstractFolder implements Folder {
 
     @Override
     public String getFilePath(String name) {
+        // FilenameUtils.concat(getPath(), name);
         return getPath() + name;
     }
 }

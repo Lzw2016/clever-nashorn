@@ -3,48 +3,55 @@ package org.clever.nashorn.cache;
 import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
-import org.clever.nashorn.mapper.JsCodeFileMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 作者：lizw <br/>
  * 创建时间：2019/08/27 11:25 <br/>
  */
-@Transactional(readOnly = true)
-@Service
 public class MemoryJsCodeFileCache implements JsCodeFileCache {
 
     /**
-     * 获取实例
+     * JsCodeFile 数据库查询工具
      */
-    public static MemoryJsCodeFileCache getInstance() {
-        return SpringContextHolder.getBean(MemoryJsCodeFileCache.class);
-    }
-
+    private final JsCodeFileCacheService cacheService;
     /**
      * 内存缓存 Map<bizType|groupName|nodeType|filePath|name, JsCodeFile>
      */
-    private static final Map<String, JsCodeFile> Js_Code_File_Map = new HashMap<>();
-    @Autowired
-    private JsCodeFileMapper jsCodeFileMapper;
+    private final Map<String, JsCodeFile> Js_Code_File_Map = new ConcurrentHashMap<>();
     /**
      * 定时清除缓存的时间间隔,毫秒(小于等于0表示不清除)
      */
-    @SuppressWarnings("FieldCanBeLocal")
-    private final long clearTimeInterval = 1000 * 3600 * 3;
+    private final long clearTimeInterval;
     /**
      * 最后一次清除缓存时间
      */
     private long lastClearTime = System.currentTimeMillis();
 
+    /**
+     * @param clearTimeInterval 定时清除缓存的时间间隔,毫秒(小于等于0表示不清除)
+     */
+    public MemoryJsCodeFileCache(long clearTimeInterval) {
+        this.clearTimeInterval = clearTimeInterval;
+        this.cacheService = SpringContextHolder.getBean(JsCodeFileCacheService.class);
+    }
+
+    public MemoryJsCodeFileCache() {
+        this(-1);
+    }
+
+    public MemoryJsCodeFileCache(long clearTimeInterval, JsCodeFileCacheService cacheService) {
+        this.clearTimeInterval = clearTimeInterval;
+        this.cacheService = cacheService;
+    }
+
+    /**
+     * 清除缓存(定时策略)
+     */
     private void intervalClear() {
-        //noinspection ConstantConditions
         if (clearTimeInterval <= 0) {
             return;
         }
@@ -62,14 +69,14 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
      * @param filePath  上级路径
      * @param name      文件或文件夹名称
      */
-    public static String getCacheKey(String bizType, String groupName, Integer nodeType, String filePath, String name) {
+    private static String getCacheKey(String bizType, String groupName, Integer nodeType, String filePath, String name) {
         return String.format("%s|%s|%s|%s|%s", bizType, groupName, nodeType, filePath, name);
     }
 
     /**
      * 得到缓存 key
      */
-    public static String getCacheKey(JsCodeFile jsCodeFile) {
+    private static String getCacheKey(JsCodeFile jsCodeFile) {
         return getCacheKey(jsCodeFile.getBizType(), jsCodeFile.getGroupName(), jsCodeFile.getNodeType(), jsCodeFile.getFilePath(), jsCodeFile.getName());
     }
 
@@ -79,7 +86,7 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
         String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
-            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
+            jsCodeFile = cacheService.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_2, filePath, name);
         }
         return jsCodeFile;
     }
@@ -90,7 +97,7 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
         String key = getCacheKey(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
         JsCodeFile jsCodeFile = Js_Code_File_Map.get(key);
         if (jsCodeFile == null) {
-            jsCodeFile = jsCodeFileMapper.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
+            jsCodeFile = cacheService.getJsCodeFile(bizType, groupName, EnumConstant.Node_Type_1, filePath, name);
         }
         return jsCodeFile;
     }
@@ -112,7 +119,7 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
     @Override
     public void reload() {
         clear();
-        Set<JsCodeFile> set = jsCodeFileMapper.findAll();
+        Set<JsCodeFile> set = cacheService.findAll();
         set.forEach(this::put);
     }
 

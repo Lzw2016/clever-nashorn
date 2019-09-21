@@ -3,13 +3,31 @@ package org.clever.nashorn.config;
 import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.SqlExplainInterceptor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.server.config.CustomPaginationInterceptor;
+import org.clever.nashorn.ScriptModuleInstance;
+import org.clever.nashorn.cache.JsCodeFileCacheService;
+import org.clever.nashorn.cache.MemoryJsCodeFileCache;
+import org.clever.nashorn.entity.EnumConstant;
+import org.clever.nashorn.folder.DatabaseFolder;
+import org.clever.nashorn.folder.Folder;
+import org.clever.nashorn.intercept.HttpRequestJsHandler;
+import org.clever.nashorn.internal.CommonUtils;
+import org.clever.nashorn.internal.Console;
+import org.clever.nashorn.internal.LogConsole;
+import org.clever.nashorn.module.cache.MemoryModuleCache;
+import org.clever.nashorn.module.cache.ModuleCache;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 作者： lzw<br/>
@@ -80,6 +98,34 @@ public class BeanConfiguration {
         SqlExplainInterceptor sqlExplainInterceptor = new SqlExplainInterceptor();
 //        sqlExplainInterceptor.stopProceed
         return sqlExplainInterceptor;
+    }
+
+    @Bean("HttpRequestJsHandler-ModuleCache")
+    public ModuleCache moduleCache() {
+        return new MemoryModuleCache();
+    }
+
+    @Bean("HttpRequestJsHandler-JsCodeFileCache")
+    public MemoryJsCodeFileCache jsCodeFileCache(@Autowired JsCodeFileCacheService jsCodeFileCacheService) {
+        return new MemoryJsCodeFileCache(1000 * 3600 * 2, jsCodeFileCacheService);
+    }
+
+    @Bean
+    public HttpRequestJsHandler httpRequestJsHandler(
+            @Autowired ObjectMapper objectMapper,
+            @Autowired @Qualifier("HttpRequestJsHandler-ModuleCache") ModuleCache moduleCache,
+            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") MemoryJsCodeFileCache jsCodeFileCache
+    ) {
+        final String bizType = EnumConstant.DefaultBizType;
+        final String groupName = EnumConstant.DefaultGroupName;
+        // 设置context内容 EnumConstant
+        Map<String, Object> context = new HashMap<>(1);
+        context.put("CommonUtils", CommonUtils.Instance);
+        // 初始化ScriptModuleInstance
+        Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
+        Console console = new LogConsole("/");
+        ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
+        return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
     }
 
     // TODO 需要删除

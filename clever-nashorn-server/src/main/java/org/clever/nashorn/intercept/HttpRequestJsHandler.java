@@ -2,22 +2,15 @@ package org.clever.nashorn.intercept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
-import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
-import org.clever.nashorn.cache.MemoryJsCodeFileCache;
 import org.clever.nashorn.entity.JsCodeFile;
-import org.clever.nashorn.folder.DatabaseFolder;
-import org.clever.nashorn.folder.Folder;
-import org.clever.nashorn.internal.CommonUtils;
-import org.clever.nashorn.internal.Console;
-import org.clever.nashorn.internal.LogConsole;
-import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -26,9 +19,7 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,49 +44,38 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
      * 处理请求脚本的文件名称
      */
     private static final String Handler_File_Name = "controller.js";
-    /**
-     * 响应数据序列化
-     */
-    private JacksonMapper jacksonMapper;
+
     /**
      * 业务类型
      */
+    @Getter
     private final String bizType;
     /**
      * 代码分组
      */
+    @Getter
     private final String groupName;
     /**
-     * ScriptModuleInstance context
+     * 响应数据序列化
      */
-    private final Map<String, Object> context = new HashMap<>(1);
+    private final JacksonMapper jacksonMapper;
     /**
      * 脚本缓存
      */
-    private final JsCodeFileCache jsCodeFileCache = MemoryJsCodeFileCache.getInstance();
+    @Getter
+    private final JsCodeFileCache jsCodeFileCache;
     /**
      * js引擎模块实例
      */
-    private ScriptModuleInstance scriptModuleInstance;
+    @Getter
+    private final ScriptModuleInstance scriptModuleInstance;
 
-    public HttpRequestJsHandler(final String bizType, final String groupName) {
+    public HttpRequestJsHandler(final String bizType, final String groupName, ObjectMapper objectMapper, JsCodeFileCache jsCodeFileCache, ScriptModuleInstance scriptModuleInstance) {
         this.bizType = bizType;
         this.groupName = groupName;
-    }
-
-    private synchronized void init() {
-        if (scriptModuleInstance != null) {
-            return;
-        }
-        ObjectMapper objectMapper = SpringContextHolder.getBean(ObjectMapper.class);
         jacksonMapper = new JacksonMapper(objectMapper);
-        // 设置context内容
-        context.put("CommonUtils", CommonUtils.Instance);
-        // 初始化ScriptModuleInstance
-        Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
-        Console console = new LogConsole("/");
-        MemoryModuleCache moduleCache = new MemoryModuleCache();
-        scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
+        this.jsCodeFileCache = jsCodeFileCache;
+        this.scriptModuleInstance = scriptModuleInstance;
     }
 
     private boolean jsCodeFileExists(String fileFullName) {
@@ -106,8 +86,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        final long startTime = System.currentTimeMillis();
-        init();
+        final long startTime1 = System.currentTimeMillis();
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         boolean supportUri = false;
@@ -151,6 +130,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
             return true;
         }
         // 加载js模块对象处理请求
+        final long startTime2 = System.currentTimeMillis();
         final ScriptObjectMirror jsHandler = scriptModuleInstance.useJs(jsHandlerFileFullName);
         Object handlerObject = jsHandler.getMember(Handler_Method);
         if (!(handlerObject instanceof ScriptObjectMirror)) {
@@ -171,12 +151,26 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         }
         // 使用js代码处理请求
         response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
+        final long startTime3 = System.currentTimeMillis();
         Object result = jsHandler.callMember(Handler_Method);
+        long startTime4 = -1;
         if (result != null) {
+            startTime4 = System.currentTimeMillis();
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(jacksonMapper.toJson(result));
         }
-        log.info("使用js代码处理请求 | [{}] | 耗时 {}ms", jsHandlerFileFullName, System.currentTimeMillis() - startTime);
+        long endTime = System.currentTimeMillis();
+        if (startTime4 < 0) {
+            startTime4 = endTime;
+        }
+        log.info(
+                "使用js代码处理请求 | [{}] | [总]耗时 {}ms | [Js处理全过程]耗时 {}ms | [Js函数调用]耗时 {}ms | [返回值序列化]耗时 {}ms",
+                jsHandlerFileFullName,
+                endTime - startTime1,
+                endTime - startTime2,
+                endTime - startTime3,
+                endTime - startTime4
+        );
         return false;
     }
 

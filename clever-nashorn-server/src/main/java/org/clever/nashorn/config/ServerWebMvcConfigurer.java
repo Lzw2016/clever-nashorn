@@ -1,7 +1,7 @@
 package org.clever.nashorn.config;
 
-import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.intercept.HttpRequestJsHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -24,9 +24,11 @@ public class ServerWebMvcConfigurer implements WebMvcConfigurer {
 //        registry.addResourceHandler("/api/excel-templates/**").addResourceLocations("classpath:/excel-templates/");
 //    }
 
+    @Autowired
+    private HttpRequestJsHandler httpRequestJsHandler;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        HttpRequestJsHandler httpRequestJsHandler = new HttpRequestJsHandler(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName);
         registry.addInterceptor(httpRequestJsHandler).addPathPatterns("/**");
     }
 }

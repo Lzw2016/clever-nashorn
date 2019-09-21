@@ -48,6 +48,12 @@ public class ScriptModuleInstance {
     private final Module rootModule;
 
     /**
+     * global Bindings (context)
+     */
+    @Getter
+    private final Bindings global;
+
+    /**
      * @param folder      脚本资源获取实现
      * @param moduleCache 模块缓存实现
      * @param console     Console
@@ -58,7 +64,7 @@ public class ScriptModuleInstance {
         this.moduleCache = moduleCache;
         // 初始化 root Module
         engine = ScriptEngineUtils.creatEngine();
-        Bindings global = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        global = engine.getBindings(ScriptContext.ENGINE_SCOPE);
         if (context != null && context.size() > 0) {
             global.putAll(context);
         }

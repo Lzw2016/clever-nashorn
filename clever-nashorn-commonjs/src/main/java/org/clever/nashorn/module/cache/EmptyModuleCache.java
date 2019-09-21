@@ -22,4 +22,8 @@ public class EmptyModuleCache implements ModuleCache {
     @Override
     public void clear() {
     }
+
+    @Override
+    public void remove(String fullPath) {
+    }
 }

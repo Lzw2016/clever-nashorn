@@ -5,18 +5,20 @@ import org.clever.common.exception.BusinessException;
 import org.clever.common.utils.mapper.BeanMapper;
 import org.clever.common.utils.tree.BuildTreeUtils;
 import org.clever.common.utils.tuples.TupleTow;
-import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.dto.request.JsCodeFileAddReq;
 import org.clever.nashorn.dto.request.JsCodeFileTreeFindReq;
 import org.clever.nashorn.dto.request.JsCodeFileUpdateReq;
 import org.clever.nashorn.entity.CodeFileHistory;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
+import org.clever.nashorn.event.JsCodeFileChangeEnum;
+import org.clever.nashorn.event.JsCodeFileChangeEvent;
 import org.clever.nashorn.mapper.CodeFileHistoryMapper;
 import org.clever.nashorn.mapper.JsCodeFileMapper;
 import org.clever.nashorn.model.JsCodeFileNode;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +38,13 @@ public class JsCodeFileService {
     @Autowired
     private CodeFileHistoryMapper codeFileHistoryMapper;
     @Autowired
-    private JsCodeFileCache jsCodeFileCache;
+    private ApplicationContext applicationContext;
 
     public JsCodeFile getJsCodeFile(Long id) {
         JsCodeFile jsCodeFile = jsCodeFileMapper.selectById(id);
         if (jsCodeFile != null) {
-            jsCodeFileCache.put(jsCodeFile);
+            // 发布更新事件
+            applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, jsCodeFile));
         }
         return jsCodeFile;
     }
@@ -52,15 +55,15 @@ public class JsCodeFileService {
         if (list.size() <= 0) {
             return treeList;
         }
-//        // 增加根路径
-//        JsCodeFile root = new JsCodeFile();
-//        root.setId(-1L);
-//        root.setBizType(req.getBizType());
-//        root.setGroupName(req.getGroupName());
-//        root.setNodeType(EnumConstant.Node_Type_2);
-//        root.setFilePath("");
-//        root.setName(EnumConstant.File_Path_Separator);
-//        treeList.add(new JsCodeFileNode(root));
+        // // 增加根路径
+        // JsCodeFile root = new JsCodeFile();
+        // root.setId(-1L);
+        // root.setBizType(req.getBizType());
+        // root.setGroupName(req.getGroupName());
+        // root.setNodeType(EnumConstant.Node_Type_2);
+        // root.setFilePath("");
+        // root.setName(EnumConstant.File_Path_Separator);
+        // treeList.add(new JsCodeFileNode(root));
         // 增加子路径
         list.forEach(jsCodeFile -> treeList.add(new JsCodeFileNode(jsCodeFile)));
         return BuildTreeUtils.buildTree(treeList);
@@ -95,6 +98,9 @@ public class JsCodeFileService {
         if (Objects.equals(EnumConstant.Node_Type_1, jsCodeFile.getNodeType())) {
             addHistory(jsCodeFile);
         }
+        jsCodeFile = jsCodeFileMapper.selectById(jsCodeFile.getId());
+        // 发布新增事件
+        applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Add, jsCodeFile));
         return jsCodeFile;
     }
 
@@ -137,8 +143,8 @@ public class JsCodeFileService {
         update.setId(old.getId());
         jsCodeFileMapper.updateById(update);
         update = jsCodeFileMapper.selectById(id);
-        // 更新缓存
-        jsCodeFileCache.put(update);
+        // 发布更新事件
+        applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, update));
         return update;
     }
 
