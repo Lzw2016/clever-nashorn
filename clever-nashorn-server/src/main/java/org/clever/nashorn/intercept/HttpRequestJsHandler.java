@@ -2,6 +2,7 @@ package org.clever.nashorn.intercept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.Undefined;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -12,6 +13,7 @@ import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
@@ -84,20 +86,25 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
     }
 
+    private ScriptObjectMirror getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ScriptObjectMirror ctx = ScriptEngineUtils.newObject();
+        HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
+        ctx.put("req", requestWrapper.getWrapper());
+        return ctx;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         final long startTime1 = System.currentTimeMillis();
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         boolean supportUri = false;
-        boolean hasSuffix = false;
         for (String suffix : Support_Suffix) {
             if (StringUtils.isBlank(suffix)) {
                 supportUri = true;
                 continue;
             }
             if (requestUri.endsWith(suffix)) {
-                hasSuffix = true;
                 supportUri = true;
                 requestUri = requestUri.substring(0, requestUri.length() - suffix.length());
                 break;
@@ -105,7 +112,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         }
         String singleMethodHandler = null;
         String allMethodHandler = null;
-        if (supportUri && hasSuffix) {
+        if (supportUri) {
             // ...(requestUri)/[post/get/put/delete]_controller
             singleMethodHandler = requestUri + "/" + method.toLowerCase() + "_" + Handler_File_Name;
             // ...(requestUri)/controller
@@ -152,9 +159,14 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         // 使用js代码处理请求
         response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
         final long startTime3 = System.currentTimeMillis();
-        Object result = jsHandler.callMember(Handler_Method);
+        ScriptObjectMirror ctx = getCtx(request, response);
+        Object result = jsHandler.callMember(Handler_Method, ctx);
         long startTime4 = -1;
-        if (result != null) {
+        boolean needWriteResult = false;
+        if (result != null && !(result instanceof Undefined)) {
+            needWriteResult = true;
+        }
+        if (needWriteResult) {
             startTime4 = System.currentTimeMillis();
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(jacksonMapper.toJson(result));
