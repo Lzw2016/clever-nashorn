@@ -74,6 +74,7 @@ public class HttpRequestWrapper extends HashMap<String, Object> {
      * cookies             -   请求cookies
      * content             -   请求body原始字符串
      * body                -   请求body对象
+     * attributes          -   请求attributes
      * // ---------------------------------------------------------------
      * pathVariables
      * getCookies(name, [options])
@@ -207,5 +208,16 @@ public class HttpRequestWrapper extends HashMap<String, Object> {
                 wrapper.put("body", content);
             }
         }
+        // --------------------------------------------------------------------- 请求attributes
+        Enumeration<String> attributesEnumeration = request.getAttributeNames();
+        ScriptObjectMirror attributes = ScriptEngineUtils.newObject();
+        while (attributesEnumeration.hasMoreElements()) {
+            String attributeName = attributesEnumeration.nextElement();
+            Object attributeValue = request.getAttribute(attributeName);
+            // attribute 对象存在死循环的值
+            // attributes.put(attributeName, ObjectConvertUtils.Instance.javaToJSObject(attributeValue));
+            attributes.put(attributeName, attributeValue);
+        }
+        wrapper.put("attributes", attributes);
     }
 }

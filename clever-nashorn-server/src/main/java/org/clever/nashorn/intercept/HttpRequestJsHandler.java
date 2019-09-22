@@ -20,6 +20,7 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -89,8 +90,15 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     private ScriptObjectMirror getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ScriptObjectMirror ctx = ScriptEngineUtils.newObject();
         HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
+        HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response);
+        HttpSession session = request.getSession(false);
+        HttpSessionWrapper sessionWrapper = new HttpSessionWrapper(session);
+        CurrentUserWrapper currentUserWrapper = new CurrentUserWrapper("lizw", "13260658831");
         // ctx.put("req", requestWrapper.getWrapper());
         ctx.put("req", requestWrapper);
+        ctx.put("res", responseWrapper);
+        ctx.put("session", sessionWrapper);
+        ctx.put("currentUser", currentUserWrapper);
         return ctx;
     }
 

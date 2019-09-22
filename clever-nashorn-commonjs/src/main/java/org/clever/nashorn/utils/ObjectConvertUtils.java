@@ -92,6 +92,7 @@ public class ObjectConvertUtils {
         if (deep >= recursiveMaxDeep) {
             result = obj;
         } else if (obj instanceof ScriptObjectMirror) {
+            // TODO 需要当Map处理？
             result = obj;
         } else if (obj == null) {// ------------------------------------------------------------------- null
             result = null;
