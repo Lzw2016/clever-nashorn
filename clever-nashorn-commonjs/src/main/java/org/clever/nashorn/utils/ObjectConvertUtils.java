@@ -1,9 +1,8 @@
 package org.clever.nashorn.utils;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.internal.objects.NativeArray;
-import jdk.nashorn.internal.objects.NativeDate;
 import lombok.extern.slf4j.Slf4j;
+import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.BeanMapConverter;
 import org.joda.time.DateTime;
 
@@ -57,10 +56,16 @@ public class ObjectConvertUtils {
         final long startTime = System.currentTimeMillis();
         deepSlot.set(0);
         deepMaxSlot.set(0);
-        Object res = doJavaToJSObject(obj);
-        log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}ms", deepMaxSlot.get(), System.currentTimeMillis() - startTime);
-        deepSlot.remove();
-        deepMaxSlot.remove();
+        Object res;
+        try {
+            res = doJavaToJSObject(obj);
+        } catch (Throwable e) {
+            throw ExceptionUtils.unchecked(e);
+        } finally {
+            log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}ms", deepMaxSlot.get(), System.currentTimeMillis() - startTime);
+            deepSlot.remove();
+            deepMaxSlot.remove();
+        }
         return res;
     }
 
@@ -85,6 +90,8 @@ public class ObjectConvertUtils {
         }
         // 超过了最大递归深度
         if (deep >= recursiveMaxDeep) {
+            result = obj;
+        } else if (obj instanceof ScriptObjectMirror) {
             result = obj;
         } else if (obj == null) {// ------------------------------------------------------------------- null
             result = null;
@@ -119,37 +126,41 @@ public class ObjectConvertUtils {
             result = obj;
         } else if (obj instanceof String) {// --------------------------------------------------------- String
             result = obj;
+        } else if (obj instanceof Character) {
+            result = obj.toString();
+        } else if (obj instanceof CharSequence) {
+            result = obj.toString();
         } else if (obj instanceof Date) {// ----------------------------------------------------------- Date
             double val = (double) ((Date) obj).getTime();
-            result = NativeDate.construct(true, val, val);
+            result = ScriptEngineUtils.newDate(val);
         } else if (obj instanceof DateTime) {
             double val = (double) ((DateTime) obj).toDate().getTime();
-            result = NativeDate.construct(true, val, val);
+            result = ScriptEngineUtils.newDate(val);
         } else if (obj.getClass().isArray()) {// ------------------------------------------------------ Array
-            NativeArray nativeArray;
+            ScriptObjectMirror nativeArray;
             Object[] array = (Object[]) obj;
             if (array.length < collectionMaxSize) {
                 List<Object> list = new ArrayList<>(array.length);
                 for (Object o : array) {
                     list.add(doJavaToJSObject(o));
                 }
-                nativeArray = NativeArray.construct(true, list, list.toArray());
+                nativeArray = ScriptEngineUtils.newArray(list);
             } else {
-                nativeArray = NativeArray.construct(true, obj, obj);
+                nativeArray = ScriptEngineUtils.newArray(array);
             }
             // result = ScriptEngineUtils.newObject(nativeArray);
             result = nativeArray;
         } else if (obj instanceof Collection) {
-            NativeArray nativeArray;
+            ScriptObjectMirror nativeArray;
             Collection collection = (Collection) obj;
             if (collection.size() < collectionMaxSize) {
                 List<Object> list = new ArrayList<>(collection.size());
                 for (Object o : collection) {
                     list.add(doJavaToJSObject(o));
                 }
-                nativeArray = NativeArray.construct(true, list, list.toArray());
+                nativeArray = ScriptEngineUtils.newArray(list);
             } else {
-                nativeArray = NativeArray.construct(true, collection, collection.toArray());
+                nativeArray = ScriptEngineUtils.newArray(collection);
             }
             // result = ScriptEngineUtils.newObject(nativeArray);
             result = nativeArray;
