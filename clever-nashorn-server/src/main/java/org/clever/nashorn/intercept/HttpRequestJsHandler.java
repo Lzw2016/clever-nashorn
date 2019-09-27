@@ -8,20 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
-import org.clever.common.utils.tuples.TupleFive;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
-import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -86,21 +83,6 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(fileFullName);
         JsCodeFile jsCodeFile = jsCodeFileCache.getFile(bizType, groupName, tupleTow.getValue1(), tupleTow.getValue2());
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
-    }
-
-    private TupleFive<ScriptObjectMirror, CurrentUserWrapper, HttpRequestWrapper, HttpResponseWrapper, HttpSessionWrapper> getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ScriptObjectMirror ctx = ScriptEngineUtils.newObject();
-        HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
-        HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response, jacksonMapper);
-        HttpSession session = request.getSession(false);
-        HttpSessionWrapper sessionWrapper = new HttpSessionWrapper(session);
-        CurrentUserWrapper currentUserWrapper = new CurrentUserWrapper("lizw", "13260658831");
-        // ctx.put("req", requestWrapper.getWrapper());
-        ctx.put("req", requestWrapper);
-        ctx.put("res", responseWrapper);
-        ctx.put("session", sessionWrapper);
-        ctx.put("currentUser", currentUserWrapper);
-        return TupleFive.creat(ctx, currentUserWrapper, requestWrapper, responseWrapper, sessionWrapper);
     }
 
     @Override
@@ -169,15 +151,15 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         // 使用js代码处理请求
         final long startTime3 = System.currentTimeMillis();
         response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
-        TupleFive<ScriptObjectMirror, CurrentUserWrapper, HttpRequestWrapper, HttpResponseWrapper, HttpSessionWrapper> tupleFive = getCtx(request, response);
-        Object result = jsHandler.callMember(Handler_Method, tupleFive.getValue1());
+        ServletContextWrapper contextWrapper = new ServletContextWrapper(request, response, jacksonMapper);
+        Object result = jsHandler.callMember(Handler_Method, contextWrapper);
         final long startTime4 = System.currentTimeMillis();
-        tupleFive.getValue4().wrapper();
+        contextWrapper.getResponseWrapper().wrapper();
         boolean needWriteResult = false;
         if (result != null && !(result instanceof Undefined)) {
             needWriteResult = true;
         }
-        if (needWriteResult && !tupleFive.getValue4().isWrite()) {
+        if (needWriteResult && !contextWrapper.getResponseWrapper().isWrite()) {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(jacksonMapper.toJson(result));
         }

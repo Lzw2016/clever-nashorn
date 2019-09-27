@@ -18,6 +18,7 @@ import java.util.Map;
  * 作者：lizw <br/>
  * 创建时间：2019/09/20 17:28 <br/>
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class HttpResponseWrapper extends HashMap<String, Object> {
     /**
      * Http响应对象
@@ -79,6 +80,7 @@ public class HttpResponseWrapper extends HashMap<String, Object> {
     /**
      * 适配响应对象
      */
+    @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
     public HttpServletResponse wrapper() throws IOException {
         // --------------------------------------------------------------------- 设置响应状态码
         Object status = wrapper.getOrDefault("status", 200);
