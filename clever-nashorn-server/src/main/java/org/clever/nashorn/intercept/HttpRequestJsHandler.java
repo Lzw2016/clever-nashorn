@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
+import org.clever.common.utils.tuples.TupleFive;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
@@ -87,10 +88,10 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
     }
 
-    private ScriptObjectMirror getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private TupleFive<ScriptObjectMirror, CurrentUserWrapper, HttpRequestWrapper, HttpResponseWrapper, HttpSessionWrapper> getCtx(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ScriptObjectMirror ctx = ScriptEngineUtils.newObject();
         HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
-        HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response);
+        HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response, jacksonMapper);
         HttpSession session = request.getSession(false);
         HttpSessionWrapper sessionWrapper = new HttpSessionWrapper(session);
         CurrentUserWrapper currentUserWrapper = new CurrentUserWrapper("lizw", "13260658831");
@@ -99,7 +100,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         ctx.put("res", responseWrapper);
         ctx.put("session", sessionWrapper);
         ctx.put("currentUser", currentUserWrapper);
-        return ctx;
+        return TupleFive.creat(ctx, currentUserWrapper, requestWrapper, responseWrapper, sessionWrapper);
     }
 
     @Override
@@ -168,22 +169,19 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         // 使用js代码处理请求
         final long startTime3 = System.currentTimeMillis();
         response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
-        ScriptObjectMirror ctx = getCtx(request, response);
-        Object result = jsHandler.callMember(Handler_Method, ctx);
-        long startTime4 = -1;
+        TupleFive<ScriptObjectMirror, CurrentUserWrapper, HttpRequestWrapper, HttpResponseWrapper, HttpSessionWrapper> tupleFive = getCtx(request, response);
+        Object result = jsHandler.callMember(Handler_Method, tupleFive.getValue1());
+        final long startTime4 = System.currentTimeMillis();
+        tupleFive.getValue4().wrapper();
         boolean needWriteResult = false;
         if (result != null && !(result instanceof Undefined)) {
             needWriteResult = true;
         }
-        if (needWriteResult) {
-            startTime4 = System.currentTimeMillis();
+        if (needWriteResult && !tupleFive.getValue4().isWrite()) {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(jacksonMapper.toJson(result));
         }
         long endTime = System.currentTimeMillis();
-        if (startTime4 < 0) {
-            startTime4 = endTime;
-        }
         log.info(
                 "使用js代码处理请求 | [{}] | [总]耗时 {}ms | [Js处理全过程]耗时 {}ms | [Js函数调用]耗时 {}ms | [返回值序列化]耗时 {}ms",
                 jsHandlerFileFullName,
