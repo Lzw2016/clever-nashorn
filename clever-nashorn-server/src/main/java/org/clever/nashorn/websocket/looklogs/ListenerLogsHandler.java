@@ -14,10 +14,13 @@ import org.springframework.web.socket.WebSocketSession;
 @Slf4j
 public class ListenerLogsHandler extends Handler<ListenerLogsReq, ListenerLogsTask> {
 
-    private ListenerLogsTask listenerLogsTask = new ListenerLogsTask();
+    private static ListenerLogsTask listenerLogsTask;
 
     @Override
     public synchronized ListenerLogsTask creatTask(WebSocketSession session, ListenerLogsReq message, boolean verify) {
+        if (listenerLogsTask == null) {
+            listenerLogsTask = new ListenerLogsTask();
+        }
         return listenerLogsTask;
     }
 }

@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,6 +101,13 @@ public class BeanConfiguration {
         return sqlExplainInterceptor;
     }
 
+    @Bean("ScriptGlobalContext")
+    public Map<String, Object> scriptContext() {
+        Map<String, Object> context = new HashMap<>(1);
+        context.put("CommonUtils", CommonUtils.Instance);
+        return Collections.unmodifiableMap(context);
+    }
+
     @Bean("HttpRequestJsHandler-ModuleCache")
     public ModuleCache moduleCache() {
         return new MemoryModuleCache();
@@ -114,13 +122,11 @@ public class BeanConfiguration {
     public HttpRequestJsHandler httpRequestJsHandler(
             @Autowired ObjectMapper objectMapper,
             @Autowired @Qualifier("HttpRequestJsHandler-ModuleCache") ModuleCache moduleCache,
-            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") MemoryJsCodeFileCache jsCodeFileCache
+            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") MemoryJsCodeFileCache jsCodeFileCache,
+            @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context
     ) {
         final String bizType = EnumConstant.DefaultBizType;
         final String groupName = EnumConstant.DefaultGroupName;
-        // 设置context内容 EnumConstant
-        Map<String, Object> context = new HashMap<>(1);
-        context.put("CommonUtils", CommonUtils.Instance);
         // 初始化ScriptModuleInstance
         Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
         Console console = new LogConsole("/");

@@ -319,7 +319,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         if (task == null) {
             // 第一次处理消息
             if (Objects.equals(msg.getType(), WebSocketTaskReq.Type_Join_Task)) {
-                // 讲当前session加入到Task
+                // 将当前session加入到Task
                 if (StringUtils.isNotBlank(msg.getTaskId())) {
                     Task tmpTask = getTaskByTaskId(msg.getTaskId());
                     if (tmpTask != null) {

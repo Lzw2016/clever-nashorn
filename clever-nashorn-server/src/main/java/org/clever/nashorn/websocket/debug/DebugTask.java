@@ -3,13 +3,12 @@ package org.clever.nashorn.websocket.debug;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.IDCreateUtils;
+import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.MemoryJsCodeFileCache;
 import org.clever.nashorn.dto.request.DebugReq;
-import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.folder.DatabaseFolder;
 import org.clever.nashorn.folder.Folder;
-import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
@@ -18,7 +17,6 @@ import org.clever.nashorn.websocket.TaskType;
 import org.clever.nashorn.websocket.WebSocketConsole;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,11 +33,10 @@ public class DebugTask extends Task<DebugReq> {
         super(String.format("(%s)%s", IDCreateUtils.uuid(), debugReq.getFileFullPath()), TaskType.DebugJs);
         // Folder rootFolder = FileSystemFolder.create(new File(debugReq.getFilePath()));
         MemoryJsCodeFileCache jsCodeFileCache = new MemoryJsCodeFileCache();
-        Folder rootFolder = new DatabaseFolder(EnumConstant.DefaultBizType, EnumConstant.DefaultGroupName, jsCodeFileCache);
+        Folder rootFolder = new DatabaseFolder(debugReq.getBizType(), debugReq.getGroupName(), jsCodeFileCache);
         ModuleCache moduleCache = new MemoryModuleCache();
         Console console = new WebSocketConsole(debugReq.getFileFullPath(), this);
-        Map<String, Object> context = new HashMap<>(1);
-        context.put("CommonUtils", CommonUtils.Instance);
+        Map<String, Object> context = SpringContextHolder.getBean("ScriptGlobalContext");
         scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         this.runTimeOut = 5;
     }
