@@ -42,9 +42,9 @@ public abstract class Task<T extends WebSocketTaskReq> {
     }
 
     /**
-     * 执行WebSocket任务的线程池
+     * 执行WebSocket任务的线程池，不能直接使用需要调用 getTaskThreadPool() 方法
      */
-    public final ThreadPoolExecutor taskThreadPool;
+    private ThreadPoolExecutor taskThreadPool;
     /**
      * 连接当前任务的Session集合<br />
      * 一个Task对应多个session，一个session只能对应一个Task
@@ -68,17 +68,17 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * 当前任务ID(全局唯一)
      */
     @Getter
-    private final String taskId;
+    protected final String taskId;
     /**
      * 任务类型
      */
     @Getter
-    private final TaskType taskType;
+    protected final TaskType taskType;
     /**
      * 当前任务是否已经停止
      */
     @Getter
-    private boolean stop = false;
+    protected boolean stop = false;
     /**
      * 任务是否已经启动
      */
@@ -97,7 +97,16 @@ public abstract class Task<T extends WebSocketTaskReq> {
     public Task(String taskId, TaskType taskType) {
         this.taskId = taskId;
         this.taskType = taskType;
-        this.taskThreadPool = ThreadPoolUtils.getThreadPoolForTask(taskId);
+    }
+
+    /**
+     * 初始化并且返回：执行WebSocket任务的线程池
+     */
+    protected synchronized ThreadPoolExecutor getTaskThreadPool() {
+        if (taskThreadPool == null) {
+            taskThreadPool = ThreadPoolUtils.getThreadPoolForTask(taskId);
+        }
+        return taskThreadPool;
     }
 
     /**
@@ -124,6 +133,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     /**
      * 从当前任务移除一个WebSocketSession
      */
+    @SuppressWarnings("unused")
     private boolean removeWebSocketSession(WebSocketSession session) {
         if (session == null) {
             return true;
@@ -166,6 +176,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     /**
      * 等待所有的连接关闭(会阻塞当前线程)
      */
+    @SuppressWarnings("unused")
     protected void awaitAllSessionClose() {
         while (getWebSocketSessionSize() > 0) {
             try {
@@ -226,6 +237,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * @param message 请求消息
      * @param verify  消息数据校验结果
      */
+    @SuppressWarnings("unused")
     public void start(T message, boolean verify) {
         if (start) {
             throw new RuntimeException("任务已经启动了");
@@ -267,7 +279,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     @SuppressWarnings("UnusedReturnValue")
     protected boolean execTask(DoTask task) {
         try {
-            taskThreadPool.execute(() -> {
+            getTaskThreadPool().execute(() -> {
                 try {
                     runningTaskCount.incrementAndGet();
                     task.runTask();
@@ -295,6 +307,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * @param message 请求消息
      * @param verify  消息数据校验结果
      */
+    @SuppressWarnings("SameParameterValue")
     protected abstract void doStart(T message, boolean verify);
 
     /**
@@ -316,7 +329,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
     /**
      * 运行任务接口
      */
-    public static interface DoTask {
+    public interface DoTask {
 
         /**
          * 具体的执行任务

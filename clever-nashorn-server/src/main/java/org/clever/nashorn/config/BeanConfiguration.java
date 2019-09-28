@@ -13,9 +13,9 @@ import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.folder.DatabaseFolder;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.intercept.HttpRequestJsHandler;
+import org.clever.nashorn.internal.AllConsoleWrapper;
 import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
-import org.clever.nashorn.internal.LogConsole;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +129,7 @@ public class BeanConfiguration {
         final String groupName = EnumConstant.DefaultGroupName;
         // 初始化ScriptModuleInstance
         Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
-        Console console = new LogConsole(bizType, groupName, "/");
+        Console console = new AllConsoleWrapper(bizType, groupName, "/");
         ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
     }

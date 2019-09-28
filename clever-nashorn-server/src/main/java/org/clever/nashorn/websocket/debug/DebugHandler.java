@@ -2,6 +2,7 @@ package org.clever.nashorn.websocket.debug;
 
 import lombok.extern.slf4j.Slf4j;
 import org.clever.nashorn.dto.request.DebugReq;
+import org.clever.nashorn.dto.response.ConsoleLogRes;
 import org.clever.nashorn.websocket.Handler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -16,6 +17,9 @@ public class DebugHandler extends Handler<DebugReq, DebugTask> {
 
     @Override
     public DebugTask creatTask(WebSocketSession session, DebugReq message, boolean verify) {
+        if (!verify) {
+            sendErrorMessage(session, ConsoleLogRes.newError("请求参数校验失败", null), true);
+        }
         return new DebugTask(message);
     }
 }
