@@ -8,5 +8,9 @@ public enum TaskType {
     /**
      * 调试JS
      */
-    DebugJs;
+    DebugJs,
+    /**
+     * 监听日志
+     */
+    ListenerLogs,
 }

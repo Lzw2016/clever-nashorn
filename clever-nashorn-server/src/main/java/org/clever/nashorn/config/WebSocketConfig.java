@@ -2,6 +2,7 @@ package org.clever.nashorn.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.clever.nashorn.websocket.debug.DebugHandler;
+import org.clever.nashorn.websocket.looklogs.ListenerLogsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -19,6 +20,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Autowired
     private DebugHandler debugHandler;
+    @Autowired
+    private ListenerLogsHandler listenerLogsHandler;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -27,5 +30,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         registry.addHandler(debugHandler, "/ws/debug")
                 .setAllowedOrigins(allowsOrigins);
         // .withSockJS();
+        registry.addHandler(listenerLogsHandler, "/ws/listener_logs")
+                .setAllowedOrigins(allowsOrigins);
     }
 }

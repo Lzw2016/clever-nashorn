@@ -71,7 +71,12 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     @Getter
     private final ScriptModuleInstance scriptModuleInstance;
 
-    public HttpRequestJsHandler(final String bizType, final String groupName, ObjectMapper objectMapper, JsCodeFileCache jsCodeFileCache, ScriptModuleInstance scriptModuleInstance) {
+    public HttpRequestJsHandler(
+            final String bizType,
+            final String groupName,
+            ObjectMapper objectMapper,
+            JsCodeFileCache jsCodeFileCache,
+            ScriptModuleInstance scriptModuleInstance) {
         this.bizType = bizType;
         this.groupName = groupName;
         jacksonMapper = new JacksonMapper(objectMapper);

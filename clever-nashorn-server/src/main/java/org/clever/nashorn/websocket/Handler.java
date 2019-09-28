@@ -306,12 +306,14 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         if (msg == null) {
             return;
         }
-        boolean verify = true;
+        boolean verify = false;
         try {
             BaseValidatorUtils.validateThrowException(ValidatorFactoryUtils.getHibernateValidator(), msg);
-        } catch (ConstraintViolationException e) {
-            verify = false;
+            verify = true;
+        } catch (ConstraintViolationException ignored) {
+            // 请求数据校验不通过
         } catch (Throwable e) {
+            sendErrorMessage(session, ConsoleLogRes.newError("请求消息校验失败", null), true);
             log.error("请求消息校验失败", e);
         }
         if (task == null) {
