@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 public class LogConsoleTest {
 
-    private LogConsole logConsole = new LogConsole("/", "test");
+    private LogConsole logConsole = new LogConsole("test", "test", "/", "test");
 
     @Test
     public void t1() {
@@ -38,7 +38,7 @@ public class LogConsoleTest {
     public void t3() {
         log.info(" # --- {}", JSTools.Instance);
         Map<String, Object> context = new HashMap<>();
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
         scriptObjectMirror.callMember("printJava");
         scriptObjectMirror.callMember("printJava", 1);
@@ -66,7 +66,7 @@ public class LogConsoleTest {
     @Test
     public void tmp() {
         Map<String, Object> context = new HashMap<>();
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t3.js");
         scriptObjectMirror.callMember("tmp");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
@@ -76,7 +76,7 @@ public class LogConsoleTest {
     public void t4() {
         // 打印语法错误位置(行列)
         Map<String, Object> context = new HashMap<>();
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/tmp", context);
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t4.js");
         scriptObjectMirror.callMember("tmp");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());

@@ -31,7 +31,7 @@ public class MyTest {
 
     @Test
     public void test1() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test1");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test1");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./foo.js");
         scriptObjectMirror.callMember("test", "nashorn");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
@@ -39,7 +39,7 @@ public class MyTest {
 
     @Test
     public void test3() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test3");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test3");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./test.js");
         log.info(" # --- {}", scriptObjectMirror.get("invariant"));
     }
@@ -47,7 +47,7 @@ public class MyTest {
     // 循环依赖 test4 - cycles
     @Test
     public void test4Cycles() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/cycles");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test4/cycles");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### scriptObjectMirror - {}", scriptObjectMirror);
     }
@@ -55,7 +55,7 @@ public class MyTest {
     // 循环依赖 test4 - deep
     @Test
     public void test4Deep() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/deep");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test4/deep");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### scriptObjectMirror - {}", scriptObjectMirror);
     }
@@ -63,7 +63,7 @@ public class MyTest {
     // 循环依赖 test4 - demo3
     @Test
     public void test4Demo3() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test4/demo3");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test4/demo3");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./main.js");
         log.info("### --------------------------------------------------------------------- scriptObjectMirror - {}", scriptObjectMirror);
         ScriptObjectMirror a = scriptModuleInstance.useJs("./a.js");
@@ -74,7 +74,7 @@ public class MyTest {
 
     @Test
     public void test6() throws InterruptedException {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test6");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test6");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t01");
         scriptObjectMirror.callMember("test");
         Thread.sleep(1000 * 3);
@@ -87,7 +87,7 @@ public class MyTest {
 
     @Test
     public void testLib() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/lib");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/lib");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./index");
         log.info(" # --- {}", scriptObjectMirror);
     }
@@ -96,7 +96,7 @@ public class MyTest {
 
     @Test
     public void tmp1() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/tmp");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./index.js");
         scriptObjectMirror.callMember("test", "nashorn");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
@@ -106,7 +106,7 @@ public class MyTest {
     public void tmp2() {
         Map<String, Object> context = new HashMap<>();
         context.put("abcd", new MyTest());
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/tmp", context);
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/tmp", context);
         scriptModuleInstance.useJs("./index.js");
         log.info(" # --- {}", scriptModuleInstance.getRootModule());
     }
@@ -119,7 +119,7 @@ public class MyTest {
 
     @Test
     public void test7() {
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("src/test/resources/test7");
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", "src/test/resources/test7");
         ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./t01");
         final long start = System.currentTimeMillis();
         Object res;

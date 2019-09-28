@@ -129,7 +129,7 @@ public class BeanConfiguration {
         final String groupName = EnumConstant.DefaultGroupName;
         // 初始化ScriptModuleInstance
         Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
-        Console console = new LogConsole("/");
+        Console console = new LogConsole(bizType, groupName, "/");
         ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
     }

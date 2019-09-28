@@ -94,9 +94,9 @@ public class ScriptModuleInstance {
      * @param rootFilePath 本地文件路径
      * @param context      全局的对象
      */
-    public static ScriptModuleInstance creatDefault(String rootFilePath, Map<String, Object> context) {
+    public static ScriptModuleInstance creatDefault(String bizType, String groupName, String rootFilePath, Map<String, Object> context) {
         Folder rootFolder = FileSystemFolder.create(new File(rootFilePath));
-        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(rootFilePath), context);
+        return new ScriptModuleInstance(rootFolder, new MemoryModuleCache(), new LogConsole(bizType, groupName, rootFilePath), context);
     }
 
     /**
@@ -106,8 +106,8 @@ public class ScriptModuleInstance {
      *
      * @param rootFilePath 本地文件路径
      */
-    public static ScriptModuleInstance creatDefault(String rootFilePath) {
-        return creatDefault(rootFilePath, null);
+    public static ScriptModuleInstance creatDefault(String bizType, String groupName, String rootFilePath) {
+        return creatDefault(bizType, groupName, rootFilePath, null);
     }
 
     /**

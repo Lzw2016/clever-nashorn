@@ -101,7 +101,7 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
      */
     protected Module(Folder folder, String filename, Module parent) {
         this.engine = parent.engine;
-        this.console = parent.console.creat(folder.getFilePath(filename), filename);
+        this.console = parent.console.creat(folder.getPath(), filename);
         this.moduleCache = parent.moduleCache;
         this.folder = folder;
         // 初始化 module

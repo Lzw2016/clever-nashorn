@@ -4,6 +4,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * 日志写入数据库实现
  * <p>
@@ -14,38 +16,38 @@ public class DatabaseLogConsole extends AbstractConsole {
 
     private final Logger log;
 
-    public DatabaseLogConsole(String filePath, String fileName) {
-        super(filePath, fileName);
+    public DatabaseLogConsole(String bizType, String groupName, String filePath, String fileName) {
+        super(bizType, groupName, filePath, fileName);
         this.log = LoggerFactory.getLogger(FilenameUtils.concat(filePath, fileName));
     }
 
     @Override
-    public void log(Object... args) {
+    protected void doLog(String logsText, List<Object> args) {
 
     }
 
     @Override
-    public void trace(Object... args) {
+    protected void doTrace(String logsText, List<Object> args) {
 
     }
 
     @Override
-    public void debug(Object... args) {
+    protected void doDebug(String logsText, List<Object> args) {
 
     }
 
     @Override
-    public void info(Object... args) {
+    protected void doInfo(String logsText, List<Object> args) {
 
     }
 
     @Override
-    public void warn(Object... args) {
+    protected void doWarn(String logsText, List<Object> args) {
 
     }
 
     @Override
-    public void error(Object... args) {
+    protected void doError(String logsText, List<Object> args) {
 
     }
 

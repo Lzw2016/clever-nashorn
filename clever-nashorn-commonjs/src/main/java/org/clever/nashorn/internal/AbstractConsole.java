@@ -1,9 +1,14 @@
 package org.clever.nashorn.internal;
 
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.module.Module;
 import org.clever.nashorn.utils.StrFormatter;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 作者：lizw <br/>
@@ -21,6 +26,10 @@ public abstract class AbstractConsole implements Console {
     public static final String Overflow_Suffix = "...";
 
     @Getter
+    private final String bizType;
+    @Getter
+    private final String groupName;
+    @Getter
     private final String filePath;
     @Getter
     private final String fileName;
@@ -29,7 +38,9 @@ public abstract class AbstractConsole implements Console {
      * @param filePath 文件路径
      * @param fileName 文件名称
      */
-    public AbstractConsole(String filePath, String fileName) {
+    protected AbstractConsole(String bizType, String groupName, String filePath, String fileName) {
+        this.bizType = bizType;
+        this.groupName = groupName;
         this.filePath = filePath;
         this.fileName = fileName;
     }
@@ -39,8 +50,8 @@ public abstract class AbstractConsole implements Console {
      *
      * @param filePath root文件路径
      */
-    public AbstractConsole(String filePath) {
-        this(filePath, Module.Root_Filename);
+    public AbstractConsole(String bizType, String groupName, String filePath) {
+        this(bizType, groupName, filePath, Module.Root_Filename);
     }
 
     /**
@@ -53,25 +64,30 @@ public abstract class AbstractConsole implements Console {
         StringBuilder sb = new StringBuilder(args.length * 32);
         for (Object arg : args) {
             String str = StrFormatter.toString(arg);
-            sb.append(overflow(str));
-
+            TupleTow<String, Boolean> tupleTow = overflow(str);
+            sb.append(tupleTow.getValue1());
+            if (tupleTow.getValue2()) {
+                break;
+            }
         }
-        return overflow(sb.toString());
+        return overflow(sb.toString()).getValue1();
     }
 
     /**
      * 字符串溢出处理
      */
     @SuppressWarnings("ConstantConditions")
-    protected String overflow(String str) {
+    protected TupleTow<String, Boolean> overflow(String str) {
+        boolean overflow = false;
         if (StringUtils.isNotBlank(str) && Max_Len < str.length()) {
             int end = Max_Len - Overflow_Suffix.length();
             if (end < 0) {
                 end = 0;
             }
             str = str.substring(0, end) + Overflow_Suffix;
+            overflow = true;
         }
-        return str;
+        return TupleTow.creat(str, overflow);
     }
 
     /**
@@ -80,4 +96,59 @@ public abstract class AbstractConsole implements Console {
     protected String format(final String format, final Object... argArray) {
         return StrFormatter.format(format, argArray);
     }
+
+    /**
+     * 获取控制台名称
+     */
+    protected String getConsoleName() {
+        return String.format("%s.%s#%s", bizType, groupName, FilenameUtils.concat(filePath, fileName));
+    }
+
+    @Override
+    public void log(Object... args) {
+        String logsText = logString(args);
+        doLog(logsText, Arrays.asList(args));
+    }
+
+    @Override
+    public void trace(Object... args) {
+        String logsText = logString(args);
+        doTrace(logsText, Arrays.asList(args));
+    }
+
+    @Override
+    public void debug(Object... args) {
+        String logsText = logString(args);
+        doDebug(logsText, Arrays.asList(args));
+    }
+
+    @Override
+    public void info(Object... args) {
+        String logsText = logString(args);
+        doInfo(logsText, Arrays.asList(args));
+    }
+
+    @Override
+    public void warn(Object... args) {
+        String logsText = logString(args);
+        doWarn(logsText, Arrays.asList(args));
+    }
+
+    @Override
+    public void error(Object... args) {
+        String logsText = logString(args);
+        doError(logsText, Arrays.asList(args));
+    }
+
+    protected abstract void doLog(String logsText, List<Object> args);
+
+    protected abstract void doTrace(String logsText, List<Object> args);
+
+    protected abstract void doDebug(String logsText, List<Object> args);
+
+    protected abstract void doInfo(String logsText, List<Object> args);
+
+    protected abstract void doWarn(String logsText, List<Object> args);
+
+    protected abstract void doError(String logsText, List<Object> args);
 }

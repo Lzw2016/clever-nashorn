@@ -35,7 +35,7 @@ public class DebugTask extends Task<DebugReq> {
         MemoryJsCodeFileCache jsCodeFileCache = new MemoryJsCodeFileCache();
         Folder rootFolder = new DatabaseFolder(debugReq.getBizType(), debugReq.getGroupName(), jsCodeFileCache);
         ModuleCache moduleCache = new MemoryModuleCache();
-        Console console = new WebSocketConsole(debugReq.getFileFullPath(), this);
+        Console console = new WebSocketConsole(debugReq.getBizType(), debugReq.getGroupName(), debugReq.getFileFullPath(), this);
         Map<String, Object> context = SpringContextHolder.getBean("ScriptGlobalContext");
         scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         this.runTimeOut = 5;

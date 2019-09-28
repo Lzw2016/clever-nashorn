@@ -27,7 +27,7 @@ public class JSTools {
         Instance = new ScriptModuleInstance(
                 ResourceFolder.create(ScriptEngineUtils.class.getClassLoader(), "javascript", "UTF-8"),
                 new MemoryModuleCache(1000 * 60),
-                new LogConsole("/resources")
+                new LogConsole("internal", "internal", "/resources")
         );
         BaseUtils = Instance.useJs("./BaseUtils.js");
     }
