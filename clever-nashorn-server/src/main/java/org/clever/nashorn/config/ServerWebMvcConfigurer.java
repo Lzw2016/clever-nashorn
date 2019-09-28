@@ -29,6 +29,6 @@ public class ServerWebMvcConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(httpRequestJsHandler).addPathPatterns("/**");
+        registry.addInterceptor(httpRequestJsHandler).addPathPatterns("/**").order(Integer.MAX_VALUE);
     }
 }

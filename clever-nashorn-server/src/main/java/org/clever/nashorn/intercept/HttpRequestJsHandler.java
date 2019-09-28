@@ -79,15 +79,21 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         this.scriptModuleInstance = scriptModuleInstance;
     }
 
+    /**
+     * 判断脚本是否存在
+     *
+     * @param fileFullName 脚本全路径
+     */
     private boolean jsCodeFileExists(String fileFullName) {
         TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(fileFullName);
         JsCodeFile jsCodeFile = jsCodeFileCache.getFile(bizType, groupName, tupleTow.getValue1(), tupleTow.getValue2());
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
     }
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        final long startTime1 = System.currentTimeMillis();
+    /**
+     * 获取JS文件全名称
+     */
+    private String getJsHandlerFileFullName(final HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         boolean supportUri = false;
@@ -124,36 +130,41 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
                 jsHandlerFileFullName = tmp;
             }
         }
-        // js请求处理文件不存在
-        if (StringUtils.isBlank(jsHandlerFileFullName)) {
-            return true;
-        }
-        // 加载js模块对象处理请求
-        final long startTime2 = System.currentTimeMillis();
+        return jsHandlerFileFullName;
+    }
+
+    /**
+     * 获取js模块对象处理请求
+     */
+    private ScriptObjectMirror getJsHandler(final String jsHandlerFileFullName, final HttpServletResponse response, final Object handler) {
         final ScriptObjectMirror jsHandler = scriptModuleInstance.useJs(jsHandlerFileFullName);
         Object handlerObject = jsHandler.getMember(Handler_Method);
         if (!(handlerObject instanceof ScriptObjectMirror)) {
-            return true;
+            return null;
         }
         ScriptObjectMirror handlerFunction = (ScriptObjectMirror) handlerObject;
         if (!handlerFunction.isFunction()) {
-            return true;
+            return null;
         }
         if (handler instanceof HandlerMethod) {
             log.warn("js请求处理函数功能被原生SpringMvc功能覆盖 | {}", jsHandlerFileFullName);
-            response.setHeader("use-http-request-js-handler-be-override", jsHandlerFileFullName);
-            return true;
+            response.setHeader("http-request-js-handler-be-override", jsHandlerFileFullName);
+            return null;
         }
         if (!(handler instanceof ResourceHttpRequestHandler)) {
             log.warn("出现意外的handler | {}", handler.getClass());
-            return true;
+            return null;
         }
-        // 使用js代码处理请求
-        final long startTime3 = System.currentTimeMillis();
-        response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
+        return jsHandler;
+    }
+
+    /**
+     * 使用js代码处理请求
+     */
+    private long doHandle(final ScriptObjectMirror jsHandler, final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         ServletContextWrapper contextWrapper = new ServletContextWrapper(request, response, jacksonMapper);
         Object result = jsHandler.callMember(Handler_Method, contextWrapper);
-        final long startTime4 = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
         contextWrapper.getResponseWrapper().wrapper();
         boolean needWriteResult = false;
         if (result != null && !(result instanceof Undefined)) {
@@ -163,6 +174,28 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().println(jacksonMapper.toJson(result));
         }
+        return startTime;
+    }
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
+        // 获取JS文件全名称
+        final long startTime1 = System.currentTimeMillis();
+        final String jsHandlerFileFullName = getJsHandlerFileFullName(request);
+        if (StringUtils.isBlank(jsHandlerFileFullName)) {
+            return true;
+        }
+        // 获取js模块对象处理请求
+        final long startTime2 = System.currentTimeMillis();
+        final ScriptObjectMirror jsHandler = getJsHandler(jsHandlerFileFullName, response, handler);
+        if (jsHandler == null) {
+            return true;
+        }
+        // 使用js代码处理请求
+        final long startTime3 = System.currentTimeMillis();
+        response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
+        final long startTime4 = doHandle(jsHandler, request, response);
+        // 请求处理完成 - 打印日志
         long endTime = System.currentTimeMillis();
         log.info(
                 "使用js代码处理请求 | [{}] | [总]耗时 {}ms | [Js处理全过程]耗时 {}ms | [Js函数调用]耗时 {}ms | [返回值序列化]耗时 {}ms",
