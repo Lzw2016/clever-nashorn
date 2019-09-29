@@ -64,7 +64,7 @@ public class ObjectConvertUtils {
             return null;
         }
         final long startTime = System.currentTimeMillis();
-        cacheSlot.set(new ArrayList<>(8));
+        cacheSlot.set(new ArrayList<>(512));
         deepSlot.set(0);
         deepMaxSlot.set(0);
         Object res;

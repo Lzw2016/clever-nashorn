@@ -132,6 +132,11 @@ public class BeanConfiguration {
         // 初始化ScriptModuleInstance
         Folder rootFolder = new DatabaseFolder(bizType, groupName, jsCodeFileCache);
         Console console = new AllConsoleWrapper(bizType, groupName, "/");
+        // 由于Spring bug导致需要这样获取 context
+        if (context.get("ScriptGlobalContext") != null && context.get("ScriptGlobalContext") instanceof Map) {
+            //noinspection unchecked
+            context = (Map<String, Object>) context.get("ScriptGlobalContext");
+        }
         ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
     }
