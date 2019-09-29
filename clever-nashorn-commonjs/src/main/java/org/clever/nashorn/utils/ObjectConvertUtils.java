@@ -57,7 +57,7 @@ public class ObjectConvertUtils {
     }
 
     /**
-     * Java对象转换成JS对象(性能较差慎用)
+     * Java对象转换成JS对象(慎用: 性能较差)
      */
     public Object javaToJSObject(Object obj) {
         if (obj == null) {
