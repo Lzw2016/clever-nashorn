@@ -15,23 +15,31 @@ import java.util.regex.Pattern;
  * 作者：lizw <br/>
  * 创建时间：2019/08/24 12:32 <br/>
  */
+@SuppressWarnings("unused")
 public class CommonUtils {
+    /**
+     * 时间格式
+     */
+    private static final Pattern Date_Pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z");
 
     public static final CommonUtils Instance = new CommonUtils();
+
+    private CommonUtils() {
+    }
 
     /**
      * 休眠一段时间
      *
      * @param millis 毫秒
      */
-    public static void sleep(long millis) throws InterruptedException {
+    public void sleep(long millis) throws InterruptedException {
         Thread.sleep(millis);
     }
 
     /**
      * 获取对象16进制的 hashcode
      */
-    public static String hexHashCode(Object object) {
+    public String hexHashCode(Object object) {
         if (object == null) {
             return null;
         }
@@ -41,7 +49,7 @@ public class CommonUtils {
     /**
      * 获取对象的 hashcode
      */
-    public static Integer hashCode(Object object) {
+    public Integer hashCode(Object object) {
         if (object == null) {
             return null;
         }
@@ -51,16 +59,14 @@ public class CommonUtils {
     /**
      * 两个对象 equals
      */
-    public static boolean equals(Object a, Object b) {
+    public boolean equals(Object a, Object b) {
         return Objects.equals(a, b);
     }
-
-    private static final Pattern Date_Pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z");
 
     /**
      * 把时间格式化成标准的格式(只支持格式 2019-08-26T08:35:24.566Z)
      */
-    public static String formatDate(String str) {
+    public String formatDate(String str) {
         if (StringUtils.isBlank(str)) {
             return str;
         }

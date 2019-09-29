@@ -1,5 +1,6 @@
 // noinspection JSUnresolvedVariable
-var CommonUtils = Java.type("org.clever.nashorn.internal.CommonUtils");
+var CommonUtilsClass = Java.type("org.clever.nashorn.internal.CommonUtils");
+var CommonUtils = CommonUtilsClass.Instance;
 
 // -------------------------------------------------------------------------------------------------------
 

@@ -16,6 +16,7 @@ import org.clever.nashorn.intercept.HttpRequestJsHandler;
 import org.clever.nashorn.internal.AllConsoleWrapper;
 import org.clever.nashorn.internal.CommonUtils;
 import org.clever.nashorn.internal.Console;
+import org.clever.nashorn.internal.HttpUtils;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +106,7 @@ public class BeanConfiguration {
     public Map<String, Object> scriptContext() {
         Map<String, Object> context = new HashMap<>(1);
         context.put("CommonUtils", CommonUtils.Instance);
+        context.put("HttpUtils", HttpUtils.Instance);
         return Collections.unmodifiableMap(context);
     }
 

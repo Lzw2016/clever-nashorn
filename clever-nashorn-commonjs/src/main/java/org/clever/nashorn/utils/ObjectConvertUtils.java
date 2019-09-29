@@ -53,6 +53,9 @@ public class ObjectConvertUtils {
      * Java对象转换成JS对象
      */
     public Object javaToJSObject(Object obj) {
+        if (obj == null) {
+            return null;
+        }
         final long startTime = System.currentTimeMillis();
         deepSlot.set(0);
         deepMaxSlot.set(0);
