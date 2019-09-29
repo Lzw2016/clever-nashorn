@@ -102,7 +102,7 @@ public class HttpUtils {
      */
     public Object getObject(final String url, final Map<String, String> headers, final Map<String, String> params) {
         String json = getStr(url, headers, params);
-        return stringToMap(json);
+        return stringToObject(json);
     }
 
     /**
@@ -113,7 +113,7 @@ public class HttpUtils {
      */
     public Object getObject(final String url, Map<String, String> params) {
         String json = getStr(url, params);
-        return stringToMap(json);
+        return stringToObject(json);
     }
 
     /**
@@ -123,7 +123,7 @@ public class HttpUtils {
      */
     public Object getObject(final String url) {
         String json = getStr(url);
-        return stringToMap(json);
+        return stringToObject(json);
     }
 
     // --------------------------------------------------------------------------------------------

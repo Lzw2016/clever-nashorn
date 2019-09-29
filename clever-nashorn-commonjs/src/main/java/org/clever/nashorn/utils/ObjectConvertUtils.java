@@ -19,9 +19,9 @@ import java.util.*;
 public class ObjectConvertUtils {
 
     /**
-     * 递归深度 256；集合大小 10000
+     * 递归深度 32；集合大小 10000
      */
-    public static final ObjectConvertUtils Instance = new ObjectConvertUtils(256, 1001);
+    public static final ObjectConvertUtils Instance = new ObjectConvertUtils(32, 1001);
 
     private static final NumberFormat Number_Format;
 
@@ -39,10 +39,17 @@ public class ObjectConvertUtils {
      */
     private final int collectionMaxSize;
     /**
-     * 递归深度-线程槽
+     * 当前递归深度-线程槽
      */
     private final ThreadLocal<Integer> deepSlot = new ThreadLocal<>();
+    /**
+     * 递归最大深度-线程槽
+     */
     private final ThreadLocal<Integer> deepMaxSlot = new ThreadLocal<>();
+    /**
+     * 已经转换了的对象缓存 - 解决循环依赖问题
+     */
+    private final ThreadLocal<List<Object>> cacheSlot = new ThreadLocal<>();
 
     public ObjectConvertUtils(int recursiveMaxDeep, int collectionMaxSize) {
         this.recursiveMaxDeep = recursiveMaxDeep;
@@ -50,13 +57,14 @@ public class ObjectConvertUtils {
     }
 
     /**
-     * Java对象转换成JS对象
+     * Java对象转换成JS对象(性能较差慎用)
      */
     public Object javaToJSObject(Object obj) {
         if (obj == null) {
             return null;
         }
         final long startTime = System.currentTimeMillis();
+        cacheSlot.set(new ArrayList<>(8));
         deepSlot.set(0);
         deepMaxSlot.set(0);
         Object res;
@@ -66,16 +74,22 @@ public class ObjectConvertUtils {
             throw ExceptionUtils.unchecked(e);
         } finally {
             log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}ms", deepMaxSlot.get(), System.currentTimeMillis() - startTime);
+            cacheSlot.remove();
             deepSlot.remove();
             deepMaxSlot.remove();
         }
         return res;
     }
 
-    /**
-     * TODO 这个实现有循环依赖问题
-     */
     private Object doJavaToJSObject(Object obj) {
+        if (obj != null) {
+            for (Object cache : cacheSlot.get()) {
+                if (cache == obj) {
+                    return "Cycle Reference";
+                }
+            }
+            cacheSlot.get().add(obj);
+        }
         Object result;
         // 递归深度加 1
         Integer deep = deepSlot.get();

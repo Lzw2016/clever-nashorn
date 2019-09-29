@@ -90,7 +90,7 @@ function indexOf(array, item) {
     for (var i = 0; i < array.length; i++) {
         var value = array[i];
         // noinspection JSUnresolvedFunction
-        if (CommonUtils.equals(item, value)) {
+        if (CommonUtils.same(item, value)) {
             index = i;
             break;
         }

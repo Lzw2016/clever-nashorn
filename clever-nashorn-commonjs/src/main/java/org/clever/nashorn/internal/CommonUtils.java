@@ -64,6 +64,13 @@ public class CommonUtils {
     }
 
     /**
+     * 判断两个对象是不是同一个对象(内存地址相同)
+     */
+    public boolean same(Object a, Object b) {
+        return a == b;
+    }
+
+    /**
      * 把时间格式化成标准的格式(只支持格式 2019-08-26T08:35:24.566Z)
      */
     public String formatDate(String str) {
