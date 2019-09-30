@@ -1,7 +1,10 @@
 package org.clever.nashorn.modules;
 
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
+import org.clever.common.utils.DateTimeUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
+import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.clever.nashorn.utils.StrFormatter;
 import org.junit.Test;
 
@@ -45,5 +48,12 @@ public class ObjectConvertUtilsTest {
         log.info("-------------------------> {}", StrFormatter.toString(object));
         object = ObjectConvertUtils.Instance.javaToJSObject(mapA);
         log.info("-------------------------> {}", StrFormatter.toString(object));
+    }
+
+    @Test
+    public void t5() {
+        ScriptObjectMirror scriptObjectMirror = ScriptEngineUtils.newDate(new Date());
+        Object object = ObjectConvertUtils.Instance.jsBaseToJava(scriptObjectMirror);
+        log.info("-------------------------> {}", DateTimeUtils.formatToString((Date) object));
     }
 }

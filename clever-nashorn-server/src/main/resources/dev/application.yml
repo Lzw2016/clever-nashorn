@@ -73,6 +73,7 @@ spring:
     username: clever-nashorn
     password: lizhiwei1993
     hikari:
+      pool-name: defaultDataSource
       data-source-properties:
         serverTimezone: GMT+8
         useUnicode: true
@@ -240,12 +241,31 @@ clever:
     server-api-access-token:
       token-name: 'ServerApiToken'
       token-value: 'uheduifhiuewjeihuhbgr89489y458ojhas9yd78wnajxioqjw893urax23er3fxcasx2wt56ujyjnva2e32taxaE1R3R'
-  config:
-    upload-speed-limit: 102400
-    download-speed-limit: 102400
-    local-storage-config:
-      disk-base-path: 'data/'
-      stored-node: '127.0.0.1'
+
+  nashorn:
+    config:
+      multiple-data-source:
+        default-data-source: defaultDataSource
+        data-source-global-config:
+          pool-name: defaultDataSource
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          data-source-properties:
+            serverTimezone: GMT+8
+            useUnicode: true
+            characterEncoding: utf-8
+            zeroDateTimeBehavior: convert_to_null
+            useSSL: false
+          auto-commit: false
+          maximum-pool-size: 5
+          minimum-idle: 1
+          max-lifetime: 1800000
+          connection-test-query: SELECT 1
+        data-source-map:
+          dataSource2:
+            pool-name: dataSource2
+            jdbc-url: jdbc:mysql://mysql.msvc.top:3306/clever-nashorn
+            username: clever-nashorn
+            password: lizhiwei1993
 
 ###################################################################################
 ### Feign配置

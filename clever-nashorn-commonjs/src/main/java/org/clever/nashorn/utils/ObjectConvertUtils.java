@@ -1,9 +1,13 @@
 package org.clever.nashorn.utils;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.objects.NativeDate;
+import jdk.nashorn.internal.runtime.ScriptObject;
+import jdk.nashorn.internal.runtime.Undefined;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.BeanMapConverter;
+import org.clever.common.utils.reflection.ReflectionsUtils;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
@@ -218,6 +222,54 @@ public class ObjectConvertUtils {
         }
         deep--;
         deepSlot.set(deep);
+        return result;
+    }
+
+    /**
+     * Ja基本类型转换成Java类型
+     *
+     * @return undefined 或者不是基本类型 返回null
+     */
+    public Object jsBaseToJava(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Undefined) {
+            return null;
+        }
+        if (!(value instanceof ScriptObjectMirror) && !(value instanceof ScriptObject)) {
+            return value;
+        }
+        ScriptObject scriptObject = null;
+        if (value instanceof ScriptObjectMirror) {
+            ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) value;
+            if (scriptObjectMirror.isArray() || scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
+                return null;
+            }
+            Object tmp = ReflectionsUtils.getFieldValue(scriptObjectMirror, "sobj");
+            if (tmp instanceof ScriptObject) {
+                scriptObject = (ScriptObject) tmp;
+            }
+        }
+        if (value instanceof ScriptObject) {
+            scriptObject = (ScriptObject) value;
+        }
+        // 打印JS变量 | undefined   jdk.nashorn.internal.runtime.Undefined
+        // 打印JS变量 | null        null
+        // 打印JS变量 | int         java.lang.Integer
+        // 打印JS变量 | float       java.lang.Double
+        // 打印JS变量 | boolean     java.lang.Boolean
+        // 打印JS变量 | string      java.lang.String
+        // 打印JS变量 | date        jdk.nashorn.api.scripting.ScriptObjectMirror
+        // 打印JS变量 | array       jdk.nashorn.api.scripting.ScriptObjectMirror
+        // 打印JS变量 | object      jdk.nashorn.api.scripting.ScriptObjectMirror
+        // 打印JS变量 | function    jdk.nashorn.api.scripting.ScriptObjectMirror
+        Object result = null;
+        if (scriptObject instanceof NativeDate) {
+            NativeDate nativeDate = (NativeDate) scriptObject;
+            result = new Date((long) NativeDate.getTime(nativeDate));
+        }
+        // 其他类型暂不处理
         return result;
     }
 }

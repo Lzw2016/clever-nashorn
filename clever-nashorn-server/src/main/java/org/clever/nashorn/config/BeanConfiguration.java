@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.SqlExplainInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.clever.common.server.config.CustomPaginationInterceptor;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCacheService;
@@ -13,12 +16,10 @@ import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.folder.DatabaseFolder;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.intercept.HttpRequestJsHandler;
-import org.clever.nashorn.internal.AllConsoleWrapper;
-import org.clever.nashorn.internal.CommonUtils;
-import org.clever.nashorn.internal.Console;
-import org.clever.nashorn.internal.HttpUtils;
+import org.clever.nashorn.internal.*;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
+import org.clever.nashorn.utils.MergeDataSourceConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +28,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import javax.sql.DataSource;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -107,6 +110,7 @@ public class BeanConfiguration {
         Map<String, Object> context = new HashMap<>(1);
         context.put("CommonUtils", CommonUtils.Instance);
         context.put("HttpUtils", HttpUtils.Instance);
+        context.put("JdbcUtils", JdbcUtils.Instance);
         return Collections.unmodifiableMap(context);
     }
 
@@ -139,6 +143,59 @@ public class BeanConfiguration {
         }
         ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
         return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
+    }
+
+    @Bean("MultipleDataSource")
+    public Map<String, DataSource> multipleDataSource(
+            @Autowired GlobalConfig globalConfig,
+            @Autowired(required = false) List<DataSource> dataSourceList) {
+        MultipleDataSourceConfig multipleDataSource = globalConfig.getMultipleDataSource();
+        if (multipleDataSource == null) {
+            multipleDataSource = new MultipleDataSourceConfig();
+            globalConfig.setMultipleDataSource(multipleDataSource);
+        }
+        int dataSourceCount = multipleDataSource.getDataSourceMap().size();
+        if (dataSourceList != null) {
+            dataSourceCount = dataSourceCount + dataSourceList.size();
+        }
+        final Map<String, DataSource> dataSourceMap = new HashMap<>(dataSourceCount);
+        // 加入已存在的数据源
+        if (dataSourceList != null) {
+            for (DataSource dataSource : dataSourceList) {
+                String name = null;
+                if (dataSource instanceof HikariDataSource) {
+                    HikariDataSource tmp = (HikariDataSource) dataSource;
+                    name = tmp.getPoolName();
+                }
+                if (StringUtils.isBlank(name)) {
+                    name = dataSource.toString();
+                }
+                if (dataSourceMap.containsKey(name)) {
+                    throw new RuntimeException("DataSource 名称重复: " + name);
+                }
+                dataSourceMap.put(name, dataSource);
+                if (StringUtils.isBlank(multipleDataSource.getDefaultDataSource())) {
+                    multipleDataSource.setDefaultDataSource(name);
+                }
+            }
+        }
+        if (StringUtils.isBlank(multipleDataSource.getDefaultDataSource())) {
+            throw new RuntimeException("默认的数据源名称 defaultDataSource 不能是空");
+        }
+        // 初始化配置的数据源
+        final HikariConfig dataSourceGlobalConfig = multipleDataSource.getDataSourceGlobalConfig();
+        multipleDataSource.getDataSourceMap().forEach((name, hikariConfig) -> {
+            if (dataSourceMap.containsKey(name)) {
+                throw new RuntimeException("DataSource 名称重复: " + name);
+            }
+            hikariConfig = MergeDataSourceConfig.mergeConfig(dataSourceGlobalConfig, hikariConfig);
+            if (StringUtils.isBlank(hikariConfig.getPoolName())) {
+                hikariConfig.setPoolName(name);
+            }
+            HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
+            dataSourceMap.put(name, hikariDataSource);
+        });
+        return Collections.unmodifiableMap(dataSourceMap);
     }
 
     // TODO 需要删除
