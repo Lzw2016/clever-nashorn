@@ -15,6 +15,13 @@ import java.util.*;
 public class TestInternal {
     // ------------------------------------------------------------------------------------------------------------------ test
 
+    public static String getClass(Object object) {
+        if (object == null) {
+            return null;
+        }
+        return object.getClass().getName();
+    }
+
     public static void test(Object param) {
         // jdk.nashorn.internal.objects.NativeDate
         log.info("----------> {} | {}", param == null ? "null" : param.getClass(), param);

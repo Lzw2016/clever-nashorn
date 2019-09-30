@@ -245,7 +245,7 @@ clever:
   nashorn:
     config:
       multiple-data-source:
-        default-data-source: defaultDataSource
+        default-data-source: dataSource2
         data-source-global-config:
           pool-name: defaultDataSource
           driver-class-name: com.mysql.cj.jdbc.Driver
@@ -255,7 +255,7 @@ clever:
             characterEncoding: utf-8
             zeroDateTimeBehavior: convert_to_null
             useSSL: false
-          auto-commit: false
+          auto-commit: true
           maximum-pool-size: 5
           minimum-idle: 1
           max-lifetime: 1800000
@@ -263,7 +263,9 @@ clever:
         data-source-map:
           dataSource2:
             pool-name: dataSource2
-            jdbc-url: jdbc:mysql://mysql.msvc.top:3306/clever-nashorn
+            driver-class-name: org.mariadb.jdbc.Driver
+            jdbc-url: jdbc:mariadb://127.0.0.1:3306/clever-nashorn
+            # jdbc-url: jdbc:mysql://mysql.msvc.top:3306/clever-nashorn
             username: clever-nashorn
             password: lizhiwei1993
 
