@@ -24,6 +24,7 @@ import java.util.*;
 @SuppressWarnings({"unused", "WeakerAccess"})
 @Slf4j
 public class JdbcExecutor {
+    // TODO 事务控制 TransactionTemplate DataSourceTransactionManager
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     /**
@@ -187,7 +188,7 @@ public class JdbcExecutor {
      * 批量执行更新SQL，返回更新影响数据量
      *
      * @param sql           sql脚本，参数格式[:param]
-     * @param arrayParamMap 参数数组(可选)，参数格式[:param]
+     * @param arrayParamMap 参数数组，参数格式[:param]
      */
     public int[] batchUpdate(String sql, ScriptObjectMirror arrayParamMap) {
         if (arrayParamMap == null) {
