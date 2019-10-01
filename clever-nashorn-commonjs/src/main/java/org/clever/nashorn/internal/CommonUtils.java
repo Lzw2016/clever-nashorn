@@ -2,6 +2,7 @@ package org.clever.nashorn.internal;
 
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.DateTimeUtils;
+import org.clever.nashorn.utils.ObjectConvertUtils;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -94,4 +95,13 @@ public class CommonUtils {
             return str;
         }
     }
+
+    /**
+     * Java对象转换成JS对象(慎用: 性能较差)
+     */
+    public Object javaToJsObject(Object obj) {
+        return ObjectConvertUtils.Instance.javaToJSObject(obj);
+    }
+
+    // TODO String处理等工具类
 }
