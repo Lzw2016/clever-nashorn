@@ -2,6 +2,7 @@ package org.clever.nashorn.internal;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.parser.SqlInfo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
@@ -301,7 +302,19 @@ public class JdbcExecutor {
         paramMap = jsToJavaMap(paramMap);
         log.info("pageSql --> \n {}", pageSql);
         List<Map<String, Object>> listData = jdbcTemplate.queryForList(pageSql, paramMap);
+        // 设置返回数据
         page.setRecords(listData);
+        // 排序信息
+        List<String> orderFieldsTmp = queryBySort.getOrderFieldsSql();
+        List<String> sortsTmp = queryBySort.getSortsSql();
+        for (int i = 0; i < orderFieldsTmp.size(); i++) {
+            String fieldSql = orderFieldsTmp.get(i);
+            String sort = sortsTmp.get(i);
+            OrderItem orderItem = new OrderItem();
+            orderItem.setColumn(fieldSql);
+            orderItem.setAsc(ASC.equalsIgnoreCase(StringUtils.trim(sort)));
+            page.addOrder(orderItem);
+        }
         return page;
     }
 
