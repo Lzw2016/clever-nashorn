@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class JdbcUtils {
     /**
      * 所有的 JdbcExecutor
@@ -23,7 +24,8 @@ public class JdbcUtils {
             Map<String, DataSource> dataSourceMap = SpringContextHolder.getBean("MultipleDataSource");
             Map<String, JdbcExecutor> tmpMap = new HashMap<>();
             dataSourceMap.forEach((name, dataSource) -> {
-                tmpMap.put(name, new JdbcExecutor(dataSource));
+                JdbcExecutor jdbcExecutor = new JdbcExecutor(dataSource);
+                tmpMap.put(name, jdbcExecutor);
             });
             JdbcExecutor_Map = Collections.unmodifiableMap(tmpMap);
         }

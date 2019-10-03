@@ -244,7 +244,7 @@ public class ObjectConvertUtils {
         if (value instanceof ScriptObjectMirror) {
             ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) value;
             if (scriptObjectMirror.isArray() || scriptObjectMirror.isFunction() || scriptObjectMirror.isStrictFunction()) {
-                return null;
+                return value;
             }
             Object tmp = ReflectionsUtils.getFieldValue(scriptObjectMirror, "sobj");
             if (tmp instanceof ScriptObject) {
@@ -264,7 +264,7 @@ public class ObjectConvertUtils {
         // 打印JS变量 | array       jdk.nashorn.api.scripting.ScriptObjectMirror
         // 打印JS变量 | object      jdk.nashorn.api.scripting.ScriptObjectMirror
         // 打印JS变量 | function    jdk.nashorn.api.scripting.ScriptObjectMirror
-        Object result = null;
+        Object result = value;
         if (scriptObject instanceof NativeDate) {
             NativeDate nativeDate = (NativeDate) scriptObject;
             result = new Date((long) NativeDate.getTime(nativeDate));
