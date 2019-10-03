@@ -271,9 +271,6 @@ public class JdbcExecutor {
             });
         }
         Page<Map<String, Object>> page = new Page<>(pageNo, pageSize);
-        // 构造排序以及分页sql
-        String sortSql = concatOrderBy(sql, queryBySort);
-        String pageSql = DialectFactory.buildPaginationSql(page, sortSql, paramMap, dbType, null);
         // 执行 count 查询
         if (countQuery) {
             String countSql = Count_Sql_Cache.getIfPresent(StringUtils.trim(sql));
@@ -297,6 +294,9 @@ public class JdbcExecutor {
             page.setSearchCount(false);
             page.setTotal(-1);
         }
+        // 构造排序以及分页sql
+        String sortSql = concatOrderBy(sql, queryBySort);
+        String pageSql = DialectFactory.buildPaginationSql(page, sortSql, paramMap, dbType, null);
         // 执行 pageSql
         paramMap = jsToJavaMap(paramMap);
         log.info("pageSql --> \n {}", pageSql);
