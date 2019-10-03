@@ -39,6 +39,7 @@ public class JdbcExecutor {
     private static final String ASC = "ASC";
     private static final String DESC = "DESC";
     private static final String COMMA = ",";
+    private static final int Max_PageSize = 1000;
 
     /**
      * Count Sql 缓存(最大1W条数据)
@@ -271,7 +272,7 @@ public class JdbcExecutor {
                 queryBySort.addOrderFieldMapping((String) orderField, (String) sqlField);
             });
         }
-        Page<Map<String, Object>> page = new Page<>(pageNo, pageSize);
+        Page<Map<String, Object>> page = new Page<>(pageNo, Math.min(pageSize, Max_PageSize));
         // 执行 count 查询
         if (countQuery) {
             String countSql = Count_Sql_Cache.getIfPresent(StringUtils.trim(sql));
