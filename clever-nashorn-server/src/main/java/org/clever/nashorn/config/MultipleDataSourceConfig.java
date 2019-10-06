@@ -23,7 +23,7 @@ public class MultipleDataSourceConfig {
     @NestedConfigurationProperty
     private HikariConfig dataSourceGlobalConfig;
     /**
-     * 数据源集合，数据源名称 --> 数据源配置
+     * 数据源集合(数据源名称 --> 数据源配置)
      */
     private Map<String, HikariConfig> dataSourceMap = Collections.emptyMap();
 }

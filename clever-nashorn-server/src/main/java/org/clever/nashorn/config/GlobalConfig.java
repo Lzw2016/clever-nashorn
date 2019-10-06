@@ -18,4 +18,10 @@ public class GlobalConfig {
      */
     @NestedConfigurationProperty
     private MultipleDataSourceConfig multipleDataSource = new MultipleDataSourceConfig();
+
+    /**
+     * 多Redis配置
+     */
+    @NestedConfigurationProperty
+    private MultipleRedisConfig multipleRedis = new MultipleRedisConfig();
 }
