@@ -268,6 +268,29 @@ clever:
             # jdbc-url: jdbc:mysql://mysql.msvc.top:3306/clever-nashorn
             username: clever-nashorn
             password: lizhiwei1993
+      multiple-redis:
+        default-redis: redisDb1
+        global-config:
+          ssl: false
+          host: redis.msvc.top
+          port: 6379
+          timeout: 10s
+          database: 0
+          password: lizhiwei1993
+          lettuce:
+            pool:
+              max-active: 5
+              max-idle: 5
+              min-idle: 1
+              max-wait: 1s
+            shutdown-timeout: 1000ms
+        redis-config-map:
+          redisDb1:
+            database: 1
+          redisDb2:
+            database: 2
+          redisDb3:
+            database: 3
 
 ###################################################################################
 ### Feign配置
