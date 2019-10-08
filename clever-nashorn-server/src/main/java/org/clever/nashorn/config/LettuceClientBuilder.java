@@ -1,13 +1,20 @@
 package org.clever.nashorn.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
+import lombok.Getter;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.data.redis.connection.*;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -22,17 +29,63 @@ import java.util.List;
  * 作者： lzw<br/>
  * 创建时间：2019-10-07 22:16 <br/>
  */
-public class LettuceClientBuilder {
+@SuppressWarnings("WeakerAccess")
+public class LettuceClientBuilder implements DisposableBean {
     private final RedisProperties properties;
+    private final ObjectMapper objectMapper;
+    private final ClientResources clientResources;
+    @Getter
+    private final RedisConnectionFactory redisConnectionFactory;
+    @Getter
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public LettuceClientBuilder(RedisProperties redisProperties) {
+    public LettuceClientBuilder(RedisProperties redisProperties, ObjectMapper objectMapper) {
         this.properties = redisProperties;
+        this.objectMapper = objectMapper;
+        this.clientResources = DefaultClientResources.create();
+        this.redisConnectionFactory = build();
+        this.redisTemplate = initRedisTemplate();
     }
 
-    public LettuceConnectionFactory build() {
-        DefaultClientResources clientResources = DefaultClientResources.create();
-        // clientResources.shutdown(); TODO
-        LettuceClientConfiguration clientConfig = getLettuceClientConfiguration(clientResources, this.properties.getLettuce().getPool());
+    public LettuceClientBuilder(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
+        this.properties = null;
+        this.objectMapper = objectMapper;
+        this.clientResources = null;
+        this.redisConnectionFactory = redisConnectionFactory;
+        this.redisTemplate = initRedisTemplate();
+    }
+
+    @Override
+    public void destroy() {
+        if (clientResources != null) {
+            clientResources.shutdown();
+        }
+        if (redisConnectionFactory instanceof LettuceConnectionFactory) {
+            ((LettuceConnectionFactory) redisConnectionFactory).destroy();
+        }
+        if (redisConnectionFactory instanceof JedisConnectionFactory) {
+            ((JedisConnectionFactory) redisConnectionFactory).destroy();
+        }
+    }
+
+    private RedisTemplate<String, Object> initRedisTemplate() {
+        // 创建 RedisTemplate
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        // 设置value的序列化规则和 key的序列化规则
+        template.setKeySerializer(new StringRedisSerializer());
+        // template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        serializer.setObjectMapper(objectMapper);
+        template.setValueSerializer(serializer);
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    private LettuceConnectionFactory build() {
+        LettuceClientConfiguration clientConfig = getLettuceClientConfiguration(this.clientResources, this.properties.getLettuce().getPool());
         return createLettuceConnectionFactory(clientConfig);
     }
 
@@ -176,7 +229,7 @@ public class LettuceClientBuilder {
         return config;
     }
 
-    // =======================================================================================================================================================
+    // =========================================================================================================================================================
 
     /**
      * Inner class to allow optional commons-pool2 dependency.

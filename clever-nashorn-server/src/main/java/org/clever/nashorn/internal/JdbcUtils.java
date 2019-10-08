@@ -22,7 +22,7 @@ public class JdbcUtils {
     private synchronized static Map<String, JdbcExecutor> getJdbcExecutorMap() {
         if (JdbcExecutor_Map == null) {
             Map<String, DataSource> dataSourceMap = SpringContextHolder.getBean("MultipleDataSource");
-            Map<String, JdbcExecutor> tmpMap = new HashMap<>();
+            Map<String, JdbcExecutor> tmpMap = new HashMap<>(dataSourceMap.size());
             dataSourceMap.forEach((name, dataSource) -> {
                 JdbcExecutor jdbcExecutor = new JdbcExecutor(dataSource);
                 tmpMap.put(name, jdbcExecutor);

@@ -1,10 +1,5 @@
 package org.clever.nashorn.internal;
 
-/**
- * 作者：lizw <br/>
- * 创建时间：2019/09/30 17:56 <br/>
- */
-
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.springframework.jdbc.core.RowCountCallbackHandler;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -14,6 +9,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 作者：lizw <br/>
+ * 创建时间：2019/09/30 17:56 <br/>
+ */
+@SuppressWarnings("WeakerAccess")
 public class RowCallbackHandlerJsCallback extends RowCountCallbackHandler {
     /**
      * JS 回调函数

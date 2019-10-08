@@ -17,7 +17,7 @@ public class MultipleRedisConfig {
     /**
      * 默认的Redis数据源名称
      */
-    private String defaultRedis;
+    private String defaultRedis = "spring-data-redis";
     /**
      * Redis数据源全局配置
      */

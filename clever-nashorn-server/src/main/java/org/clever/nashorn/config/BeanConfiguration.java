@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -115,6 +114,7 @@ public class BeanConfiguration {
         context.put("CommonUtils", CommonUtils.Instance);
         context.put("HttpUtils", HttpUtils.Instance);
         context.put("JdbcUtils", JdbcUtils.Instance);
+        context.put("RedisUtils", RedisUtils.Instance);
         return Collections.unmodifiableMap(context);
     }
 
@@ -214,7 +214,7 @@ public class BeanConfiguration {
     }
 
     @Bean("MultipleRedis")
-    public Map<String, RedisConnectionFactory> multipleRedis(
+    public Map<String, LettuceClientBuilder> multipleRedis(
             @Autowired ObjectMapper objectMapper,
             @Autowired GlobalConfig globalConfig,
             @Autowired(required = false) RedisConnectionFactory redisConnectionFactory) {
@@ -227,34 +227,27 @@ public class BeanConfiguration {
         if (redisConnectionFactory != null) {
             redisConfigCount = redisConfigCount + 1;
         }
-        final Map<String, RedisConnectionFactory> redisConnectionFactoryMap = new HashMap<>(redisConfigCount);
-        // 加入已存在的数据源 TODO
+        final Map<String, LettuceClientBuilder> redisConnectionFactoryMap = new HashMap<>(redisConfigCount);
+        // 加入已存在的数据源
+        if (redisConnectionFactory != null) {
+            redisConnectionFactoryMap.put("spring-data-redis", new LettuceClientBuilder(redisConnectionFactory, objectMapper));
+        }
         // 初始化配置的数据源
         final RedisProperties redisGlobalConfig = multipleRedis.getGlobalConfig();
         multipleRedis.getRedisConfigMap().forEach((name, redisConfig) -> {
             if (redisConnectionFactoryMap.containsKey(name)) {
+                if ("spring-data-redis".equals(name)) {
+                    throw new RuntimeException("redis-config-map 名称不能使用“spring-data-redis”");
+                }
                 throw new RuntimeException("redis-config-map 名称重复: " + name);
             }
             redisConfig = MergeRedisProperties.mergeConfig(redisGlobalConfig, redisConfig);
-            LettuceClientBuilder lettuceClientBuilder = new LettuceClientBuilder(redisConfig);
-            LettuceConnectionFactory lettuceConnectionFactory = lettuceClientBuilder.build();
-//            // 创建 RedisTemplate
-//            RedisTemplate<String, Object> template = new RedisTemplate<>();
-//            template.setConnectionFactory(lettuceConnectionFactory);
-//            // 设置value的序列化规则和 key的序列化规则
-//            template.setKeySerializer(new StringRedisSerializer());
-//            template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
-//            template.afterPropertiesSet();
-
-            redisConnectionFactoryMap.put(name, lettuceConnectionFactory);
+            LettuceClientBuilder lettuceClientBuilder = new LettuceClientBuilder(redisConfig, objectMapper);
+            redisConnectionFactoryMap.put(name, lettuceClientBuilder);
         });
-        final Map<String, RedisConnectionFactory> result = Collections.unmodifiableMap(redisConnectionFactoryMap);
-        // TODO 关闭连接池
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            result.forEach((name, dataSource) -> {
-//
-//            });
-//        }));
+        final Map<String, LettuceClientBuilder> result = Collections.unmodifiableMap(redisConnectionFactoryMap);
+        // 关闭连接池
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> redisConnectionFactoryMap.values().forEach(LettuceClientBuilder::destroy)));
         return result;
     }
 
