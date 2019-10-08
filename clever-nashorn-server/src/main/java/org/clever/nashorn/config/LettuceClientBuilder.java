@@ -57,14 +57,14 @@ public class LettuceClientBuilder implements DisposableBean {
 
     @Override
     public void destroy() {
-        if (clientResources != null) {
-            clientResources.shutdown();
-        }
         if (redisConnectionFactory instanceof LettuceConnectionFactory) {
             ((LettuceConnectionFactory) redisConnectionFactory).destroy();
         }
         if (redisConnectionFactory instanceof JedisConnectionFactory) {
             ((JedisConnectionFactory) redisConnectionFactory).destroy();
+        }
+        if (clientResources != null) {
+            clientResources.shutdown();
         }
     }
 
@@ -86,7 +86,9 @@ public class LettuceClientBuilder implements DisposableBean {
 
     private LettuceConnectionFactory build() {
         LettuceClientConfiguration clientConfig = getLettuceClientConfiguration(this.clientResources, this.properties.getLettuce().getPool());
-        return createLettuceConnectionFactory(clientConfig);
+        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(clientConfig);
+        lettuceConnectionFactory.afterPropertiesSet();
+        return lettuceConnectionFactory;
     }
 
     private LettuceClientConfiguration getLettuceClientConfiguration(ClientResources clientResources, RedisProperties.Pool pool) {
