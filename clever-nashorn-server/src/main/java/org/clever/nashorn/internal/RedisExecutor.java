@@ -4,6 +4,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
+import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.*;
@@ -24,8 +25,6 @@ public class RedisExecutor {
         }
         this.redisTemplate = redisTemplate;
     }
-
-    // TODO 各种Redis操作
 
     // --------------------------------------------------------------------------------------------
     // Key 操作
@@ -194,14 +193,59 @@ public class RedisExecutor {
         return redisTemplate.persist(key);
     }
 
+    /**
+     * 以毫秒为单位返回 key 的剩余的过期时间
+     *
+     * @param key key
+     */
+    public Long getExpire(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 从当前数据库中随机返回一个 key
+     */
+    public String randomKey() {
+        return redisTemplate.randomKey();
+    }
+
+    /**
+     * 修改 key 的名称
+     *
+     * @param oldKey oldKey
+     * @param newKey newKey
+     */
+    public void rename(String oldKey, String newKey) {
+        redisTemplate.rename(oldKey, newKey);
+    }
+
+    /**
+     * 仅当 newkey 不存在时，将 key 改名为 newkey
+     *
+     * @param oldKey oldKey
+     * @param newKey newKey
+     */
+    public Boolean renameIfAbsent(String oldKey, String newKey) {
+        return redisTemplate.renameIfAbsent(oldKey, newKey);
+    }
+
+    /**
+     * 返回 key 所储存的值的类型
+     *
+     * @param key key
+     */
+    public DataType type(String key) {
+        return redisTemplate.type(key);
+    }
+
+
     // --------------------------------------------------------------------------------------------
     // String 操作
     // --------------------------------------------------------------------------------------------
 
     public void tt(String key, Object value) {
         redisTemplate.boundValueOps(key).set(value);
-        redisTemplate.persist("");
-
+//        redisTemplate.type();
 //        redisTemplate.delete()
 //        redisTemplate.opsForValue().
     }
