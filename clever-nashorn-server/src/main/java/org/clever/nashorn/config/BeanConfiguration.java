@@ -247,7 +247,15 @@ public class BeanConfiguration {
         });
         final Map<String, LettuceClientBuilder> result = Collections.unmodifiableMap(redisConnectionFactoryMap);
         // 关闭连接池
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> redisConnectionFactoryMap.values().forEach(LettuceClientBuilder::destroy)));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> redisConnectionFactoryMap.forEach((name, lettuceClientBuilder) -> {
+            log.info("[" + name + "]Redis Connection Destroy start...");
+            try {
+                lettuceClientBuilder.destroy();
+                log.info("[" + name + "]Redis Connection Destroy completed!");
+            } catch (Throwable e) {
+                log.info("[" + name + "]Redis Connection Destroy error", e);
+            }
+        })));
         return result;
     }
 
