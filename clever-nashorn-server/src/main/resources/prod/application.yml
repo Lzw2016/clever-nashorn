@@ -240,12 +240,55 @@ clever:
     server-api-access-token:
       token-name: 'ServerApiToken'
       token-value: 'uheduifhiuewjeihuhbgr89489y458ojhas9yd78wnajxioqjw893urax23er3fxcasx2wt56ujyjnva2e32taxaE1R3R'
-  config:
-    upload-speed-limit: 102400
-    download-speed-limit: 102400
-    local-storage-config:
-      disk-base-path: 'data/'
-      stored-node: '127.0.0.1'
+
+  nashorn:
+    config:
+      multiple-data-source:
+        default-data-source: dataSource2
+        data-source-global-config:
+          pool-name: defaultDataSource
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          data-source-properties:
+            serverTimezone: GMT+8
+            useUnicode: true
+            characterEncoding: utf-8
+            zeroDateTimeBehavior: convert_to_null
+            useSSL: false
+          auto-commit: true
+          maximum-pool-size: 5
+          minimum-idle: 1
+          max-lifetime: 1800000
+          connection-test-query: SELECT 1
+        data-source-map:
+          dataSource2:
+            pool-name: dataSource2
+            driver-class-name: org.mariadb.jdbc.Driver
+            jdbc-url: jdbc:mysql://172.18.1.1:3306/clever-nashorn
+            username: clever-nashorn
+            password: lizhiwei1993
+      multiple-redis:
+        default-redis: redisDb1
+        global-config:
+          ssl: false
+          host: 172.18.1.1
+          port: 6379
+          timeout: 10s
+          database: 0
+          password: lizhiwei1993
+          lettuce:
+            pool:
+              max-active: 5
+              max-idle: 5
+              min-idle: 1
+              max-wait: 1s
+            shutdown-timeout: 1000ms
+        redis-config-map:
+          redisDb1:
+            database: 1
+          redisDb2:
+            database: 2
+          redisDb3:
+            database: 3
 
 ###################################################################################
 ### Feign配置

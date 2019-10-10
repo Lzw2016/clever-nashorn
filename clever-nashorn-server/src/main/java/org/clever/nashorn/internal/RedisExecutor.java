@@ -3,6 +3,7 @@ package org.clever.nashorn.internal;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.DateTimeUtils;
+import org.clever.nashorn.internal.utils.InternalUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
@@ -38,7 +39,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Boolean delete(String key) {
+    public Boolean kDelete(String key) {
         return redisTemplate.delete(key);
     }
 
@@ -47,7 +48,7 @@ public class RedisExecutor {
      *
      * @param keys keys
      */
-    public Long delete(Collection<String> keys) {
+    public Long kDelete(Collection<String> keys) {
         return redisTemplate.delete(keys);
     }
 
@@ -56,7 +57,7 @@ public class RedisExecutor {
      *
      * @param keys keys
      */
-    public Long delete(String... keys) {
+    public Long kDelete(String... keys) {
         return redisTemplate.delete(Arrays.asList(keys));
     }
 
@@ -65,7 +66,7 @@ public class RedisExecutor {
      *
      * @param scriptObjectMirror keys
      */
-    public Long delete(ScriptObjectMirror scriptObjectMirror) {
+    public Long kDelete(ScriptObjectMirror scriptObjectMirror) {
         if (!scriptObjectMirror.isArray()) {
             throw new IllegalArgumentException("参数必须是一个数组");
         }
@@ -87,7 +88,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public byte[] dump(String key) {
+    public byte[] kDump(String key) {
         return redisTemplate.dump(key);
     }
 
@@ -96,7 +97,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Boolean hasKey(String key) {
+    public Boolean kHasKey(String key) {
         return redisTemplate.hasKey(key);
     }
 
@@ -106,7 +107,7 @@ public class RedisExecutor {
      * @param key     key
      * @param timeout timeout以毫秒计
      */
-    public Boolean expire(String key, long timeout) {
+    public Boolean kExpire(String key, long timeout) {
         return redisTemplate.expire(key, timeout, TimeUnit.MILLISECONDS);
     }
 
@@ -116,7 +117,7 @@ public class RedisExecutor {
      * @param key     key
      * @param timeout timeout以毫秒计
      */
-    public Boolean expire(String key, Double timeout) {
+    public Boolean kExpire(String key, Double timeout) {
         return redisTemplate.expire(key, timeout.longValue(), TimeUnit.MILLISECONDS);
     }
 
@@ -126,7 +127,7 @@ public class RedisExecutor {
      * @param key     key
      * @param timeout timeout以毫秒计
      */
-    public Boolean expire(String key, Integer timeout) {
+    public Boolean kExpire(String key, Integer timeout) {
         return redisTemplate.expire(key, timeout.longValue(), TimeUnit.MILLISECONDS);
     }
 
@@ -136,7 +137,7 @@ public class RedisExecutor {
      * @param key  key
      * @param date 过期时间
      */
-    public Boolean expireAt(String key, Date date) {
+    public Boolean kExpireAt(String key, Date date) {
         return redisTemplate.expireAt(key, date);
     }
 
@@ -146,7 +147,7 @@ public class RedisExecutor {
      * @param key                key
      * @param scriptObjectMirror 过期时间
      */
-    public Boolean expireAt(String key, ScriptObjectMirror scriptObjectMirror) {
+    public Boolean kExpireAt(String key, ScriptObjectMirror scriptObjectMirror) {
         Object date = ObjectConvertUtils.Instance.jsBaseToJava(scriptObjectMirror);
         if (!(date instanceof Date)) {
             throw new IllegalArgumentException("过期时间必须是一个Date");
@@ -160,7 +161,7 @@ public class RedisExecutor {
      * @param key     key
      * @param dateStr 过期时间
      */
-    public Boolean expireAt(String key, String dateStr) {
+    public Boolean kExpireAt(String key, String dateStr) {
         Date date = DateTimeUtils.parseDate(dateStr);
         if (date == null) {
             throw new IllegalArgumentException("过期时间必须是一个时间字符串");
@@ -183,7 +184,7 @@ public class RedisExecutor {
      * @param key     key
      * @param dbIndex dbIndex
      */
-    public Boolean move(String key, int dbIndex) {
+    public Boolean kMove(String key, int dbIndex) {
         return redisTemplate.move(key, dbIndex);
     }
 
@@ -192,7 +193,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Boolean persist(String key) {
+    public Boolean kPersist(String key) {
         return redisTemplate.persist(key);
     }
 
@@ -201,14 +202,14 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Long getExpire(String key) {
+    public Long kGetExpire(String key) {
         return redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
     }
 
     /**
      * 从当前数据库中随机返回一个 key
      */
-    public String randomKey() {
+    public String kRandomKey() {
         return redisTemplate.randomKey();
     }
 
@@ -218,7 +219,7 @@ public class RedisExecutor {
      * @param oldKey oldKey
      * @param newKey newKey
      */
-    public void rename(String oldKey, String newKey) {
+    public void kRename(String oldKey, String newKey) {
         redisTemplate.rename(oldKey, newKey);
     }
 
@@ -228,7 +229,7 @@ public class RedisExecutor {
      * @param oldKey oldKey
      * @param newKey newKey
      */
-    public Boolean renameIfAbsent(String oldKey, String newKey) {
+    public Boolean kRenameIfAbsent(String oldKey, String newKey) {
         return redisTemplate.renameIfAbsent(oldKey, newKey);
     }
 
@@ -237,7 +238,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public DataType type(String key) {
+    public DataType kType(String key) {
         return redisTemplate.type(key);
     }
 
@@ -745,23 +746,212 @@ public class RedisExecutor {
     /**
      * 迭代哈希表中的键值对
      *
-     * @param key      key
-     * @param count    数量
-     * @param pattern  字段匹配字符串
-     * @param callback 回调函数
+     * @param key                key
+     * @param count              数量
+     * @param pattern            字段匹配字符串
+     * @param scriptObjectMirror 回调函数
      */
-    public void hScan(String key, long count, String pattern, ScriptObjectMirror callback) {
+    public void hScan(String key, long count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        ScriptObjectMirror callback = InternalUtils.getCallback(scriptObjectMirror);
         ScanOptions scanOptions = ScanOptions.scanOptions().count(count).match(pattern).build();
         Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(key, scanOptions);
         while (cursor.hasNext()) {
             Map.Entry<Object, Object> entry = cursor.next();
-            // TODO callback
+            Object res = callback.call(entry, entry.getKey(), entry.getValue());
+            if (res instanceof Boolean && (Boolean) res) {
+                break;
+            }
         }
     }
 
     // --------------------------------------------------------------------------------------------
     // List 操作
     // --------------------------------------------------------------------------------------------
+
+    /**
+     * 获取列表指定范围内的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public List<Object> lRange(String key, long start, long end) {
+        return redisTemplate.opsForList().range(key, start, end);
+    }
+
+    /**
+     * 获取列表指定范围内的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public List<Object> lRange(String key, Integer start, Integer end) {
+        return redisTemplate.opsForList().range(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 获取列表指定范围内的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public List<Object> lRange(String key, Double start, Double end) {
+        return redisTemplate.opsForList().range(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public void lTrim(String key, long start, long end) {
+        redisTemplate.opsForList().trim(key, start, end);
+    }
+
+    /**
+     * 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public void lTrim(String key, Integer start, Integer end) {
+        redisTemplate.opsForList().trim(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public void lTrim(String key, Double start, Double end) {
+        redisTemplate.opsForList().trim(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 获取列表长度
+     *
+     * @param key key
+     */
+    public Long lSize(String key) {
+        return redisTemplate.opsForList().size(key);
+    }
+
+    /**
+     * 将一个或多个值插入到列表头部
+     *
+     * @param key   key
+     * @param value value
+     */
+    public Long lLeftPush(String key, Object value) {
+        return redisTemplate.opsForList().leftPush(key, value);
+    }
+
+    /**
+     * 将一个或多个值插入到列表头部
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long lLeftPushAll(String key, Object... values) {
+        return redisTemplate.opsForList().leftPushAll(key, values);
+    }
+
+    /**
+     * 将一个或多个值插入到列表头部
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long lLeftPushAll(String key, Collection<Object> values) {
+        return redisTemplate.opsForList().leftPushAll(key, values);
+    }
+
+    /**
+     * 将一个或多个值插入到列表头部
+     *
+     * @param key                key
+     * @param scriptObjectMirror values
+     */
+    public Long lLeftPushAll(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        return redisTemplate.opsForList().leftPushAll(key, scriptObjectMirror.values());
+    }
+
+    /**
+     * 将一个值插入到已存在的列表头部
+     *
+     * @param key   key
+     * @param value value
+     */
+    public Long lLeftPushIfPresent(String key, Object value) {
+        return redisTemplate.opsForList().leftPushIfPresent(key, value);
+    }
+
+    /**
+     * 将值前置到键值之前
+     *
+     * @param key   key
+     * @param pivot pivot
+     * @param value value
+     */
+    public Long lLeftPush(String key, Object pivot, Object value) {
+        return redisTemplate.opsForList().leftPush(key, pivot, value);
+    }
+
+    //
+
+
+
+    /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key key
+     */
+    public Object lLeftPop(String key) {
+        return redisTemplate.opsForList().leftPop(key);
+    }
+
+    /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lLeftPop(String key, long timeout) {
+        return redisTemplate.opsForList().leftPop(key, timeout, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key key
+     */
+    public Object lRightPop(String key) {
+        return redisTemplate.opsForList().rightPop(key);
+    }
+
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lRightPop(String key, long timeout) {
+        return redisTemplate.opsForList().rightPop(key, timeout, TimeUnit.MILLISECONDS);
+    }
+
 
     // --------------------------------------------------------------------------------------------
     // Set 操作
@@ -774,8 +964,7 @@ public class RedisExecutor {
 
     public void tt(String key, Object value) {
         redisTemplate.boundValueOps(key).set(value);
-//        redisTemplate.type();
-//        redisTemplate.delete()
+//        redisTemplate.opsForList().
 
 
     }

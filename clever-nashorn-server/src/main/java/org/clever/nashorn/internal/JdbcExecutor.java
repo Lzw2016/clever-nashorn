@@ -13,6 +13,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.model.request.QueryBySort;
+import org.clever.nashorn.internal.utils.InternalUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -121,21 +122,7 @@ public class JdbcExecutor {
      * @param scriptObjectMirror 回调函数
      */
     public void query(String sql, Map<String, ?> paramMap, ScriptObjectMirror scriptObjectMirror) {
-        if (scriptObjectMirror == null) {
-            throw new RuntimeException("没有回调函数");
-        }
-        ScriptObjectMirror callback = null;
-        if (scriptObjectMirror.isFunction()) {
-            callback = scriptObjectMirror;
-        } else {
-            Object tmp = scriptObjectMirror.get("callback");
-            if (tmp instanceof ScriptObjectMirror && ((ScriptObjectMirror) tmp).isFunction()) {
-                callback = (ScriptObjectMirror) tmp;
-            }
-        }
-        if (callback == null) {
-            throw new RuntimeException("没有回调函数");
-        }
+        ScriptObjectMirror callback = InternalUtils.getCallback(scriptObjectMirror);
         RowCallbackHandler rowCallbackHandler = new RowCallbackHandlerJsCallback(callback);
         if (paramMap == null) {
             jdbcTemplate.query(sql, rowCallbackHandler);
