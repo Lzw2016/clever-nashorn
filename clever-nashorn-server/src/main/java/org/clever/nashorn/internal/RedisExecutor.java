@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * 作者： lzw<br/>
  * 创建时间：2019-10-06 22:01 <br/>
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused", "DuplicatedCode"})
 @Slf4j
 public class RedisExecutor {
     private final RedisTemplate<String, Object> redisTemplate;
@@ -253,7 +253,7 @@ public class RedisExecutor {
      * @param key   key
      * @param value value
      */
-    public void set(String key, Object value) {
+    public void vSet(String key, Object value) {
         redisTemplate.opsForValue().set(key, value);
     }
 
@@ -264,7 +264,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public void set(String key, Object value, long timeout) {
+    public void vSet(String key, Object value, long timeout) {
         redisTemplate.opsForValue().set(key, value, Duration.ofMillis(timeout));
     }
 
@@ -275,7 +275,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public void set(String key, Object value, Double timeout) {
+    public void vSet(String key, Object value, Double timeout) {
         redisTemplate.opsForValue().set(key, value, Duration.ofMillis(timeout.longValue()));
     }
 
@@ -286,7 +286,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public void set(String key, Object value, Integer timeout) {
+    public void vSet(String key, Object value, Integer timeout) {
         redisTemplate.opsForValue().set(key, value, Duration.ofMillis(timeout.longValue()));
     }
 
@@ -296,7 +296,7 @@ public class RedisExecutor {
      * @param key   key
      * @param value value
      */
-    public Boolean setIfAbsent(String key, Object value) {
+    public Boolean vSetIfAbsent(String key, Object value) {
         return redisTemplate.opsForValue().setIfAbsent(key, value);
     }
 
@@ -305,7 +305,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public Boolean setIfAbsent(String key, Object value, long timeout) {
+    public Boolean vSetIfAbsent(String key, Object value, long timeout) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofMillis(timeout));
     }
 
@@ -314,7 +314,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public Boolean setIfAbsent(String key, Object value, Double timeout) {
+    public Boolean vSetIfAbsent(String key, Object value, Double timeout) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofMillis(timeout.longValue()));
     }
 
@@ -323,7 +323,7 @@ public class RedisExecutor {
      * @param value   value
      * @param timeout 过期时间毫秒
      */
-    public Boolean setIfAbsent(String key, Object value, Integer timeout) {
+    public Boolean vSetIfAbsent(String key, Object value, Integer timeout) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofMillis(timeout.longValue()));
     }
 
@@ -335,7 +335,7 @@ public class RedisExecutor {
      * @param start start
      * @param end   end
      */
-    public String get(String key, long start, long end) {
+    public String vGet(String key, long start, long end) {
         return redisTemplate.opsForValue().get(key, start, end);
     }
 
@@ -345,7 +345,7 @@ public class RedisExecutor {
      * @param key   key
      * @param value value
      */
-    public Object getAndSet(String key, Object value) {
+    public Object vGetAndSet(String key, Object value) {
         return redisTemplate.opsForValue().getAndSet(key, value);
     }
 
@@ -355,7 +355,7 @@ public class RedisExecutor {
      * @param key    key
      * @param offset 偏移量
      */
-    public Boolean getBit(String key, long offset) {
+    public Boolean vGetBit(String key, long offset) {
         return redisTemplate.opsForValue().getBit(key, offset);
     }
 
@@ -364,7 +364,7 @@ public class RedisExecutor {
      *
      * @param keys keys
      */
-    public List<Object> multiGet(Collection<String> keys) {
+    public List<Object> vMultiGet(Collection<String> keys) {
         return redisTemplate.opsForValue().multiGet(keys);
     }
 
@@ -373,7 +373,7 @@ public class RedisExecutor {
      *
      * @param keys keys
      */
-    public List<Object> multiGet(String... keys) {
+    public List<Object> vMultiGet(String... keys) {
         return redisTemplate.opsForValue().multiGet(Arrays.asList(keys));
     }
 
@@ -382,7 +382,7 @@ public class RedisExecutor {
      *
      * @param scriptObjectMirror keys
      */
-    public List<Object> multiGet(ScriptObjectMirror scriptObjectMirror) {
+    public List<Object> vMultiGet(ScriptObjectMirror scriptObjectMirror) {
         if (!scriptObjectMirror.isArray()) {
             throw new IllegalArgumentException("参数必须是一个数组");
         }
@@ -406,7 +406,7 @@ public class RedisExecutor {
      * @param offset 偏移量
      * @param value  值
      */
-    public Boolean setBit(String key, long offset, boolean value) {
+    public Boolean vSetBit(String key, long offset, boolean value) {
         return redisTemplate.opsForValue().setBit(key, offset, value);
     }
 
@@ -417,7 +417,7 @@ public class RedisExecutor {
      * @param value  value
      * @param offset 偏移量
      */
-    public void setRange(String key, Object value, long offset) {
+    public void vSetRange(String key, Object value, long offset) {
         redisTemplate.opsForValue().set(key, value, offset);
     }
 
@@ -426,7 +426,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Long size(String key) {
+    public Long vSize(String key) {
         return redisTemplate.opsForValue().size(key);
     }
 
@@ -435,7 +435,7 @@ public class RedisExecutor {
      *
      * @param map 多个 key-value 对
      */
-    public void multiSet(Map<String, Object> map) {
+    public void vMultiSet(Map<String, Object> map) {
         redisTemplate.opsForValue().multiSet(map);
     }
 
@@ -444,7 +444,7 @@ public class RedisExecutor {
      *
      * @param map 多个 key-value 对
      */
-    public void multiSetIfAbsent(Map<String, Object> map) {
+    public void vMultiSetIfAbsent(Map<String, Object> map) {
         redisTemplate.opsForValue().multiSetIfAbsent(map);
     }
 
@@ -453,7 +453,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Long increment(String key) {
+    public Long vIncrement(String key) {
         return redisTemplate.opsForValue().increment(key);
     }
 
@@ -463,7 +463,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 增量值
      */
-    public Long increment(String key, long delta) {
+    public Long vIncrement(String key, long delta) {
         return redisTemplate.opsForValue().increment(key, delta);
     }
 
@@ -473,7 +473,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 增量值
      */
-    public Long increment(String key, Integer delta) {
+    public Long vIncrement(String key, Integer delta) {
         return redisTemplate.opsForValue().increment(key, delta.longValue());
     }
 
@@ -483,7 +483,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 增量值
      */
-    public Double increment(String key, double delta) {
+    public Double vIncrement(String key, double delta) {
         return redisTemplate.opsForValue().increment(key, delta);
     }
 
@@ -492,7 +492,7 @@ public class RedisExecutor {
      *
      * @param key key
      */
-    public Long decrement(String key) {
+    public Long vDecrement(String key) {
         return redisTemplate.opsForValue().decrement(key);
     }
 
@@ -502,7 +502,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 减量值
      */
-    public Long decrement(String key, long delta) {
+    public Long vDecrement(String key, long delta) {
         return redisTemplate.opsForValue().decrement(key, delta);
     }
 
@@ -512,7 +512,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 减量值
      */
-    public Long decrement(String key, Integer delta) {
+    public Long vDecrement(String key, Integer delta) {
         return redisTemplate.opsForValue().decrement(key, delta.longValue());
     }
 
@@ -522,7 +522,7 @@ public class RedisExecutor {
      * @param key   key
      * @param delta 增量值
      */
-    public Long decrement(String key, Double delta) {
+    public Long vDecrement(String key, Double delta) {
         return redisTemplate.opsForValue().decrement(key, delta.longValue());
     }
 
@@ -532,7 +532,7 @@ public class RedisExecutor {
      * @param key   key
      * @param value value
      */
-    public Integer append(String key, String value) {
+    public Integer vAppend(String key, String value) {
         return redisTemplate.opsForValue().append(key, value);
     }
 
@@ -764,6 +764,30 @@ public class RedisExecutor {
         }
     }
 
+    /**
+     * 迭代哈希表中的键值对
+     *
+     * @param key                key
+     * @param count              数量
+     * @param pattern            字段匹配字符串
+     * @param scriptObjectMirror 回调函数
+     */
+    public void hScan(String key, Integer count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        hScan(key, count.longValue(), pattern, scriptObjectMirror);
+    }
+
+    /**
+     * 迭代哈希表中的键值对
+     *
+     * @param key                key
+     * @param count              数量
+     * @param pattern            字段匹配字符串
+     * @param scriptObjectMirror 回调函数
+     */
+    public void hScan(String key, Double count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        hScan(key, count.longValue(), pattern, scriptObjectMirror);
+    }
+
     // --------------------------------------------------------------------------------------------
     // List 操作
     // --------------------------------------------------------------------------------------------
@@ -910,9 +934,168 @@ public class RedisExecutor {
         return redisTemplate.opsForList().leftPush(key, pivot, value);
     }
 
-    //
+    /**
+     * 在列表中添加一个或多个值
+     *
+     * @param key   key
+     * @param value value
+     */
+    public Long lRightPush(String key, Object value) {
+        return redisTemplate.opsForList().rightPush(key, value);
+    }
 
+    /**
+     * 在列表中添加一个或多个值
+     *
+     * @param key    key
+     * @param values value
+     */
+    public Long lRightPushAll(String key, Object... values) {
+        return redisTemplate.opsForList().rightPushAll(key, values);
+    }
 
+    /**
+     * 在列表中添加一个或多个值
+     *
+     * @param key    key
+     * @param values value
+     */
+    public Long lRightPushAll(String key, Collection<Object> values) {
+        return redisTemplate.opsForList().rightPushAll(key, values);
+    }
+
+    /**
+     * 在列表中添加一个或多个值
+     *
+     * @param key                key
+     * @param scriptObjectMirror value
+     */
+    public Long lRightPushAll(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        return redisTemplate.opsForList().rightPushAll(key, scriptObjectMirror.values());
+    }
+
+    /**
+     * 仅当列表存在时才向键追加值
+     *
+     * @param key   key
+     * @param value value
+     */
+    public Long lRightPushIfPresent(String key, Object value) {
+        return redisTemplate.opsForList().rightPushIfPresent(key, value);
+    }
+
+    /**
+     * 在键值之前追加值
+     *
+     * @param key   key
+     * @param pivot pivot
+     * @param value value
+     */
+    public Long lRightPush(String key, Object pivot, Object value) {
+        return redisTemplate.opsForList().rightPush(key, pivot, value);
+    }
+
+    /**
+     * 通过索引设置列表元素的值
+     *
+     * @param key   key
+     * @param index 索引
+     * @param value value
+     */
+    public void lSet(String key, long index, Object value) {
+        redisTemplate.opsForList().set(key, index, value);
+    }
+
+    /**
+     * 通过索引设置列表元素的值
+     *
+     * @param key   key
+     * @param index 索引
+     * @param value value
+     */
+    public void lSet(String key, Integer index, Object value) {
+        redisTemplate.opsForList().set(key, index.longValue(), value);
+    }
+
+    /**
+     * 通过索引设置列表元素的值
+     *
+     * @param key   key
+     * @param index 索引
+     * @param value value
+     */
+    public void lSet(String key, Double index, Object value) {
+        redisTemplate.opsForList().set(key, index.longValue(), value);
+    }
+
+    /**
+     * 移除列表元素，从存储在键上的列表中删除第一次出现的值计数
+     *
+     * @param key   key
+     * @param count count
+     * @param value value
+     */
+    public Long lRemove(String key, long count, Object value) {
+        return redisTemplate.opsForList().remove(key, count, value);
+    }
+
+    /**
+     * 移除列表元素，从存储在键上的列表中删除第一次出现的值计数
+     *
+     * @param key   key
+     * @param count count
+     * @param value value
+     */
+    public Long lRemove(String key, Integer count, Object value) {
+        return redisTemplate.opsForList().remove(key, count.longValue(), value);
+    }
+
+    /**
+     * 移除列表元素，从存储在键上的列表中删除第一次出现的值计数
+     *
+     * @param key   key
+     * @param count count
+     * @param value value
+     */
+    public Long lRemove(String key, Double count, Object value) {
+        return redisTemplate.opsForList().remove(key, count.longValue(), value);
+    }
+
+    /**
+     * 通过索引获取列表中的元素
+     *
+     * @param key   key
+     * @param index 索引
+     */
+    public Object lIndex(String key, long index) {
+        return redisTemplate.opsForList().index(key, index);
+    }
+
+    /**
+     * 通过索引获取列表中的元素
+     *
+     * @param key   key
+     * @param index 索引
+     */
+    public Object lIndex(String key, Integer index) {
+        return redisTemplate.opsForList().index(key, index.longValue());
+    }
+
+    /**
+     * 通过索引获取列表中的元素
+     *
+     * @param key   key
+     * @param index 索引
+     */
+    public Object lIndex(String key, Double index) {
+        return redisTemplate.opsForList().index(key, index.longValue());
+    }
 
     /**
      * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
@@ -934,6 +1117,26 @@ public class RedisExecutor {
     }
 
     /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lLeftPop(String key, Integer timeout) {
+        return redisTemplate.opsForList().leftPop(key, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lLeftPop(String key, Double timeout) {
+        return redisTemplate.opsForList().leftPop(key, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
      *
      * @param key key
@@ -952,10 +1155,666 @@ public class RedisExecutor {
         return redisTemplate.opsForList().rightPop(key, timeout, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lRightPop(String key, Integer timeout) {
+        return redisTemplate.opsForList().rightPop(key, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param key     key
+     * @param timeout timeout 毫秒
+     */
+    public Object lRightPop(String key, Double timeout) {
+        return redisTemplate.opsForList().rightPop(key, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param sourceKey      sourceKey
+     * @param destinationKey destinationKey
+     */
+    public Object lRightPopAndLeftPush(String sourceKey, String destinationKey) {
+        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey, destinationKey);
+    }
+
+    /**
+     * 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param sourceKey      sourceKey
+     * @param destinationKey destinationKey
+     * @param timeout        timeout 毫秒
+     */
+    public Object lRightPopAndLeftPush(String sourceKey, String destinationKey, long timeout) {
+        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey, destinationKey, timeout, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param sourceKey      sourceKey
+     * @param destinationKey destinationKey
+     * @param timeout        timeout 毫秒
+     */
+    public Object lRightPopAndLeftPush(String sourceKey, String destinationKey, Integer timeout) {
+        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey, destinationKey, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止
+     *
+     * @param sourceKey      sourceKey
+     * @param destinationKey destinationKey
+     * @param timeout        timeout 毫秒
+     */
+    public Object lRightPopAndLeftPush(String sourceKey, String destinationKey, Double timeout) {
+        return redisTemplate.opsForList().rightPopAndLeftPush(sourceKey, destinationKey, timeout.longValue(), TimeUnit.MILLISECONDS);
+    }
 
     // --------------------------------------------------------------------------------------------
     // Set 操作
     // --------------------------------------------------------------------------------------------
+
+    /**
+     * 向集合添加一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long sAdd(String key, Object... values) {
+        return redisTemplate.opsForSet().add(key, values);
+    }
+
+    /**
+     * 向集合添加一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long sAdd(String key, Collection<Object> values) {
+        return redisTemplate.opsForSet().add(key, values.toArray());
+    }
+
+    /**
+     * 向集合添加一个或多个成员
+     *
+     * @param key                key
+     * @param scriptObjectMirror values
+     */
+    public Long sAdd(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        return redisTemplate.opsForSet().add(key, scriptObjectMirror.values().toArray());
+    }
+
+    /**
+     * 移除集合中一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long sRemove(String key, Object... values) {
+        return redisTemplate.opsForSet().remove(key, values);
+    }
+
+    /**
+     * 移除集合中一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long sRemove(String key, Collection<Object> values) {
+        return redisTemplate.opsForSet().remove(key, values.toArray());
+    }
+
+    /**
+     * 移除集合中一个或多个成员
+     *
+     * @param key                key
+     * @param scriptObjectMirror values
+     */
+    public Long sRemove(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        return redisTemplate.opsForSet().remove(key, scriptObjectMirror.values().toArray());
+    }
+
+    /**
+     * 移除并返回集合中的一个随机元素
+     *
+     * @param key key
+     */
+    public Object sPop(String key) {
+        return redisTemplate.opsForSet().pop(key);
+    }
+
+    /**
+     * 移除并返回集合中的count个随机元素
+     *
+     * @param key   key
+     * @param count count
+     */
+    public List<Object> sPop(String key, long count) {
+        return redisTemplate.opsForSet().pop(key, count);
+    }
+
+    /**
+     * 移除并返回集合中的count个随机元素
+     *
+     * @param key   key
+     * @param count count
+     */
+    public List<Object> sPop(String key, Integer count) {
+        return redisTemplate.opsForSet().pop(key, count.longValue());
+    }
+
+    /**
+     * 移除并返回集合中的count个随机元素
+     *
+     * @param key   key
+     * @param count count
+     */
+    public List<Object> sPop(String key, Double count) {
+        return redisTemplate.opsForSet().pop(key, count.longValue());
+    }
+
+    /**
+     * 将 value 元素从 key 集合移动到 destKey 集合
+     *
+     * @param key     key
+     * @param value   value
+     * @param destKey destKey
+     */
+    public Boolean sMove(String key, Object value, String destKey) {
+        return redisTemplate.opsForSet().move(key, value, destKey);
+    }
+
+    /**
+     * 获取集合的成员数
+     *
+     * @param key key
+     */
+    public Long sSize(String key) {
+        return redisTemplate.opsForSet().size(key);
+    }
+
+    /**
+     * 判断 member 元素是否是集合 key 的成员
+     *
+     * @param key    key
+     * @param member member 元素
+     */
+    public Boolean sIsMember(String key, Object member) {
+        return redisTemplate.opsForSet().isMember(key, member);
+    }
+
+    /**
+     * 返回给定所有集合的交集
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     */
+    public Set<Object> sIntersect(String key, String otherKey) {
+        return redisTemplate.opsForSet().intersect(key, otherKey);
+    }
+
+    /**
+     * 返回给定所有集合的交集
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     */
+    public Set<Object> sIntersect(String key, Collection<String> otherKeys) {
+        return redisTemplate.opsForSet().intersect(key, otherKeys);
+    }
+
+    /**
+     * 返回给定所有集合的交集
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     */
+    public Set<Object> sIntersect(String key, String... otherKeys) {
+        return redisTemplate.opsForSet().intersect(key, Arrays.asList(otherKeys));
+    }
+
+    /**
+     * 返回给定所有集合的交集
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     */
+    public Set<Object> sIntersect(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return Collections.emptySet();
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().intersect(key, otherKeys);
+    }
+
+    /**
+     * 返回给定所有集合的交集并存储在 destination 中
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     * @param destKey  destKey
+     */
+    public Long sIntersectAndStore(String key, String otherKey, String destKey) {
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKey, destKey);
+    }
+
+    /**
+     * 返回给定所有集合的交集并存储在 destination 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sIntersectAndStore(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 返回给定所有集合的交集并存储在 destination 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sIntersectAndStore(String key, String[] otherKeys, String destKey) {
+        return redisTemplate.opsForSet().intersectAndStore(key, Arrays.asList(otherKeys), destKey);
+    }
+
+    /**
+     * 返回给定所有集合的交集并存储在 destination 中
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     * @param destKey            destKey
+     */
+    public Long sIntersectAndStore(String key, ScriptObjectMirror scriptObjectMirror, String destKey) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().intersectAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 返回所有给定集合的并集
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     */
+    public Set<Object> sUnion(String key, String otherKey) {
+        return redisTemplate.opsForSet().union(key, otherKey);
+    }
+
+    /**
+     * 返回所有给定集合的并集
+     *
+     * @param key       key
+     * @param otherKeys otherKey
+     */
+    public Set<Object> sUnion(String key, Collection<String> otherKeys) {
+        return redisTemplate.opsForSet().union(key, otherKeys);
+    }
+
+    /**
+     * 返回所有给定集合的并集
+     *
+     * @param key       key
+     * @param otherKeys otherKey
+     */
+    public Set<Object> sUnion(String key, String... otherKeys) {
+        return redisTemplate.opsForSet().union(key, Arrays.asList(otherKeys));
+    }
+
+    /**
+     * 返回所有给定集合的并集
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKey
+     */
+    public Set<Object> sUnion(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return Collections.emptySet();
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().union(key, otherKeys);
+    }
+
+    /**
+     * 所有给定集合的并集存储在 destKey 集合中
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     * @param destKey  destKey
+     */
+    public Long sUnionAndStore(String key, String otherKey, String destKey) {
+        return redisTemplate.opsForSet().unionAndStore(key, otherKey, destKey);
+    }
+
+    /**
+     * 所有给定集合的并集存储在 destKey 集合中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sUnionAndStore(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForSet().unionAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 所有给定集合的并集存储在 destKey 集合中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sUnionAndStore(String key, String[] otherKeys, String destKey) {
+        return redisTemplate.opsForSet().unionAndStore(key, Arrays.asList(otherKeys), destKey);
+    }
+
+    /**
+     * 所有给定集合的并集存储在 destKey 集合中
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     * @param destKey            destKey
+     */
+    public Long sUnionAndStore(String key, ScriptObjectMirror scriptObjectMirror, String destKey) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().unionAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     */
+    public Set<Object> sDifference(String key, String otherKey) {
+        return redisTemplate.opsForSet().difference(key, otherKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     */
+    public Set<Object> sDifference(String key, Collection<String> otherKey) {
+        return redisTemplate.opsForSet().difference(key, otherKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     */
+    public Set<Object> sDifference(String key, String... otherKey) {
+        return redisTemplate.opsForSet().difference(key, Arrays.asList(otherKey));
+    }
+
+    /**
+     * 返回给定所有集合的差集
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKey
+     */
+    public Set<Object> sDifference(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return Collections.emptySet();
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().difference(key, otherKeys);
+    }
+
+    /**
+     * 返回给定所有集合的差集并存储在 destKey 中
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     * @param destKey  destKey
+     */
+    public Long sDifferenceAndStore(String key, String otherKey, String destKey) {
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKey, destKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集并存储在 destKey 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sDifferenceAndStore(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集并存储在 destKey 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long sDifferenceAndStore(String key, String[] otherKeys, String destKey) {
+        return redisTemplate.opsForSet().differenceAndStore(key, Arrays.asList(otherKeys), destKey);
+    }
+
+    /**
+     * 返回给定所有集合的差集并存储在 destKey 中
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     * @param destKey            destKey
+     */
+    public Long sDifferenceAndStore(String key, ScriptObjectMirror scriptObjectMirror, String destKey) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForSet().differenceAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 返回集合中的所有成员
+     *
+     * @param key key
+     */
+    public Set<Object> sMembers(String key) {
+        return redisTemplate.opsForSet().members(key);
+    }
+
+    /**
+     * 返回集合中一个或多个随机数
+     *
+     * @param key key
+     */
+    public Object sRandomMember(String key) {
+        return redisTemplate.opsForSet().randomMember(key);
+    }
+
+    /**
+     * 从集合中获取不同的随机元素
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public Set<Object> sDistinctRandomMembers(String key, long count) {
+        return redisTemplate.opsForSet().distinctRandomMembers(key, count);
+    }
+
+    /**
+     * 从集合中获取不同的随机元素
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public Set<Object> sDistinctRandomMembers(String key, Integer count) {
+        return redisTemplate.opsForSet().distinctRandomMembers(key, count.longValue());
+    }
+
+    /**
+     * 从集合中获取不同的随机元素
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public Set<Object> sDistinctRandomMembers(String key, Double count) {
+        return redisTemplate.opsForSet().distinctRandomMembers(key, count.longValue());
+    }
+
+    /**
+     * 返回集合中一个或多个随机数
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public List<Object> sRandomMembers(String key, long count) {
+        return redisTemplate.opsForSet().randomMembers(key, count);
+    }
+
+    /**
+     * 返回集合中一个或多个随机数
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public List<Object> sRandomMembers(String key, Integer count) {
+        return redisTemplate.opsForSet().randomMembers(key, count.longValue());
+    }
+
+    /**
+     * 返回集合中一个或多个随机数
+     *
+     * @param key   key
+     * @param count 数量
+     */
+    public List<Object> sRandomMembers(String key, Double count) {
+        return redisTemplate.opsForSet().randomMembers(key, count.longValue());
+    }
+
+    /**
+     * 迭代集合中的元素
+     *
+     * @param key                key
+     * @param count              count
+     * @param pattern            pattern
+     * @param scriptObjectMirror 回调函数
+     */
+    public void sScan(String key, long count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        ScriptObjectMirror callback = InternalUtils.getCallback(scriptObjectMirror);
+        ScanOptions scanOptions = ScanOptions.scanOptions().count(count).match(pattern).build();
+        Cursor<Object> cursor = redisTemplate.opsForSet().scan(key, scanOptions);
+        while (cursor.hasNext()) {
+            Object value = cursor.next();
+            Object res = callback.call(value, value);
+            if (res instanceof Boolean && (Boolean) res) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * 迭代集合中的元素
+     *
+     * @param key                key
+     * @param count              count
+     * @param pattern            pattern
+     * @param scriptObjectMirror 回调函数
+     */
+    public void sScan(String key, Integer count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        sScan(key, count.longValue(), pattern, scriptObjectMirror);
+    }
+
+    /**
+     * 迭代集合中的元素
+     *
+     * @param key                key
+     * @param count              count
+     * @param pattern            pattern
+     * @param scriptObjectMirror 回调函数
+     */
+    public void sScan(String key, Double count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        sScan(key, count.longValue(), pattern, scriptObjectMirror);
+    }
 
     // --------------------------------------------------------------------------------------------
     // Sorted Set 操作
@@ -964,8 +1823,11 @@ public class RedisExecutor {
 
     public void tt(String key, Object value) {
         redisTemplate.boundValueOps(key).set(value);
-//        redisTemplate.opsForList().
-
-
+//        redisTemplate.opsForZSet()
+//        redisTemplate.opsForHyperLogLog()
+//        redisTemplate.opsForGeo()
+//        redisTemplate.opsForCluster()
+//        redisTemplate.execute()
+//        redisTemplate.executePipelined()
     }
 }

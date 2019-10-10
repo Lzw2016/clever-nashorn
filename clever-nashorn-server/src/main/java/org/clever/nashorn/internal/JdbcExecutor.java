@@ -25,6 +25,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.*;
 
@@ -112,6 +113,120 @@ public class JdbcExecutor {
      */
     public List<Map<String, Object>> queryForList(String sql) {
         return jdbcTemplate.queryForList(sql, Collections.emptyMap());
+    }
+
+    /**
+     * 查询返回一个 String
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public String queryForString(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), String.class);
+    }
+
+    /**
+     * 查询返回一个 String
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public String queryForString(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, String.class);
+    }
+
+    /**
+     * 查询返回一个 Long
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public Long queryForLong(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), Long.class);
+    }
+
+    /**
+     * 查询返回一个 Long
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public Long queryForLong(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, Long.class);
+    }
+
+    /**
+     * 查询返回一个 Double
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public Double queryForDouble(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), Double.class);
+    }
+
+    /**
+     * 查询返回一个 Double
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public Double queryForDouble(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, Double.class);
+    }
+
+    /**
+     * 查询返回一个 BigDecimal
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public BigDecimal queryForBigDecimal(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), BigDecimal.class);
+    }
+
+    /**
+     * 查询返回一个 BigDecimal
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public BigDecimal queryForBigDecimal(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, BigDecimal.class);
+    }
+
+    /**
+     * 查询返回一个 Boolean
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public Boolean queryForBoolean(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), Boolean.class);
+    }
+
+    /**
+     * 查询返回一个 Boolean
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public Boolean queryForBoolean(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, Boolean.class);
+    }
+
+    /**
+     * 查询返回一个 Date
+     *
+     * @param sql sql脚本，参数格式[:param]
+     */
+    public Date queryForDate(String sql) {
+        return jdbcTemplate.queryForObject(sql, Collections.emptyMap(), Date.class);
+    }
+
+    /**
+     * 查询返回一个 Date
+     *
+     * @param sql      sql脚本，参数格式[:param]
+     * @param paramMap 参数(可选)，参数格式[:param]
+     */
+    public Date queryForDate(String sql, Map<String, ?> paramMap) {
+        return jdbcTemplate.queryForObject(sql, paramMap, Date.class);
     }
 
     /**
