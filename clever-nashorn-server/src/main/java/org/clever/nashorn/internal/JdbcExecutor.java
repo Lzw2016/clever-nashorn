@@ -329,6 +329,34 @@ public class JdbcExecutor {
      * @param sql           sql脚本，参数格式[:param]
      * @param arrayParamMap 参数数组，参数格式[:param]
      */
+    public int[] batchUpdate(String sql, Map<String, ?>[] arrayParamMap) {
+        List<SqlParameterSource> paramMapList = new ArrayList<>(arrayParamMap.length);
+        for (Map<String, ?> map : arrayParamMap) {
+            paramMapList.add(new MapSqlParameterSource(map));
+        }
+        return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
+    }
+
+    /**
+     * 批量执行更新SQL，返回更新影响数据量
+     *
+     * @param sql           sql脚本，参数格式[:param]
+     * @param arrayParamMap 参数数组，参数格式[:param]
+     */
+    public int[] batchUpdate(String sql, Collection<Map<String, ?>> arrayParamMap) {
+        List<SqlParameterSource> paramMapList = new ArrayList<>(arrayParamMap.size());
+        for (Map<String, ?> map : arrayParamMap) {
+            paramMapList.add(new MapSqlParameterSource(map));
+        }
+        return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
+    }
+
+    /**
+     * 批量执行更新SQL，返回更新影响数据量
+     *
+     * @param sql           sql脚本，参数格式[:param]
+     * @param arrayParamMap 参数数组，参数格式[:param]
+     */
     public int[] batchUpdate(String sql, ScriptObjectMirror arrayParamMap) {
         if (arrayParamMap == null) {
             throw new RuntimeException("参数不能为空");
