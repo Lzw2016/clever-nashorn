@@ -557,8 +557,8 @@ public class JdbcExecutor {
                 }
                 result.add((String) field);
             });
-        } else if (object instanceof List) {
-            List<?> list = (List) object;
+        } else if (object instanceof Collection) {
+            Collection<?> list = (Collection) object;
             result = new ArrayList<>(list.size());
             list.forEach(field -> {
                 if (!(field instanceof String)) {
