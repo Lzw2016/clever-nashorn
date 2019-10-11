@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.nashorn.internal.utils.InternalUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.DataType;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.*;
 
@@ -1983,10 +1986,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2016,10 +2020,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2053,10 +2058,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2086,10 +2092,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2119,10 +2126,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2156,10 +2164,11 @@ public class RedisExecutor {
         }
         Set<Map<String, Object>> result = new HashSet<>(set.size());
         set.forEach(tuple -> {
-            result.add(new HashMap<String, Object>(2) {{
+            Map<String, Object> map = new HashMap<String, Object>(2) {{
                 put("value", tuple.getValue());
                 put("score", tuple.getScore());
-            }});
+            }};
+            result.add(map);
         });
         return result;
     }
@@ -2434,17 +2443,124 @@ public class RedisExecutor {
     // Geo 操作
     // --------------------------------------------------------------------------------------------
 
+    /**
+     * 将指定成员名的点添加到键上
+     *
+     * @param key    key
+     * @param x      x
+     * @param y      y
+     * @param member member
+     */
+    public Long geoAdd(String key, Number x, Number y, Object member) {
+        return redisTemplate.opsForGeo().add(key, new Point(x.doubleValue(), y.doubleValue()), member);
+    }
+
+    /**
+     * 将指定成员名的点添加到键上
+     *
+     * @param key key
+     * @param map map
+     */
+    public Long geoAdd(String key, Map<String, Object> map) {
+        return redisTemplate.opsForGeo().add(key, getGeoLocation(map));
+    }
+
+    /**
+     * 将指定成员名的点添加到键上
+     *
+     * @param key  key
+     * @param maps maps
+     */
+    public Long geoAdd(String key, Collection<Map<String, Object>> maps) {
+        Map<Object, Point> memberCoordinateMap = new HashMap<>(maps.size());
+        maps.forEach(map -> {
+            RedisGeoCommands.GeoLocation<Object> geoLocation = getGeoLocation(map);
+            memberCoordinateMap.put(geoLocation.getName(), geoLocation.getPoint());
+        });
+        return redisTemplate.opsForGeo().add(key, memberCoordinateMap);
+    }
+
+    /**
+     * 将指定成员名的点添加到键上
+     *
+     * @param key  key
+     * @param maps maps
+     */
+    public Long geoAdd(String key, Map<String, Object>[] maps) {
+        Map<Object, Point> memberCoordinateMap = new HashMap<>(maps.length);
+        for (Map<String, Object> map : maps) {
+            RedisGeoCommands.GeoLocation<Object> geoLocation = getGeoLocation(map);
+            memberCoordinateMap.put(geoLocation.getName(), geoLocation.getPoint());
+        }
+        return redisTemplate.opsForGeo().add(key, memberCoordinateMap);
+    }
+
+    /**
+     * 将指定成员名的点添加到键上
+     *
+     * @param key                key
+     * @param scriptObjectMirror maps
+     */
+    @SuppressWarnings("unchecked")
+    public Long geoAdd(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Map<Object, Point> memberCoordinateMap = new HashMap<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof Map)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            RedisGeoCommands.GeoLocation<Object> geoLocation = getGeoLocation((Map<String, Object>) keyTmp);
+            memberCoordinateMap.put(geoLocation.getName(), geoLocation.getPoint());
+        });
+        return redisTemplate.opsForGeo().add(key, memberCoordinateMap);
+    }
+
+    /**
+     * 返回两个给定位置之间的距离
+     *
+     * @param key     key
+     * @param member1 member1
+     * @param member2 member2
+     */
+    public Distance geoDistance(String key, Object member1, Object member2) {
+        return redisTemplate.opsForGeo().distance(key, member1, member2);
+    }
+
+    // TODO ...
 
     // --------------------------------------------------------------------------------------------
     // 事务，批量处理，其他 操作
     // --------------------------------------------------------------------------------------------
 
     public void tt(String key, Object value) {
+//        redisTemplate.opsForGeo().add()
+
+
 //        redisTemplate.opsForHyperLogLog()
-//        redisTemplate.opsForGeo()
 //        redisTemplate.opsForCluster()
 //        redisTemplate.execute()
 //        redisTemplate.executePipelined()
+    }
+
+    private RedisGeoCommands.GeoLocation<Object> getGeoLocation(Map<String, Object> map) {
+        Object x = map.get("x");
+        if (!(x instanceof Number)) {
+            throw new RuntimeException("x 属性必须是Number类型");
+        }
+        Object y = map.get("y");
+        if (!(y instanceof Number)) {
+            throw new RuntimeException("y 属性必须是Number类型");
+        }
+        Object value = map.get("value");
+        if (value == null) {
+            throw new RuntimeException("value 属性不能为null");
+        }
+        return new RedisGeoCommands.GeoLocation<>(value, new Point(((Number) x).doubleValue(), ((Number) y).doubleValue()));
     }
 
     private ZSetOperations.TypedTuple<Object> toTuple(Map<String, Object> map) {
