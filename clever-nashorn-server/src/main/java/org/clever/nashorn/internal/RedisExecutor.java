@@ -6,9 +6,8 @@ import org.clever.common.utils.DateTimeUtils;
 import org.clever.nashorn.internal.utils.InternalUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
 import org.springframework.data.redis.connection.DataType;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.connection.RedisZSetCommands;
+import org.springframework.data.redis.core.*;
 
 import java.time.Duration;
 import java.util.*;
@@ -1820,14 +1819,646 @@ public class RedisExecutor {
     // Sorted Set 操作
     // --------------------------------------------------------------------------------------------
 
+    /**
+     * 向有序集合添加一个或多个成员，或者更新已存在成员的分数
+     *
+     * @param key   key
+     * @param value value
+     * @param score score
+     */
+    public Boolean zsAdd(String key, Object value, Number score) {
+        return redisTemplate.opsForZSet().add(key, value, score.doubleValue());
+    }
+
+    /**
+     * 向有序集合添加一个或多个成员，或者更新已存在成员的分数
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long zsAdd(String key, Collection<Map<String, Object>> values) {
+        Set<ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>(values.size());
+        values.forEach(map -> {
+            ZSetOperations.TypedTuple<Object> tuple = toTuple(map);
+            if (tuple != null) {
+                tuples.add(tuple);
+            }
+        });
+        return redisTemplate.opsForZSet().add(key, tuples);
+    }
+
+    /**
+     * 向有序集合添加一个或多个成员，或者更新已存在成员的分数
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long zsAdd(String key, Map<String, Object>[] values) {
+        Set<ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>(values.length);
+        for (Map<String, Object> map : values) {
+            ZSetOperations.TypedTuple<Object> tuple = toTuple(map);
+            if (tuple != null) {
+                tuples.add(tuple);
+            }
+        }
+        return redisTemplate.opsForZSet().add(key, tuples);
+    }
+
+    /**
+     * 向有序集合添加一个或多个成员，或者更新已存在成员的分数
+     *
+     * @param key                key
+     * @param scriptObjectMirror values
+     */
+    @SuppressWarnings("unchecked")
+    public Long zsAdd(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Set<ZSetOperations.TypedTuple<Object>> tuples = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(map -> {
+            if (!(map instanceof Map)) {
+                throw new IllegalArgumentException("数组元素必须是一个对象{value: 'Object', score: 'Number'}");
+            }
+            ZSetOperations.TypedTuple<Object> tuple = toTuple((Map<String, Object>) map);
+            if (tuple != null) {
+                tuples.add(tuple);
+            }
+        });
+        return redisTemplate.opsForZSet().add(key, tuples);
+    }
+
+    /**
+     * 移除有序集合中的一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long zsRemove(String key, Object... values) {
+        return redisTemplate.opsForZSet().remove(key, values);
+    }
+
+    /**
+     * 移除有序集合中的一个或多个成员
+     *
+     * @param key    key
+     * @param values values
+     */
+    public Long zsRemove(String key, Collection<Object> values) {
+        return redisTemplate.opsForZSet().remove(key, values.toArray());
+    }
+
+    /**
+     * 移除有序集合中的一个或多个成员
+     *
+     * @param key                key
+     * @param scriptObjectMirror values
+     */
+    public Long zsRemove(String key, ScriptObjectMirror scriptObjectMirror) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        return redisTemplate.opsForZSet().remove(key, scriptObjectMirror.values().toArray());
+    }
+
+    /**
+     * 有序集合中对指定成员的分数加上增量 increment
+     *
+     * @param key   key
+     * @param value value
+     * @param delta increment
+     */
+    public Double zsIncrementScore(String key, Object value, Number delta) {
+        return redisTemplate.opsForZSet().incrementScore(key, value, delta.doubleValue());
+    }
+
+    /**
+     * 返回有序集合中指定成员的索引
+     *
+     * @param key key
+     * @param o   o
+     */
+    public Long zsRank(String key, Object o) {
+        return redisTemplate.opsForZSet().rank(key, o);
+    }
+
+    /**
+     * 确定元素的索引值在排序集时得分从高到低
+     *
+     * @param key key
+     * @param o   o
+     */
+    public Long zsReverseRank(String key, Object o) {
+        return redisTemplate.opsForZSet().reverseRank(key, o);
+    }
+
+    /**
+     * 从已排序集获取开始和结束之间的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public Set<Object> zsRange(String key, Number start, Number end) {
+        return redisTemplate.opsForZSet().range(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 从已排序集获取开始和结束之间的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public Set<Map<String, Object>> zsRangeWithScores(String key, Number start, Number end) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().rangeWithScores(key, start.longValue(), end.longValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 从排序后的集合中获取得分介于最小值和最大值之间的元素
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Set<Object> zsRangeByScore(String key, Number min, Number max) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min.doubleValue(), max.doubleValue());
+    }
+
+    /**
+     * 从排序后的集合中获取得分介于最小值和最大值之间的元素
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Set<Map<String, Object>> zsRangeByScoreWithScores(String key, Number min, Number max) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().rangeByScoreWithScores(key, min.doubleValue(), max.doubleValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 获取从开始到结束的范围内的元素，其中得分在排序集的最小值和最大值之间
+     *
+     * @param key    key
+     * @param min    min
+     * @param max    max
+     * @param offset offset
+     * @param count  count
+     */
+    public Set<Object> zsRangeByScore(String key, Number min, Number max, Number offset, Number count) {
+        return redisTemplate.opsForZSet().rangeByScore(key, min.doubleValue(), max.doubleValue(), offset.longValue(), count.longValue());
+    }
+
+    /**
+     * 获取从开始到结束的范围内的元素，其中得分在排序集的最小值和最大值之间
+     *
+     * @param key    key
+     * @param min    min
+     * @param max    max
+     * @param offset offset
+     * @param count  count
+     */
+    public Set<Map<String, Object>> zsRangeByScoreWithScores(String key, Number min, Number max, Number offset, Number count) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().rangeByScoreWithScores(key, min.doubleValue(), max.doubleValue(), offset.longValue(), count.longValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 获取范围从开始到结束的元素，从高到低排序的集合
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public Set<Object> zsReverseRange(String key, Number start, Number end) {
+        return redisTemplate.opsForZSet().reverseRange(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 获取范围从开始到结束的元素，从高到低排序的集合
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public Set<Map<String, Object>> zsReverseRangeWithScores(String key, Number start, Number end) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().reverseRangeWithScores(key, start.longValue(), end.longValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 获取得分介于最小值和最大值之间的元素，从高到低排序
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Set<Object> zsReverseRangeByScore(String key, Number min, Number max) {
+        return redisTemplate.opsForZSet().reverseRangeByScore(key, min.doubleValue(), max.doubleValue());
+    }
+
+    /**
+     * 获取得分介于最小值和最大值之间的元素，从高到低排序
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Set<Map<String, Object>> zsReverseRangeByScoreWithScores(String key, Number min, Number max) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, min.doubleValue(), max.doubleValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 获取从开始到结束的范围内的元素，其中得分在最小和最大之间，排序集高 -> 低
+     *
+     * @param key    key
+     * @param min    min
+     * @param max    max
+     * @param offset offset
+     * @param count  count
+     */
+    public Set<Object> zsReverseRangeByScore(String key, Number min, Number max, Number offset, Number count) {
+        return redisTemplate.opsForZSet().reverseRangeByScore(key, min.doubleValue(), max.doubleValue(), offset.longValue(), count.longValue());
+    }
+
+    /**
+     * 获取从开始到结束的范围内的元素，其中得分在最小和最大之间，排序集高 -> 低
+     *
+     * @param key    key
+     * @param min    min
+     * @param max    max
+     * @param offset offset
+     * @param count  count
+     */
+    public Set<Map<String, Object>> zsReverseRangeByScoreWithScores(String key, Number min, Number max, Number offset, Number count) {
+        Set<ZSetOperations.TypedTuple<Object>> set = redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, min.doubleValue(), max.doubleValue(), offset.longValue(), count.longValue());
+        if (set == null) {
+            return Collections.emptySet();
+        }
+        Set<Map<String, Object>> result = new HashSet<>(set.size());
+        set.forEach(tuple -> {
+            result.add(new HashMap<String, Object>(2) {{
+                put("value", tuple.getValue());
+                put("score", tuple.getScore());
+            }});
+        });
+        return result;
+    }
+
+    /**
+     * 用最小值和最大值之间的值计算排序集中的元素数
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Long zsCount(String key, Number min, Number max) {
+        return redisTemplate.opsForZSet().count(key, min.doubleValue(), max.doubleValue());
+    }
+
+    /**
+     * 返回按给定键存储的已排序集的元素数
+     *
+     * @param key key
+     */
+    public Long zsSize(String key) {
+        return redisTemplate.opsForZSet().size(key);
+    }
+
+    /**
+     * 获取有序集合的成员数
+     *
+     * @param key key
+     */
+    public Long zsZCard(String key) {
+        return redisTemplate.opsForZSet().zCard(key);
+    }
+
+    /**
+     * 返回有序集中，成员的分数值
+     *
+     * @param key key
+     * @param o   o
+     */
+    public Double zsScore(String key, Object o) {
+        return redisTemplate.opsForZSet().score(key, o);
+    }
+
+    /**
+     * 从按键排序的集合中删除开始和结束之间范围内的元素
+     *
+     * @param key   key
+     * @param start start
+     * @param end   end
+     */
+    public Long zsRemoveRange(String key, Number start, Number end) {
+        return redisTemplate.opsForZSet().removeRange(key, start.longValue(), end.longValue());
+    }
+
+    /**
+     * 从按键排序的集合中删除得分在min和max之间的元素
+     *
+     * @param key key
+     * @param min min
+     * @param max max
+     */
+    public Long zsRemoveRangeByScore(String key, Number min, Number max) {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, min.doubleValue(), max.doubleValue());
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的并集，并存储在新的 destKey 中
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     * @param destKey  destKey
+     */
+    public Long zsUnionAndStore(String key, String otherKey, String destKey) {
+        return redisTemplate.opsForZSet().unionAndStore(key, otherKey, destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的并集，并存储在新的 destKey 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long zsUnionAndStore(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForZSet().unionAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的并集，并存储在新的 destKey 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long zsUnionAndStore(String key, String[] otherKeys, String destKey) {
+        return redisTemplate.opsForZSet().unionAndStore(key, Arrays.asList(otherKeys), destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的并集，并存储在新的 destKey 中
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     * @param destKey            destKey
+     */
+    public Long zsUnionAndStore(String key, ScriptObjectMirror scriptObjectMirror, String destKey) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForZSet().unionAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中
+     *
+     * @param key      key
+     * @param otherKey otherKey
+     * @param destKey  destKey
+     */
+    public Long zsIntersectAndStore(String key, String otherKey, String destKey) {
+        return redisTemplate.opsForZSet().intersectAndStore(key, otherKey, destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long zsIntersectAndStore(String key, Collection<String> otherKeys, String destKey) {
+        return redisTemplate.opsForZSet().intersectAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中
+     *
+     * @param key       key
+     * @param otherKeys otherKeys
+     * @param destKey   destKey
+     */
+    public Long zsIntersectAndStore(String key, String[] otherKeys, String destKey) {
+        return redisTemplate.opsForZSet().intersectAndStore(key, Arrays.asList(otherKeys), destKey);
+    }
+
+    /**
+     * 计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中
+     *
+     * @param key                key
+     * @param scriptObjectMirror otherKeys
+     * @param destKey            destKey
+     */
+    public Long zsIntersectAndStore(String key, ScriptObjectMirror scriptObjectMirror, String destKey) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return 0L;
+        }
+        Collection<String> otherKeys = new HashSet<>(scriptObjectMirror.size());
+        scriptObjectMirror.values().forEach(keyTmp -> {
+            if (!(keyTmp instanceof String)) {
+                throw new IllegalArgumentException("数组元素必须是字符串类型");
+            }
+            otherKeys.add((String) keyTmp);
+        });
+        return redisTemplate.opsForZSet().intersectAndStore(key, otherKeys, destKey);
+    }
+
+    /**
+     * 迭代有序集合中的元素（包括元素成员和元素分值）
+     *
+     * @param key                key
+     * @param count              count
+     * @param pattern            pattern
+     * @param scriptObjectMirror 回调函数
+     */
+    public void zsScan(String key, Number count, String pattern, ScriptObjectMirror scriptObjectMirror) {
+        ScriptObjectMirror callback = InternalUtils.getCallback(scriptObjectMirror);
+        ScanOptions scanOptions = ScanOptions.scanOptions().count(count.longValue()).match(pattern).build();
+        Cursor<ZSetOperations.TypedTuple<Object>> cursor = redisTemplate.opsForZSet().scan(key, scanOptions);
+        while (cursor.hasNext()) {
+            ZSetOperations.TypedTuple<Object> tuple = cursor.next();
+            Object res = callback.call(tuple, tuple.getValue(), tuple.getScore());
+            if (res instanceof Boolean && (Boolean) res) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * 通过字典区间返回有序集合的成员
+     *
+     * @param key       key
+     * @param minValue  minValue
+     * @param equalsMin equalsMin
+     * @param maxValue  maxValue
+     * @param equalsMax equalsMax
+     */
+    public Set<Object> zsRangeByLex(String key, Object minValue, boolean equalsMin, Object maxValue, boolean equalsMax) {
+        RedisZSetCommands.Range range = RedisZSetCommands.Range.range();
+        if (minValue != null) {
+            if (equalsMin) {
+                range.gte(minValue);
+            } else {
+                range.gt(minValue);
+            }
+        }
+        if (maxValue != null) {
+            if (equalsMax) {
+                range.lte(maxValue);
+            } else {
+                range.lt(maxValue);
+            }
+        }
+        return redisTemplate.opsForZSet().rangeByLex(key, range);
+    }
+
+    /**
+     * 通过字典区间返回有序集合的成员
+     *
+     * @param key       key
+     * @param minValue  minValue
+     * @param equalsMin equalsMin
+     * @param maxValue  maxValue
+     * @param equalsMax equalsMax
+     * @param count     count
+     * @param offset    offset
+     */
+    public Set<Object> zsRangeByLex(String key, Object minValue, boolean equalsMin, Object maxValue, boolean equalsMax, Number count, Number offset) {
+        RedisZSetCommands.Range range = RedisZSetCommands.Range.range();
+        if (minValue != null) {
+            if (equalsMin) {
+                range.gte(minValue);
+            } else {
+                range.gt(minValue);
+            }
+        }
+        if (maxValue != null) {
+            if (equalsMax) {
+                range.lte(maxValue);
+            } else {
+                range.lt(maxValue);
+            }
+        }
+        RedisZSetCommands.Limit limit;
+        if (count != null || offset != null) {
+            limit = RedisZSetCommands.Limit.limit();
+            if (count != null) {
+                limit.count(count.intValue());
+            }
+            if (offset != null) {
+                limit.offset(offset.intValue());
+            }
+        } else {
+            limit = RedisZSetCommands.Limit.unlimited();
+        }
+        return redisTemplate.opsForZSet().rangeByLex(key, range, limit);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Geo 操作
+    // --------------------------------------------------------------------------------------------
+
+
+    // --------------------------------------------------------------------------------------------
+    // 事务，批量处理，其他 操作
+    // --------------------------------------------------------------------------------------------
 
     public void tt(String key, Object value) {
-        redisTemplate.boundValueOps(key).set(value);
-//        redisTemplate.opsForZSet()
 //        redisTemplate.opsForHyperLogLog()
 //        redisTemplate.opsForGeo()
 //        redisTemplate.opsForCluster()
 //        redisTemplate.execute()
 //        redisTemplate.executePipelined()
+    }
+
+    private ZSetOperations.TypedTuple<Object> toTuple(Map<String, Object> map) {
+        if (map == null) {
+            return null;
+        }
+        Object value = map.get("value");
+        Object score = map.get("score");
+        if (value == null || score == null) {
+            throw new RuntimeException("value和score属性必须存在");
+        }
+        if (!(score instanceof Number)) {
+            throw new RuntimeException("score 必须是数字类型");
+        }
+        return new DefaultTypedTuple<>(value, ((Number) score).doubleValue());
     }
 }
