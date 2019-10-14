@@ -33,8 +33,8 @@ public class CommonUtils {
      *
      * @param millis 毫秒
      */
-    public void sleep(long millis) throws InterruptedException {
-        Thread.sleep(millis);
+    public void sleep(Number millis) throws InterruptedException {
+        Thread.sleep(millis.longValue());
     }
 
     /**
