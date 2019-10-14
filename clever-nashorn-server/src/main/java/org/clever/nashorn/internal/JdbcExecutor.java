@@ -459,6 +459,8 @@ public class JdbcExecutor {
         return queryByPage(sql, paramMap, true);
     }
 
+    // TODO 支持以表纬度操作数据
+
     /**
      * 查询SQL拼接Order By
      *
