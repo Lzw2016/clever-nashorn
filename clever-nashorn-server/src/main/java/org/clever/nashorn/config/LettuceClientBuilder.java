@@ -14,7 +14,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -72,12 +72,16 @@ public class LettuceClientBuilder implements DisposableBean {
         // 创建 RedisTemplate
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
-        // 设置value的序列化规则和 key的序列化规则
-        template.setKeySerializer(new StringRedisSerializer());
+        // 设置序列化规则
+        template.setStringSerializer(RedisSerializer.string());
+        template.setDefaultSerializer(RedisSerializer.string());
+        template.setEnableDefaultSerializer(true);
         // template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
         serializer.setObjectMapper(objectMapper);
         template.setValueSerializer(serializer);
+        template.setHashKeySerializer(serializer);
+        template.setHashValueSerializer(serializer);
         template.afterPropertiesSet();
         return template;
     }
