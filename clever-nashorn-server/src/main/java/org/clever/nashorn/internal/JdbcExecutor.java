@@ -459,7 +459,7 @@ public class JdbcExecutor {
         return queryByPage(sql, paramMap, true);
     }
 
-    // TODO 支持以表纬度操作数据
+    // TODO 支持以表纬度操作数据 动态sql支持(mybatis标准)
 
     /**
      * 查询SQL拼接Order By
