@@ -13,6 +13,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.model.request.QueryBySort;
+import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.internal.utils.InternalUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
@@ -81,7 +82,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Map<String, Object> queryForMap(String sql, Map<String, ?> paramMap) {
+    public Map<String, Object> queryForMap(String sql, Map<String, Object> paramMap) {
         paramMap = jsToJavaMap(paramMap);
         return jdbcTemplate.queryForObject(sql, paramMap, new ColumnMapRowMapper());
     }
@@ -101,7 +102,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public List<Map<String, Object>> queryForList(String sql, Map<String, ?> paramMap) {
+    public List<Map<String, Object>> queryForList(String sql, Map<String, Object> paramMap) {
         paramMap = jsToJavaMap(paramMap);
         return jdbcTemplate.queryForList(sql, paramMap);
     }
@@ -130,7 +131,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public String queryForString(String sql, Map<String, ?> paramMap) {
+    public String queryForString(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, String.class);
     }
 
@@ -149,7 +150,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Long queryForLong(String sql, Map<String, ?> paramMap) {
+    public Long queryForLong(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, Long.class);
     }
 
@@ -168,7 +169,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Double queryForDouble(String sql, Map<String, ?> paramMap) {
+    public Double queryForDouble(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, Double.class);
     }
 
@@ -187,7 +188,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public BigDecimal queryForBigDecimal(String sql, Map<String, ?> paramMap) {
+    public BigDecimal queryForBigDecimal(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, BigDecimal.class);
     }
 
@@ -206,7 +207,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Boolean queryForBoolean(String sql, Map<String, ?> paramMap) {
+    public Boolean queryForBoolean(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, Boolean.class);
     }
 
@@ -225,7 +226,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Date queryForDate(String sql, Map<String, ?> paramMap) {
+    public Date queryForDate(String sql, Map<String, Object> paramMap) {
         return jdbcTemplate.queryForObject(sql, paramMap, Date.class);
     }
 
@@ -236,7 +237,7 @@ public class JdbcExecutor {
      * @param paramMap           参数(可选)，参数格式[:param]
      * @param scriptObjectMirror 回调函数
      */
-    public void query(String sql, Map<String, ?> paramMap, ScriptObjectMirror scriptObjectMirror) {
+    public void query(String sql, Map<String, Object> paramMap, ScriptObjectMirror scriptObjectMirror) {
         ScriptObjectMirror callback = InternalUtils.getCallback(scriptObjectMirror);
         RowCallbackHandler rowCallbackHandler = new RowCallbackHandlerJsCallback(callback);
         if (paramMap == null) {
@@ -263,7 +264,7 @@ public class JdbcExecutor {
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public int update(String sql, Map<String, ?> paramMap) {
+    public int update(String sql, Map<String, Object> paramMap) {
         paramMap = jsToJavaMap(paramMap);
         return jdbcTemplate.update(sql, paramMap);
     }
@@ -278,12 +279,36 @@ public class JdbcExecutor {
     }
 
     /**
+     * 更新数据库表数据
+     *
+     * @param tableName         表名称
+     * @param fields            更新字段值
+     * @param whereMap          更新条件字段
+     * @param camelToUnderscore 字段驼峰转下划线(可选)
+     */
+    public int updateTable(String tableName, Map<String, Object> fields, Map<String, Object> whereMap, boolean camelToUnderscore) {
+        TupleTow<String, Map<String, Object>> tupleTow = updateSql(tableName, fields, whereMap, camelToUnderscore);
+        return update(tupleTow.getValue1(), tupleTow.getValue2());
+    }
+
+    /**
+     * 更新数据库表数据
+     *
+     * @param tableName 表名称
+     * @param fields    更新字段值
+     * @param whereMap  更新条件字段
+     */
+    public int updateTable(String tableName, Map<String, Object> fields, Map<String, Object> whereMap) {
+        return updateTable(tableName, fields, whereMap, false);
+    }
+
+    /**
      * 执行insert SQL，返回数据库自增主键值和新增数据量
      *
      * @param sql      sql脚本，参数格式[:param]
      * @param paramMap 参数(可选)，参数格式[:param]
      */
-    public Map<String, Object> insert(String sql, Map<String, ?> paramMap) {
+    public Map<String, Object> insert(String sql, Map<String, Object> paramMap) {
         SqlParameterSource sqlParameterSource;
         if (paramMap != null && paramMap.size() > 0) {
             paramMap = jsToJavaMap(paramMap);
@@ -324,14 +349,99 @@ public class JdbcExecutor {
     }
 
     /**
+     * 数据插入到表
+     *
+     * @param tableName         表名称
+     * @param fields            字段名
+     * @param camelToUnderscore 字段驼峰转下划线(可选)
+     */
+    public Map<String, Object> insertTable(String tableName, Map<String, Object> fields, boolean camelToUnderscore) {
+        TupleTow<String, Map<String, Object>> tupleTow = insertSql(tableName, fields, camelToUnderscore);
+        return insert(tupleTow.getValue1(), tupleTow.getValue2());
+    }
+
+    /**
+     * 数据插入到表
+     *
+     * @param tableName 表名称
+     * @param fields    字段名
+     */
+    public Map<String, Object> insertTable(String tableName, Map<String, Object> fields) {
+        TupleTow<String, Map<String, Object>> tupleTow = insertSql(tableName, fields, false);
+        return insert(tupleTow.getValue1(), tupleTow.getValue2());
+    }
+
+    /**
+     * 数据插入到表
+     *
+     * @param tableName         表名称
+     * @param fieldsArray       字段名集合
+     * @param camelToUnderscore 字段驼峰转下划线(可选)
+     */
+    public List<Map<String, Object>> insertTables(String tableName, Collection<Map<String, Object>> fieldsArray, boolean camelToUnderscore) {
+        List<Map<String, Object>> result = new ArrayList<>(fieldsArray.size());
+        fieldsArray.forEach(fields -> {
+            TupleTow<String, Map<String, Object>> tupleTow = insertSql(tableName, fields, camelToUnderscore);
+            Map<String, Object> map = insert(tupleTow.getValue1(), tupleTow.getValue2());
+            result.add(map);
+        });
+        return result;
+    }
+
+    /**
+     * 数据插入到表
+     *
+     * @param tableName          表名称
+     * @param scriptObjectMirror 字段名集合
+     * @param camelToUnderscore  字段驼峰转下划线(可选)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> insertTables(String tableName, ScriptObjectMirror scriptObjectMirror, boolean camelToUnderscore) {
+        if (!scriptObjectMirror.isArray()) {
+            throw new IllegalArgumentException("参数必须是一个数组");
+        }
+        if (scriptObjectMirror.size() <= 0) {
+            return Collections.emptyList();
+        }
+        List<Map<String, Object>> fieldsArray = new ArrayList<>(scriptObjectMirror.size());
+        scriptObjectMirror.forEach((index, map) -> {
+            if (!(map instanceof Map)) {
+                throw new IllegalArgumentException("数组元素必须是一个对象");
+            }
+            fieldsArray.add((Map<String, Object>) map);
+        });
+        return insertTables(tableName, fieldsArray, camelToUnderscore);
+    }
+
+    /**
+     * 数据插入到表
+     *
+     * @param tableName   表名称
+     * @param fieldsArray 字段名集合
+     */
+    public List<Map<String, Object>> insertTables(String tableName, Collection<Map<String, Object>> fieldsArray) {
+        return insertTables(tableName, fieldsArray, false);
+    }
+
+    /**
+     * 数据插入到表
+     *
+     * @param tableName          表名称
+     * @param scriptObjectMirror 字段名集合
+     */
+    public List<Map<String, Object>> insertTables(String tableName, ScriptObjectMirror scriptObjectMirror) {
+        return insertTables(tableName, scriptObjectMirror, false);
+    }
+
+    /**
      * 批量执行更新SQL，返回更新影响数据量
      *
      * @param sql           sql脚本，参数格式[:param]
      * @param arrayParamMap 参数数组，参数格式[:param]
      */
-    public int[] batchUpdate(String sql, Map<String, ?>[] arrayParamMap) {
+    public int[] batchUpdate(String sql, Map<String, Object>[] arrayParamMap) {
         List<SqlParameterSource> paramMapList = new ArrayList<>(arrayParamMap.length);
-        for (Map<String, ?> map : arrayParamMap) {
+        for (Map<String, Object> map : arrayParamMap) {
             paramMapList.add(new MapSqlParameterSource(map));
         }
         return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
@@ -343,9 +453,9 @@ public class JdbcExecutor {
      * @param sql           sql脚本，参数格式[:param]
      * @param arrayParamMap 参数数组，参数格式[:param]
      */
-    public int[] batchUpdate(String sql, Collection<Map<String, ?>> arrayParamMap) {
+    public int[] batchUpdate(String sql, Collection<Map<String, Object>> arrayParamMap) {
         List<SqlParameterSource> paramMapList = new ArrayList<>(arrayParamMap.size());
-        for (Map<String, ?> map : arrayParamMap) {
+        for (Map<String, Object> map : arrayParamMap) {
             paramMapList.add(new MapSqlParameterSource(map));
         }
         return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
@@ -370,7 +480,7 @@ public class JdbcExecutor {
                 throw new RuntimeException("数组项必须是一个对象，不能是基本类型变量");
             }
             // noinspection unchecked
-            paramMapList.add(new MapSqlParameterSource(jsToJavaMap((Map<String, ?>) map)));
+            paramMapList.add(new MapSqlParameterSource(jsToJavaMap((Map<String, Object>) map)));
         });
         return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
     }
@@ -459,7 +569,7 @@ public class JdbcExecutor {
         return queryByPage(sql, paramMap, true);
     }
 
-    // TODO 支持以表纬度操作数据 动态sql支持(mybatis标准)
+    // TODO 动态sql支持(mybatis标准)
 
     /**
      * 查询SQL拼接Order By
@@ -581,12 +691,126 @@ public class JdbcExecutor {
     /**
      * 把Js对象转换成Java Map(Sql 参数处理)
      */
-    private static Map<String, Object> jsToJavaMap(Map<String, ?> paramMap) {
+    private static Map<String, Object> jsToJavaMap(Map<String, Object> paramMap) {
         if (paramMap == null || paramMap.size() <= 0) {
             return Collections.emptyMap();
         }
         Map<String, Object> javaMap = new HashMap<>(paramMap.size());
         paramMap.forEach((key, value) -> javaMap.put(key, ObjectConvertUtils.Instance.jsBaseToJava(value)));
         return javaMap;
+    }
+
+    private static TupleTow<String, Map<String, Object>> updateSql(String tableName, Map<String, Object> fields, Map<String, Object> whereMap, boolean camelToUnderscore) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new RuntimeException("更新表名称不能为空");
+        }
+        if (fields.isEmpty()) {
+            throw new RuntimeException("更新字段不能为空");
+        }
+        if (whereMap.isEmpty()) {
+            throw new RuntimeException("更新条件不能为空");
+        }
+        Map<String, Object> paramMap = new HashMap<>(fields.size() + whereMap.size());
+        StringBuilder sb = new StringBuilder();
+        sb.append("update ").append(tableName).append(" set");
+        int index = 0;
+        for (Map.Entry<String, ?> field : fields.entrySet()) {
+            String fieldName = field.getKey();
+            Object value = field.getValue();
+            String fieldParam = "set_" + fieldName;
+            if (index == 0) {
+                sb.append(' ');
+            } else {
+                sb.append(", ");
+            }
+            sb.append(getFieldName(fieldName, camelToUnderscore)).append("=:").append(fieldParam);
+            paramMap.put(fieldParam, value);
+            index++;
+        }
+        sb.append(" where");
+        index = 0;
+        for (Map.Entry<String, ?> where : whereMap.entrySet()) {
+            String fieldName = where.getKey();
+            Object value = where.getValue();
+            String fieldParam = "where_" + fieldName;
+            if (index == 0) {
+                sb.append(' ');
+            } else {
+                sb.append(" and ");
+            }
+            sb.append(getFieldName(fieldName, camelToUnderscore)).append("=:").append(fieldParam);
+            paramMap.put(fieldParam, value);
+            index++;
+        }
+        return TupleTow.creat(sb.toString(), paramMap);
+    }
+
+    private static TupleTow<String, Map<String, Object>> insertSql(String tableName, Map<String, Object> fields, boolean camelToUnderscore) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new RuntimeException("插入表名称不能为空");
+        }
+        if (fields.isEmpty()) {
+            throw new RuntimeException("插入字段不能为空");
+        }
+        Map<String, Object> paramMap = new HashMap<>(fields.size());
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into ").append(tableName).append(" (");
+        int index = 0;
+        for (Map.Entry<String, ?> field : fields.entrySet()) {
+            String fieldName = field.getKey();
+            if (index != 0) {
+                sb.append(", ");
+            }
+            sb.append(getFieldName(fieldName, camelToUnderscore));
+            index++;
+        }
+        sb.append(") values (");
+        index = 0;
+        for (Map.Entry<String, ?> field : fields.entrySet()) {
+            String fieldName = field.getKey();
+            Object value = field.getValue();
+            if (index != 0) {
+                sb.append(", ");
+            }
+            sb.append(":").append(fieldName);
+            paramMap.put(fieldName, value);
+            index++;
+        }
+        sb.append(")");
+        return TupleTow.creat(sb.toString(), paramMap);
+    }
+
+    private static String getFieldName(String fieldName, boolean camelToUnderscore) {
+        if (!camelToUnderscore) {
+            return fieldName;
+        }
+        return camelToUnderline(fieldName);
+    }
+
+    /**
+     * 下划线字符
+     */
+    private static final char UNDERLINE = '_';
+
+    /**
+     * 字符串驼峰转下划线格式
+     *
+     * @param param 需要转换的字符串
+     * @return 转换好的字符串
+     */
+    private static String camelToUnderline(String param) {
+        if (StringUtils.isBlank(param)) {
+            return StringUtils.EMPTY;
+        }
+        int len = param.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char c = param.charAt(i);
+            if (Character.isUpperCase(c) && i > 0) {
+                sb.append(UNDERLINE);
+            }
+            sb.append(Character.toLowerCase(c));
+        }
+        return sb.toString();
     }
 }
