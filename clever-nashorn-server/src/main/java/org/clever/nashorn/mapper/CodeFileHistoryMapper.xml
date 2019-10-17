@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--suppress SqlNoDataSourceInspection, SqlDialectInspection -->
+<mapper namespace="org.clever.nashorn.mapper.CodeFileHistoryMapper">
+
+    <select id="queryByPage" resultType="org.clever.nashorn.entity.CodeFileHistory">
+        select
+            id, biz_type, group_name, file_path, name, description, create_at, update_at
+        from code_file_history
+        <where>
+            <if test="query.bizType!=null and query.bizType!=''">
+                and biz_type=#{query.bizType}
+            </if>
+            <if test="query.groupName!=null and query.groupName!=''">
+                and group_name=#{query.groupName}
+            </if>
+            <if test="query.fullPath!=null and query.fullPath!=''">
+                and concat(file_path, name)=#{query.fullPath}
+            </if>
+        </where>
+    </select>
+</mapper>

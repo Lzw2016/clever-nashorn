@@ -1,6 +1,8 @@
 package org.clever.nashorn.intercept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.Undefined;
 import lombok.Getter;
@@ -29,6 +31,10 @@ import java.util.Set;
  */
 @Slf4j
 public class HttpRequestJsHandler implements HandlerInterceptor {
+    /**
+     * url path --> file full path
+     */
+    private static final Cache<String, String> Path_FileFullPath_Cache = CacheBuilder.newBuilder().maximumSize(5000).initialCapacity(1000).build();
     /**
      * 请求支持的后缀，建议使用特殊的后缀表示使用动态js代码处理请求
      */
@@ -93,6 +99,27 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(fileFullName);
         JsCodeFile jsCodeFile = jsCodeFileCache.getFile(bizType, groupName, tupleTow.getValue1(), tupleTow.getValue2());
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
+    }
+
+    /**
+     * 获取JS文件全名称 - 使用缓存 (TODO 需要优化)
+     */
+    private String getJsHandlerFileFullNameUseCache(final HttpServletRequest request) {
+        final String path = request.getServletPath();
+        String jsHandlerFileFullName = Path_FileFullPath_Cache.getIfPresent(path);
+        if (jsHandlerFileFullName != null && jsHandlerFileFullName.startsWith("###")) {
+            return null;
+        }
+        if (StringUtils.isNotBlank(jsHandlerFileFullName) && jsCodeFileExists(jsHandlerFileFullName)) {
+            return jsHandlerFileFullName;
+        }
+        jsHandlerFileFullName = getJsHandlerFileFullName(request);
+        if (StringUtils.isNotBlank(jsHandlerFileFullName)) {
+            Path_FileFullPath_Cache.put(path, jsHandlerFileFullName);
+        } else {
+            Path_FileFullPath_Cache.put(path, "###" + System.currentTimeMillis());
+        }
+        return jsHandlerFileFullName;
     }
 
     /**
@@ -186,8 +213,9 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         // 获取JS文件全名称
         final long startTime1 = System.currentTimeMillis();
-        final String jsHandlerFileFullName = getJsHandlerFileFullName(request);
+        final String jsHandlerFileFullName = getJsHandlerFileFullNameUseCache(request);
         if (StringUtils.isBlank(jsHandlerFileFullName)) {
+            log.info("使用js代码处理请求 | 跳过js处理 | 总耗时 {}ms", System.currentTimeMillis() - startTime1);
             return true;
         }
         // 获取js模块对象处理请求
