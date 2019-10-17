@@ -19,6 +19,7 @@ import java.util.*;
  * 作者：lizw <br/>
  * 创建时间：2019/08/29 14:05 <br/>
  */
+@SuppressWarnings("DuplicatedCode")
 @Slf4j
 public class ObjectConvertUtils {
 
@@ -86,7 +87,7 @@ public class ObjectConvertUtils {
     }
 
     private Object doJavaToJSObject(Object obj) {
-        if (obj != null) {
+        if (obj != null && !isBaseType(obj)) {
             for (Object cache : cacheSlot.get()) {
                 if (cache == obj) {
                     return "Cycle Reference";
@@ -226,11 +227,109 @@ public class ObjectConvertUtils {
     }
 
     /**
+     * Map key 字符串下划线转驼峰格式
+     */
+    public Object underlineToCamel(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        final long startTime = System.currentTimeMillis();
+        cacheSlot.set(new ArrayList<>(512));
+        deepSlot.set(0);
+        deepMaxSlot.set(0);
+        Object res;
+        try {
+            res = doUnderlineToCamel(obj);
+        } catch (Throwable e) {
+            throw ExceptionUtils.unchecked(e);
+        } finally {
+            log.debug("[Java对象转换成JS对象] 递归深度：{} | 耗时：{}ms", deepMaxSlot.get(), System.currentTimeMillis() - startTime);
+            cacheSlot.remove();
+            deepSlot.remove();
+            deepMaxSlot.remove();
+        }
+        return res;
+    }
+
+    /**
+     * Map key 字符串下划线转驼峰格式
+     */
+    private Object doUnderlineToCamel(Object obj) {
+        if (obj != null && !isBaseType(obj)) {
+            for (Object cache : cacheSlot.get()) {
+                if (cache == obj) {
+                    return "Cycle Reference";
+                }
+            }
+            cacheSlot.get().add(obj);
+        }
+        Object result;
+        // 递归深度加 1
+        Integer deep = deepSlot.get();
+        if (deep == null) {
+            deep = 0;
+        }
+        deep++;
+        deepSlot.set(deep);
+        Integer maxDeep = deepMaxSlot.get();
+        if (maxDeep == null) {
+            maxDeep = 0;
+        }
+        if (maxDeep < deep) {
+            deepMaxSlot.set(deep);
+        }
+        // 超过了最大递归深度
+        if (deep >= recursiveMaxDeep) {
+            result = obj;
+        } else if (obj instanceof Map) {
+            Map<?, ?> map = (Map) obj;
+            Map<String, Object> tmp = new HashMap<>(map.size());
+            map.forEach((key, value) -> {
+                if (key instanceof String) {
+                    tmp.put(StrFormatter.underlineToCamel((String) key), doUnderlineToCamel(value));
+                }
+            });
+            result = tmp;
+        } else if (obj instanceof List) {
+            List<?> list = (List) obj;
+            List<Object> tmp = new ArrayList<>(list.size());
+            list.forEach(value -> tmp.add(doUnderlineToCamel(value)));
+            result = tmp;
+        } else if (obj instanceof Set) {
+            Set<?> list = (Set) obj;
+            Set<Object> tmp = new HashSet<>(list.size());
+            list.forEach(value -> tmp.add(doUnderlineToCamel(value)));
+            result = tmp;
+        } else {
+            result = obj;
+        }
+        deep--;
+        deepSlot.set(deep);
+        return result;
+    }
+
+    /**
+     * 是否是基本类型(不会有循环依赖问题的)
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean isBaseType(Object obj) {
+        return obj instanceof String
+                || obj instanceof Character
+                || obj instanceof Boolean
+                || obj instanceof Number
+                || obj instanceof Date
+                || obj instanceof DateTime
+                || obj instanceof Class;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------ 静态方法
+
+    /**
      * Ja基本类型转换成Java类型
      *
      * @return undefined 或者不是基本类型 返回null
      */
-    public Object jsBaseToJava(Object value) {
+    public static Object jsBaseToJava(Object value) {
         if (value == null) {
             return null;
         }

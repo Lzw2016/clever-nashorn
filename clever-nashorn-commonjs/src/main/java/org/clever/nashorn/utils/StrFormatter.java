@@ -14,10 +14,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 字符串格式化工具
@@ -28,6 +25,7 @@ public class StrFormatter {
     public static final String EMPTY_JSON = "{}";
     public static final char C_BACKSLASH = '\\';
     public static final char C_DELIM_START = '{';
+    private static final char UNDERLINE = '_';
 
     /**
      * 格式化字符串<br>
@@ -411,5 +409,55 @@ public class StrFormatter {
             return false;
         }
         return obj.getClass().isArray();
+    }
+
+    /**
+     * 字符串驼峰转下划线格式
+     *
+     * @param param 需要转换的字符串
+     * @return 转换好的字符串
+     */
+    public static String camelToUnderline(String param) {
+        if (StringUtils.isBlank(param)) {
+            return StringUtils.EMPTY;
+        }
+        int len = param.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char c = param.charAt(i);
+            if (Character.isUpperCase(c) && i > 0) {
+                sb.append(UNDERLINE);
+            }
+            sb.append(Character.toLowerCase(c));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 字符串下划线转驼峰格式
+     *
+     * @param param 需要转换的字符串
+     * @return 转换好的字符串
+     */
+    public static String underlineToCamel(String param) {
+        if (StringUtils.isBlank(param)) {
+            return StringUtils.EMPTY;
+        }
+        int len = param.length();
+        StringBuilder sb = new StringBuilder(len);
+        boolean flag = false;
+        for (int i = 0; i < len; i++) {
+            char c = param.charAt(i);
+            if (Objects.equals(UNDERLINE, c)) {
+                flag = true;
+                continue;
+            }
+            if (flag) {
+                flag = false;
+                c = Character.toUpperCase(c);
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 }

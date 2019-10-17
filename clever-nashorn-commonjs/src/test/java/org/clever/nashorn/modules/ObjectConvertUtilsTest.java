@@ -8,9 +8,7 @@ import org.clever.nashorn.utils.ScriptEngineUtils;
 import org.clever.nashorn.utils.StrFormatter;
 import org.junit.Test;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 作者： lzw<br/>
@@ -43,17 +41,49 @@ public class ObjectConvertUtilsTest {
 //        List<Object> set = new ArrayList<>(8);
 //        set.add(mapA);
         log.info("-------------------------> {}", System.identityHashCode(mapA));
-
         Object object = ObjectConvertUtils.Instance.javaToJSObject(mapA);
         log.info("-------------------------> {}", StrFormatter.toString(object));
         object = ObjectConvertUtils.Instance.javaToJSObject(mapA);
         log.info("-------------------------> {}", StrFormatter.toString(object));
+
     }
 
     @Test
     public void t5() {
         ScriptObjectMirror scriptObjectMirror = ScriptEngineUtils.newDate(new Date());
-        Object object = ObjectConvertUtils.Instance.jsBaseToJava(scriptObjectMirror);
+        Object object = ObjectConvertUtils.jsBaseToJava(scriptObjectMirror);
         log.info("-------------------------> {}", DateTimeUtils.formatToString((Date) object));
+    }
+
+    @Test
+    public void t6() {
+        Map<String, Object> mapA = new HashMap<>();
+        Map<String, Object> mapB = new HashMap<>();
+        mapA.put("amount_limit", "a");
+        mapA.put("coupon_require", mapB);
+        mapB.put("get_time_start", "a");
+        mapB.put("send_each_user", mapA);
+        // underlineToCamel
+        Object object = ObjectConvertUtils.Instance.underlineToCamel(mapA);
+        log.info("-------------------------> {}", object);
+    }
+
+    @Test
+    public void t7() {
+        List<Object> list = new ArrayList<>();
+        Map<String, Object> mapA = new HashMap<>();
+        mapA.put("amount_limit", "a");
+        mapA.put("coupon_require", "b");
+        Map<String, Object> mapB = new HashMap<>();
+        mapB.put("get_time_start", "a");
+        mapB.put("send_each_user", "b");
+        list.add(mapA);
+        list.add(mapB);
+        list.add(new HashMap<String, Object>() {{
+            put("send_each", mapA);
+        }});
+        // underlineToCamel
+        Object object = ObjectConvertUtils.Instance.underlineToCamel(list);
+        log.info("-------------------------> {}", object);
     }
 }

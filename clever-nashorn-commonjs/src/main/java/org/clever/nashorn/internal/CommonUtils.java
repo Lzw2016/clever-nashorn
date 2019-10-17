@@ -104,4 +104,34 @@ public class CommonUtils {
     }
 
     // TODO String处理等工具类
+
+    /**
+     * 获取当前时间搓(毫秒)
+     */
+    public long currentTimeMillis() {
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * 获取当前时间 Date
+     */
+    public Date nowDate() {
+        return new Date();
+    }
+
+    /**
+     * 根据 时间字符串或者时间搓(毫秒) 创建时间
+     *
+     * @param dateStr 时间字符串或者时间搓(毫秒)
+     */
+    public Date createDate(Object dateStr) {
+        return DateTimeUtils.parseDate(dateStr);
+    }
+
+    /**
+     * Map key 字符串下划线转驼峰格式
+     */
+    public Object underlineToCamel(Object obj) {
+        return ObjectConvertUtils.Instance.underlineToCamel(obj);
+    }
 }
