@@ -22,9 +22,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 作者：lizw <br/>
@@ -174,6 +172,27 @@ public class JsCodeFileService {
             }
         }
         return old;
+    }
+
+    public Map<String, List<String>> allBizType() {
+        Map<String, List<String>> result = new HashMap<>();
+        List<Map<String, String>> mapList = jsCodeFileMapper.allBizType();
+        mapList.forEach(map -> {
+            // biz_type, group_name
+            String bizType = map.get("biz_type");
+            String groupName = map.get("group_name");
+            List<String> list = result.computeIfAbsent(bizType, s -> new ArrayList<>());
+            list.add(groupName);
+        });
+        return result;
+    }
+
+    public List<String> bizTypeList() {
+        return jsCodeFileMapper.bizTypeList();
+    }
+
+    public List<String> allGroupName(String bizType) {
+        return jsCodeFileMapper.allGroupName(bizType);
     }
 
     @Transactional

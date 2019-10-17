@@ -8,6 +8,7 @@ import org.clever.nashorn.entity.JsCodeFile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -71,6 +72,15 @@ public interface JsCodeFileMapper extends BaseMapper<JsCodeFile> {
             "where file_path like concat(#{filePath}, '%')"
     })
     List<JsCodeFile> findAllChildByFilePath(@Param("filePath") String filePath);
+
+    @Select("select distinct biz_type, group_name from js_code_file")
+    List<Map<String, String>> allBizType();
+
+    @Select("select distinct biz_type from js_code_file")
+    List<String> bizTypeList();
+
+    @Select("select distinct group_name from js_code_file where biz_type=#{bizType}")
+    List<String> allGroupName(@Param("bizType") String bizType);
 
     @Select("select count(1) from js_code_file where biz_type=#{bizType} and group_name=#{groupName}")
     long countByBizAndGroup(@Param("bizType") String bizType, @Param("groupName") String groupName);

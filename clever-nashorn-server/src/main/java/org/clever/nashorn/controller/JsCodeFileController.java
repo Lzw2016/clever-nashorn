@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 作者：lizw <br/>
@@ -55,6 +56,23 @@ public class JsCodeFileController {
         return jsCodeFileService.deleteJsCodeFile(id);
     }
 
+    @ApiOperation("查询所有的业务类型和分组名称并返回关联关系")
+    @GetMapping("/all_biz_type")
+    public Map<String, List<String>> allBizType() {
+        return jsCodeFileService.allBizType();
+    }
+
+    @ApiOperation("所有业务类型")
+    @GetMapping("/biz_type")
+    public List<String> bizType() {
+        return jsCodeFileService.bizTypeList();
+    }
+
+    @ApiOperation("根据业务类型查询所有分组名称")
+    @GetMapping("/group_name")
+    public List<String> allGroupName(@RequestParam("bizType") String bizType) {
+        return jsCodeFileService.allGroupName(bizType);
+    }
 
     @ApiOperation("锁住文件(不允许修改)")
     @PutMapping("/lock_file/{id}")
