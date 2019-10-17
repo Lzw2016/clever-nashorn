@@ -234,6 +234,7 @@ public class BeanConfiguration {
         }
         // 初始化配置的数据源
         final RedisProperties redisGlobalConfig = multipleRedis.getGlobalConfig();
+        final Map<String, LettuceClientBuilder> destroyMap = new HashMap<>(multipleRedis.getRedisConfigMap().size());
         multipleRedis.getRedisConfigMap().forEach((name, redisConfig) -> {
             if (redisConnectionFactoryMap.containsKey(name)) {
                 if ("spring-data-redis".equals(name)) {
@@ -244,10 +245,11 @@ public class BeanConfiguration {
             redisConfig = MergeRedisProperties.mergeConfig(redisGlobalConfig, redisConfig);
             LettuceClientBuilder lettuceClientBuilder = new LettuceClientBuilder(redisConfig, objectMapper);
             redisConnectionFactoryMap.put(name, lettuceClientBuilder);
+            destroyMap.put(name, lettuceClientBuilder);
         });
         final Map<String, LettuceClientBuilder> result = Collections.unmodifiableMap(redisConnectionFactoryMap);
         // 关闭连接池
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> redisConnectionFactoryMap.forEach((name, lettuceClientBuilder) -> {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> destroyMap.forEach((name, lettuceClientBuilder) -> {
             log.info("[" + name + "]Redis Connection Destroy start...");
             try {
                 lettuceClientBuilder.destroy();
