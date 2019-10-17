@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import org.clever.common.PatternConstant;
 import org.clever.common.model.request.BaseRequest;
 import org.clever.common.validation.StringNotBlank;
+import org.clever.common.validation.ValidIntegerStatus;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Pattern;
@@ -29,6 +30,10 @@ public class JsCodeFileUpdateReq extends BaseRequest {
     @StringNotBlank
     @Pattern(regexp = PatternConstant.Name_Pattern + "{0,255}\\.js")
     private String name;
+
+    @ApiModelProperty("读写权限：0-可读可写，1-只读")
+    @ValidIntegerStatus(value = {0, 1}, message = "0-可读可写，1-只读")
+    private Integer readOnly;
 
     @ApiModelProperty("脚本内容")
     private String jsCode;

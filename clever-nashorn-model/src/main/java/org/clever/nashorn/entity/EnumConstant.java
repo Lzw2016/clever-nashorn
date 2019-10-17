@@ -43,4 +43,12 @@ public class EnumConstant {
      * 脚本运行状态：4-超时，
      */
     public static final Integer Run_Log_Status_4 = 4;
+    /**
+     * 读写权限：0-可读可写
+     */
+    public static final Integer Read_Only_0 = 0;
+    /**
+     * 读写权限：1-只读
+     */
+    public static final Integer Read_Only_1 = 1;
 }

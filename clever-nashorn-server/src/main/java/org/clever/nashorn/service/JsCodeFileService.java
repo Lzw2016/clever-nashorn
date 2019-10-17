@@ -110,6 +110,9 @@ public class JsCodeFileService {
         if (old == null) {
             throw new BusinessException("更新数据不存在");
         }
+        if (Objects.equals(old.getReadOnly(), EnumConstant.Read_Only_1)) {
+            throw new BusinessException("当前文件只读，不允许修改");
+        }
         // 文件夹没有脚本内容
         if (Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
             req.setJsCode(null);
@@ -146,6 +149,44 @@ public class JsCodeFileService {
         // 发布更新事件
         applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, update));
         return update;
+    }
+
+    @Transactional
+    public JsCodeFile deleteJsCodeFile(Long id) {
+        JsCodeFile old = jsCodeFileMapper.selectById(id);
+        if (old == null) {
+            return null;
+        }
+        if (Objects.equals(old.getNodeType(), EnumConstant.Node_Type_1)) {
+            // 删除文件
+            jsCodeFileMapper.deleteById(id);
+        } else if (Objects.equals(old.getNodeType(), EnumConstant.Node_Type_2)) {
+            // 查询所有需要删除的子目录或者文件
+            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(JsCodeFilePathUtils.concat(old.getFilePath(), old.getName()));
+            List<Long> idList = new ArrayList<>(childList.size() + 1);
+            idList.add(old.getId());
+            childList.forEach(file -> idList.add(file.getId()));
+            // 执行删除
+            int count = jsCodeFileMapper.deleteBatchIds(idList);
+            if (count > 0) {
+                applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Delete, old));
+                childList.forEach(file -> applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Delete, file)));
+            }
+        }
+        return old;
+    }
+
+    @Transactional
+    public JsCodeFile lockFile(Long id) {
+        JsCodeFile old = jsCodeFileMapper.selectById(id);
+        if (old == null) {
+            throw new BusinessException("文件不存在");
+        }
+        JsCodeFile update = new JsCodeFile();
+        update.setId(old.getId());
+        update.setReadOnly(EnumConstant.Read_Only_1);
+        jsCodeFileMapper.updateById(old);
+        return jsCodeFileMapper.selectById(old.getId());
     }
 
     @Transactional

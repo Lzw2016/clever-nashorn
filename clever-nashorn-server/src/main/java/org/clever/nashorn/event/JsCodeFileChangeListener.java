@@ -32,7 +32,7 @@ public class JsCodeFileChangeListener implements ApplicationListener<JsCodeFileC
         if (jsCodeFile == null) {
             return;
         }
-        String fullPath = JsCodeFilePathUtils.concat(event.getJsCodeFile().getFilePath(), event.getJsCodeFile().getName());
+        String fullPath = JsCodeFilePathUtils.concat(jsCodeFile.getFilePath(), jsCodeFile.getName());
         log.info("js代码发生变化 | {} | {}", event.getChange(), fullPath);
         switch (event.getChange()) {
             case Add:

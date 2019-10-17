@@ -48,4 +48,17 @@ public class JsCodeFileController {
     public JsCodeFile updateJsCodeFile(@PathVariable("id") Long id, @RequestBody @Validated JsCodeFileUpdateReq req) {
         return jsCodeFileService.updateJsCodeFile(id, req);
     }
+
+    @ApiOperation("删除文件或者文件夹")
+    @DeleteMapping("/{id}")
+    public JsCodeFile deleteJsCodeFile(@PathVariable("id") Long id) {
+        return jsCodeFileService.deleteJsCodeFile(id);
+    }
+
+
+    @ApiOperation("锁住文件(不允许修改)")
+    @PutMapping("/lock_file/{id}")
+    public JsCodeFile lockFile(@PathVariable("id") Long id) {
+        return jsCodeFileService.lockFile(id);
+    }
 }

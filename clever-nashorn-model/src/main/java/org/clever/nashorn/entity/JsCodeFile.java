@@ -1,8 +1,9 @@
 package org.clever.nashorn.entity;
 
-import java.util.Date;
-import java.io.Serializable;
 import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 系统JS代码
@@ -24,6 +25,9 @@ public class JsCodeFile implements Serializable {
     
     /** 数据类型：1-文件，2-文件夹 */    
     private Integer nodeType;
+
+    /** 读写权限：0-可读可写，1-只读 */
+    private Integer readOnly;
     
     /** 上级路径，以“/”号结尾 */
     private String filePath;
