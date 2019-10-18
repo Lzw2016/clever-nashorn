@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.clever.common.model.request.QueryBySort;
 import org.clever.nashorn.dto.request.CodeRunLogQueryReq;
 import org.clever.nashorn.dto.response.CodeRunLogQueryRes;
+import org.clever.nashorn.dto.response.CodeRunLogStatusSummaryRes;
 import org.clever.nashorn.entity.CodeRunLog;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 作者：lizw <br/>
@@ -41,10 +43,16 @@ public class CodeRunLogService {
         query.addOrderFieldMapping("groupName", "b.group_name");
         query.addOrderFieldMapping("filePath", "b.file_path");
         query.addOrderFieldMapping("name", "b.name");
+        query.addOrderFieldMapping("runTime", "b.name");
         if (query.getOrderFields().size() <= 0) {
             query.addOrderField("createAt", QueryBySort.DESC);
         }
         return query.result(codeRunLogMapper.queryByPage(query));
+    }
+
+    public List<CodeRunLogStatusSummaryRes> groupByStatus(CodeRunLogQueryReq query) {
+        query.setSearchCount(false);
+        return codeRunLogMapper.groupByStatus(query);
     }
 
     @Transactional

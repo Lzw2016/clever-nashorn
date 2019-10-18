@@ -41,4 +41,10 @@ public class CodeRunLogQueryReq extends QueryByPage {
 
     @ApiModelProperty("脚本运行状态：1-运行中，2-成功，3-异常，4-超时，...")
     private Integer status;
+
+    @ApiModelProperty("执行时间-最小(单位:微秒)(1毫秒=1000微秒)")
+    private Long runTimeMin;
+
+    @ApiModelProperty("执行时间-最大(单位:微秒)(1毫秒=1000微秒)")
+    private Long runTimeMax;
 }

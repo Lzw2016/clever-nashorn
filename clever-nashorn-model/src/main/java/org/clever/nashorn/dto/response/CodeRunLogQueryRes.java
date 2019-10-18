@@ -52,4 +52,9 @@ public class CodeRunLogQueryRes extends BaseResponse {
 
     /** 文件或文件夹名称 */
     private String name;
+
+    /**
+     * 执行时间(单位:微秒)
+     */
+    private Long runTime;
 }

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.clever.nashorn.dto.request.CodeRunLogQueryReq;
 import org.clever.nashorn.dto.response.CodeRunLogQueryRes;
+import org.clever.nashorn.dto.response.CodeRunLogStatusSummaryRes;
 import org.clever.nashorn.entity.CodeRunLog;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +24,6 @@ public interface CodeRunLogMapper extends BaseMapper<CodeRunLog> {
 
     @Update("update code_run_log set run_log=concat(run_log, #{addLog}) where id=#{codeRunLogId}")
     int appendLog(Long codeRunLogId, String addLog);
+
+    List<CodeRunLogStatusSummaryRes> groupByStatus(@Param("query") CodeRunLogQueryReq query);
 }
