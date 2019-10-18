@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--suppress SqlNoDataSourceInspection, SqlDialectInspection -->
+<mapper namespace="org.clever.nashorn.mapper.CodeRunLogMapper">
+    <select id="queryByPage" resultType="org.clever.nashorn.dto.response.CodeRunLogQueryRes">
+        select
+        a.id, a.js_code_id, a.run_start, a.run_end, a.status, a.create_at, a.update_at, b.biz_type, b.group_name, b.file_path, b.name
+        from code_run_log a left join js_code_file b on (a.js_code_id=b.id and b.node_type=1)
+        <where>
+            <if test="query.bizType!=null and query.bizType!=''">
+                and b.biz_type=#{query.bizType}
+            </if>
+            <if test="query.groupName!=null and query.groupName!=''">
+                and b.group_name=#{query.groupName}
+            </if>
+            <if test="query.fileId!=null and query.fileId!=''">
+                and a.js_code_id=#{query.fileId}
+            </if>
+            <if test="query.fullPath!=null and query.fullPath!=''">
+                and concat(b.file_path, b.name)=#{query.fullPath}
+            </if>
+            <if test="query.runStartStart!=null">
+                and a.run_start>=#{query.runStartStart}
+            </if>
+            <if test="query.runStartEnd!=null">
+                <![CDATA[ and a.run_start<=#{query.runStartEnd} ]]>
+            </if>
+            <if test="query.runEndStart!=null">
+                and a.run_end>=#{query.runEndStart}
+            </if>
+            <if test="query.runEndEnd!=null">
+                <![CDATA[ and a.run_end<=#{query.runEndEnd} ]]>
+            </if>
+            <if test="query.status!=null">
+                and a.status=#{query.status}
+            </if>
+        </where>
+    </select>
+</mapper>

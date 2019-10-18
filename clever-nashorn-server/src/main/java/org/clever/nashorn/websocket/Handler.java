@@ -43,7 +43,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
      */
     private static final ConcurrentHashMap<String, Task> TASK_MAP = new ConcurrentHashMap<>();
     private static long Last_Debug_Text = System.currentTimeMillis();
-    private static long Debug_Interval = 1000 * 30;
+    private static long Debug_Interval = 1000 * 60 * 10;
 
     static {
         // 守护线程

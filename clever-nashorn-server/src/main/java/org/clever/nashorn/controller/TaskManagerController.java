@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 作者：lizw <br/>
  * 创建时间：2019/10/18 10:10 <br/>
  */
-@Api("系统JS代码")
+@Api("系统任务")
 @RequestMapping("/api/task")
 @RestController
 public class TaskManagerController {

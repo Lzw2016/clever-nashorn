@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.clever.common.utils.exception.ExceptionUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
@@ -206,7 +207,15 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
      */
     private long doHandle(final ScriptObjectMirror jsHandler, final HttpServletRequest request, final HttpServletResponse response) throws IOException {
         ServletContextWrapper contextWrapper = new ServletContextWrapper(request, response, jacksonMapper);
-        Object result = jsHandler.callMember(Handler_Method, contextWrapper);
+        Object result;
+        try {
+            result = jsHandler.callMember(Handler_Method, contextWrapper);
+        } catch (Throwable e) {
+            log.warn("执行jsHandler异常", e);
+            throw ExceptionUtils.unchecked(e);
+        } finally {
+            // TODO 记录执行日志
+        }
         final long startTime = System.currentTimeMillis();
         contextWrapper.getResponseWrapper().wrapper();
         boolean needWriteResult = false;

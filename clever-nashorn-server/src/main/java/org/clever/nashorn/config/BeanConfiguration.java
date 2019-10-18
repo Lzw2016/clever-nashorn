@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.server.config.CustomPaginationInterceptor;
 import org.clever.nashorn.ScriptModuleInstance;
+import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.cache.JsCodeFileCacheService;
 import org.clever.nashorn.cache.MemoryJsCodeFileCache;
 import org.clever.nashorn.entity.EnumConstant;
@@ -124,7 +125,7 @@ public class BeanConfiguration {
     }
 
     @Bean("HttpRequestJsHandler-JsCodeFileCache")
-    public MemoryJsCodeFileCache jsCodeFileCache(@Autowired JsCodeFileCacheService jsCodeFileCacheService) {
+    public JsCodeFileCache jsCodeFileCache(@Autowired JsCodeFileCacheService jsCodeFileCacheService) {
         return new MemoryJsCodeFileCache(1000 * 3600 * 2, jsCodeFileCacheService);
     }
 
@@ -132,7 +133,7 @@ public class BeanConfiguration {
     public HttpRequestJsHandler httpRequestJsHandler(
             @Autowired ObjectMapper objectMapper,
             @Autowired @Qualifier("HttpRequestJsHandler-ModuleCache") ModuleCache moduleCache,
-            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") MemoryJsCodeFileCache jsCodeFileCache,
+            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") JsCodeFileCache jsCodeFileCache,
             @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context
     ) {
         final String bizType = EnumConstant.DefaultBizType;
