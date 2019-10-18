@@ -97,22 +97,14 @@ settings
 
 正在运行任务的管理（一张表?CodeRunLog就行），及时远程动态查看运行日志
 
-实现logback或者log4j的log，需要把Java日志也打印到浏览器
-
-提供一个接口返回任务详情
-提供接口用于管理任务，关闭等操作。
-
-js数据加载debug层外壳
-js缓存debug层外壳
-js Folder debug层外壳
-执行临时js实现
+提供一个接口返回任务详情 OK
+提供接口用于管理任务，关闭等操作。 OK
 
 Java ThreadPoolExecutor无法有效的强制停止线程，需要强制关闭超时执行的线程
     实现方式 - 使用esprima等库，做AST语法树，判断有死循环就不让保存到数据库
 
 -- 数据库设计
-js_code_file 增加tag字段，支持自定义扩展脚本分组隔离
-js_code_file 增加read_only字段，一旦设置成只读的js就不允许修改了，只能删了重新创建
+js_code_file 增加read_only字段，一旦设置成只读的js就不允许修改了，只能删了重新创建 OK
 
 
 -- 增删查改

@@ -9,6 +9,8 @@ import org.clever.common.utils.tuples.TupleSeven;
 import org.clever.common.utils.validator.BaseValidatorUtils;
 import org.clever.common.utils.validator.ValidatorFactoryUtils;
 import org.clever.nashorn.dto.response.ConsoleLogRes;
+import org.clever.nashorn.dto.response.TaskManagerRes;
+import org.clever.nashorn.model.TaskInfo;
 import org.clever.nashorn.model.WebSocketTaskReq;
 import org.clever.nashorn.websocket.utils.ThreadPoolUtils;
 import org.clever.nashorn.websocket.utils.WebSocketCloseSessionUtils;
@@ -31,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <T> 请求消息的类型
  * @param <K> WebSocket任务类型
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "FieldCanBeLocal"})
 @Slf4j
 public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> extends AbstractWebSocketHandler {
 
@@ -41,42 +43,13 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
      */
     private static final ConcurrentHashMap<String, Task> TASK_MAP = new ConcurrentHashMap<>();
     private static long Last_Debug_Text = System.currentTimeMillis();
+    private static long Debug_Interval = 1000 * 30;
 
     static {
         // 守护线程
         Thread thread = new Thread(() -> {
             while (true) {
-                List<String> rmList = new ArrayList<>();
-                int allSessionCount = 0;
-                for (ConcurrentHashMap.Entry<String, Task> entry : TASK_MAP.entrySet()) {
-                    String key = entry.getKey();
-                    Task task = entry.getValue();
-                    allSessionCount += task.getWebSocketSessionSize();
-                    // 任务已停止或者任务已经超时
-                    boolean timeOut = task.getStartTime() != null
-                            && task.getRunTimeOut() > 0
-                            && ((System.currentTimeMillis() - task.getStartTime()) / 1000) >= task.getRunTimeOut();
-                    if (task.isStop() || timeOut) {
-                        try {
-                            if (timeOut) {
-                                task.sendMessage(ConsoleLogRes.newError("[执行超时] - 服务端主动关闭", null));
-                                Thread.sleep(50);
-                            }
-                            task.stop();
-                            rmList.add(key);
-                        } catch (Throwable e) {
-                            log.error(String.format("[WebSocket] 释放%1$s任务失败", task.getClass().getSimpleName()), e);
-                        }
-                    }
-                }
-                for (String key : rmList) {
-                    TASK_MAP.remove(key);
-                }
-                // 打印日志
-                if (log.isDebugEnabled() && (System.currentTimeMillis() - Last_Debug_Text) > 1000 * 30) {
-                    log.debug(getText(allSessionCount, rmList));
-                    Last_Debug_Text = System.currentTimeMillis();
-                }
+                clearTask(false);
                 try {
                     Thread.sleep(1000 * 3);
                 } catch (Throwable e) {
@@ -88,7 +61,47 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         thread.start();
     }
 
-    private static String getText(int allSessionCount, List<String> rmList) {
+    public static TaskManagerRes clearTask(boolean force) {
+        final long currentTime = System.currentTimeMillis();
+        List<String> rmList = new ArrayList<>();
+        int allSessionCount = 0;
+        for (ConcurrentHashMap.Entry<String, Task> entry : TASK_MAP.entrySet()) {
+            String key = entry.getKey();
+            Task task = entry.getValue();
+            allSessionCount += task.getWebSocketSessionSize();
+            // 任务已停止或者任务已经超时
+            boolean timeOut = task.getStartTime() != null
+                    && task.getRunTimeOut() > 0
+                    && ((currentTime - task.getStartTime()) / 1000) >= task.getRunTimeOut();
+            if (task.isStop() || timeOut) {
+                try {
+                    if (timeOut) {
+                        task.sendMessage(ConsoleLogRes.newError("[执行超时] - 服务端主动关闭", null));
+                        Thread.sleep(5);
+                    }
+                    task.stop();
+                    rmList.add(key);
+                } catch (Throwable e) {
+                    log.error(String.format("[WebSocket] 释放%1$s任务失败", task.getClass().getSimpleName()), e);
+                }
+            }
+        }
+        for (String key : rmList) {
+            TASK_MAP.remove(key);
+        }
+        // 打印日志
+        TaskManagerRes res = null;
+        if (force || (currentTime - Last_Debug_Text) > Debug_Interval) {
+            res = getText(allSessionCount, rmList);
+        }
+        if (res != null && log.isDebugEnabled()) {
+            log.debug(res.getSummaryText());
+            Last_Debug_Text = System.currentTimeMillis();
+        }
+        return res;
+    }
+
+    private static TaskManagerRes getText(int allSessionCount, List<String> rmList) {
         final String tab = "\t";
         final String enter = "\r\n";
         final String line1 = "=======================================================================================================================================================================";
@@ -114,18 +127,24 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                 tupleSeven.getValue6(),
                 tupleSeven.getValue7()
         )).append(enter);
+        List<TaskInfo> taskInfoList = new ArrayList<>(TASK_MAP.size());
         for (Map.Entry<String, Task> entry : TASK_MAP.entrySet()) {
             String taskId = entry.getKey();
             Task task = entry.getValue();
             StringBuilder sb = taskInfoMap.computeIfAbsent(taskId, s -> new StringBuilder());
-            sb.append(String.format(
-                    "[Task] -> [%s]",
-                    taskId
-            )).append(enter);
+            sb.append(String.format("[Task] -> [%s]", taskId)).append(enter);
             sb.append(tab).append("            TaskType：").append(task.getTaskType()).append(enter);
             sb.append(tab).append("WebSocketSessionSize：").append(task.getWebSocketSessionSize()).append(enter);
             sb.append(tab).append("    RunningTaskCount：").append(task.getRunningTaskCount()).append(enter);
             sb.append(tab).append("      TotalTaskCount：").append(task.getTotalTaskCount()).append(enter);
+            // TaskInfo
+            TaskInfo taskInfo = new TaskInfo();
+            taskInfo.setTaskId(taskId);
+            taskInfo.setTaskType(String.valueOf(task.getTaskType()));
+            taskInfo.setWebSocketSessionSize(task.getWebSocketSessionSize());
+            taskInfo.setRunningTaskCount(task.getRunningTaskCount());
+            taskInfo.setTotalTaskCount(task.getTotalTaskCount());
+            taskInfoList.add(taskInfo);
         }
         // 组装返回数据
         if (taskInfoMap.size() <= 0) {
@@ -145,7 +164,31 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
                 text.append(line2).append(enter);
             }
         }
-        return text.toString();
+        TaskManagerRes res = new TaskManagerRes();
+        res.setSummaryText(text.toString());
+        res.setAllWebSocketSessionSize(allSessionCount);
+        res.setTaskCount(TASK_MAP.size());
+        res.setRemoveTaskCount(rmList.size());
+        res.setSumCorePoolSize(tupleSeven.getValue1());
+        res.setSumMaximumPoolSize(tupleSeven.getValue2());
+        res.setSumPoolSize(tupleSeven.getValue3());
+        res.setSumQueueSize(tupleSeven.getValue4());
+        res.setSumTaskCount(tupleSeven.getValue5());
+        res.setSumActiveCount(tupleSeven.getValue6());
+        res.setSumCompletedTaskCount(tupleSeven.getValue7());
+        res.setTaskInfoList(taskInfoList);
+        return res;
+    }
+
+    public static TaskManagerRes stopTask(String taskId) throws InterruptedException {
+        Task task = TASK_MAP.get(taskId);
+        if (task == null) {
+            throw new RuntimeException("任务不存在");
+        }
+        task.sendMessage(ConsoleLogRes.newError("[管理员强制停止任务] - 服务端主动关闭", null));
+        Thread.sleep(5);
+        task.stop();
+        return clearTask(true);
     }
 
     /**
