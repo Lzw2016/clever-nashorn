@@ -20,6 +20,7 @@ import org.clever.nashorn.intercept.HttpRequestJsHandler;
 import org.clever.nashorn.internal.*;
 import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
+import org.clever.nashorn.service.CodeRunLogService;
 import org.clever.nashorn.utils.MergeDataSourceConfig;
 import org.clever.nashorn.utils.MergeRedisProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,7 +135,8 @@ public class BeanConfiguration {
             @Autowired ObjectMapper objectMapper,
             @Autowired @Qualifier("HttpRequestJsHandler-ModuleCache") ModuleCache moduleCache,
             @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") JsCodeFileCache jsCodeFileCache,
-            @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context
+            @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context,
+            @Autowired CodeRunLogService codeRunLogService
     ) {
         final String bizType = EnumConstant.DefaultBizType;
         final String groupName = EnumConstant.DefaultGroupName;
@@ -147,7 +149,7 @@ public class BeanConfiguration {
             context = (Map<String, Object>) context.get("ScriptGlobalContext");
         }
         ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
-        return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance);
+        return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance, codeRunLogService);
     }
 
     @Bean("MultipleDataSource")

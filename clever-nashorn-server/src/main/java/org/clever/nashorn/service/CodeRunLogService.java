@@ -1,14 +1,19 @@
 package org.clever.nashorn.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.commons.lang3.StringUtils;
 import org.clever.common.model.request.QueryBySort;
 import org.clever.nashorn.dto.request.CodeRunLogQueryReq;
 import org.clever.nashorn.dto.response.CodeRunLogQueryRes;
 import org.clever.nashorn.entity.CodeRunLog;
+import org.clever.nashorn.entity.EnumConstant;
+import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.mapper.CodeRunLogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 /**
  * 作者：lizw <br/>
@@ -40,5 +45,31 @@ public class CodeRunLogService {
             query.addOrderField("createAt", QueryBySort.DESC);
         }
         return query.result(codeRunLogMapper.queryByPage(query));
+    }
+
+    @Transactional
+    public Long startLog(JsCodeFile jsCodeFile) {
+        CodeRunLog codeRunLog = new CodeRunLog();
+        codeRunLog.setJsCodeId(jsCodeFile.getId());
+        codeRunLog.setJsCode(jsCodeFile.getJsCode());
+        codeRunLog.setRunStart(new Date());
+        codeRunLog.setRunLog(StringUtils.EMPTY);
+        codeRunLog.setStatus(EnumConstant.Status_1);
+        codeRunLogMapper.insert(codeRunLog);
+        return codeRunLog.getId();
+    }
+
+    @Transactional
+    public void endLog(Long codeRunLogId, Integer status) {
+        CodeRunLog codeRunLog = new CodeRunLog();
+        codeRunLog.setId(codeRunLogId);
+        codeRunLog.setRunEnd(new Date());
+        codeRunLog.setStatus(status);
+        codeRunLogMapper.updateById(codeRunLog);
+    }
+
+    @Transactional
+    public void appendLog(Long codeRunLogId, String addLog) {
+        codeRunLogMapper.appendLog(codeRunLogId, addLog);
     }
 }

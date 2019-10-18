@@ -15,7 +15,9 @@ import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
+import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
+import org.clever.nashorn.service.CodeRunLogService;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -85,17 +87,21 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     @Getter
     private final ScriptModuleInstance scriptModuleInstance;
 
+    private final CodeRunLogService codeRunLogService;
+
     public HttpRequestJsHandler(
             final String bizType,
             final String groupName,
             ObjectMapper objectMapper,
             JsCodeFileCache jsCodeFileCache,
-            ScriptModuleInstance scriptModuleInstance) {
+            ScriptModuleInstance scriptModuleInstance,
+            CodeRunLogService codeRunLogService) {
         this.bizType = bizType;
         this.groupName = groupName;
         jacksonMapper = new JacksonMapper(objectMapper);
         this.jsCodeFileCache = jsCodeFileCache;
         this.scriptModuleInstance = scriptModuleInstance;
+        this.codeRunLogService = codeRunLogService;
     }
 
     /**
@@ -107,6 +113,15 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(fileFullName);
         JsCodeFile jsCodeFile = jsCodeFileCache.getFile(bizType, groupName, tupleTow.getValue1(), tupleTow.getValue2());
         return jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode());
+    }
+
+    private JsCodeFile getJsCodeFile(String fileFullName) {
+        TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(fileFullName);
+        JsCodeFile jsCodeFile = jsCodeFileCache.getFile(bizType, groupName, tupleTow.getValue1(), tupleTow.getValue2());
+        if (jsCodeFile != null && StringUtils.isNotBlank(jsCodeFile.getJsCode())) {
+            return jsCodeFile;
+        }
+        return null;
     }
 
     /**
@@ -205,16 +220,30 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     /**
      * 使用js代码处理请求
      */
-    private long doHandle(final ScriptObjectMirror jsHandler, final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+    private long doHandle(
+            final ScriptObjectMirror jsHandler,
+            final String jsHandlerFileFullName,
+            final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+        final JsCodeFile jsCodeFile = getJsCodeFile(jsHandlerFileFullName);
+        if (jsCodeFile == null) {
+            throw new RuntimeException("JsCodeFile不存在");
+        }
         ServletContextWrapper contextWrapper = new ServletContextWrapper(request, response, jacksonMapper);
         Object result;
+        Long codeRunLogId = null;
         try {
+            codeRunLogId = codeRunLogService.startLog(jsCodeFile);
             result = jsHandler.callMember(Handler_Method, contextWrapper);
         } catch (Throwable e) {
             log.warn("执行jsHandler异常", e);
+            if (codeRunLogId != null) {
+                codeRunLogService.endLog(codeRunLogId, EnumConstant.Status_3);
+            }
             throw ExceptionUtils.unchecked(e);
         } finally {
-            // TODO 记录执行日志
+            if (codeRunLogId != null) {
+                codeRunLogService.endLog(codeRunLogId, EnumConstant.Status_2);
+            }
         }
         final long startTime = System.currentTimeMillis();
         contextWrapper.getResponseWrapper().wrapper();
@@ -253,7 +282,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         // 使用js代码处理请求
         final long startTime3 = System.currentTimeMillis();
         response.setHeader("use-http-request-js-handler", jsHandlerFileFullName);
-        final long startTime4 = doHandle(jsHandler, request, response);
+        final long startTime4 = doHandle(jsHandler, jsHandlerFileFullName, request, response);
         // 请求处理完成 - 打印日志
         long endTime = System.currentTimeMillis();
         log.debug(

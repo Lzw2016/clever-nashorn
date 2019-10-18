@@ -3,6 +3,7 @@ package org.clever.nashorn.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.clever.nashorn.dto.request.CodeRunLogQueryReq;
 import org.clever.nashorn.dto.response.CodeRunLogQueryRes;
 import org.clever.nashorn.entity.CodeRunLog;
@@ -19,4 +20,7 @@ import java.util.List;
 public interface CodeRunLogMapper extends BaseMapper<CodeRunLog> {
 
     List<CodeRunLogQueryRes> queryByPage(@Param("query") CodeRunLogQueryReq query);
+
+    @Update("update code_run_log set run_log=concat(run_log, #{addLog}) where id=#{codeRunLogId}")
+    int appendLog(Long codeRunLogId, String addLog);
 }

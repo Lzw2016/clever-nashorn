@@ -51,4 +51,20 @@ public class EnumConstant {
      * 读写权限：1-只读
      */
     public static final Integer Read_Only_1 = 1;
+    /**
+     * 脚本运行状态：1-运行中
+     */
+    public static final Integer Status_1 = 1;
+    /**
+     * 脚本运行状态：2-成功
+     */
+    public static final Integer Status_2 = 2;
+    /**
+     * 脚本运行状态：3-异常
+     */
+    public static final Integer Status_3 = 3;
+    /**
+     * 脚本运行状态：4-超时
+     */
+    public static final Integer Status_4 = 4;
 }
