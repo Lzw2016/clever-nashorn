@@ -35,11 +35,11 @@ ScriptEngine Module 需要支持直接加载第三方开源库(如：lodash、Un
     关于Nashorn的 load 函数 - https://stackoverflow.com/questions/29051472/java-nashorn-accessing-another-js-file OK
 
 解决Java与JS互调的类型问题(Java对象转成Js对象)
-    Java对象转成Js对象 OK - 80%
+    Java对象转成Js对象 OK - 100%
 
 数据库操作工具
-    关系型数据库 MySql OK - 20%
-    Redis
+    关系型数据库 MySql OK - 100%
+    Redis OK - 100%
     MQ
 
 前端页面基本布局完成 -- OK
@@ -131,7 +131,7 @@ CodeFileHistory
     根据id查询 OK
     根据业务类型，分组名称，全路径查询列表（减少字段）OK
     根据业务类型，分组名称，父级路径查询所有父路径下的历史文件名 OK
-    退回代码到某个版本
+    退回代码到某个版本 OK
 
 CodeRunLog
     根据id查询

@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.clever.common.utils.mapper.JacksonMapper;
 import org.clever.common.utils.tuples.TupleTow;
 import org.clever.nashorn.ScriptModuleInstance;
@@ -32,6 +33,11 @@ import java.util.Set;
 @Slf4j
 public class HttpRequestJsHandler implements HandlerInterceptor {
     /**
+     * 没有js file映射时的数据前缀
+     */
+    private static final String No_FileFullPath_Mapping = "&&&???###";
+    private static final long No_FileFullPath_Mapping_TimeOut = 1000 * 60 * 10;
+    /**
      * url path --> file full path
      */
     private static final Cache<String, String> Path_FileFullPath_Cache = CacheBuilder.newBuilder().maximumSize(5000).initialCapacity(1000).build();
@@ -43,6 +49,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         add(".json");
         add(".action");
     }};
+    private static final String Debug_Use_Js_Handler = "debugUseJsHandler";
     /**
      * JS处理请求的方法名
      */
@@ -102,13 +109,17 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
     }
 
     /**
-     * 获取JS文件全名称 - 使用缓存 (TODO 需要优化)
+     * 获取JS文件全名称 - 使用缓存
      */
     private String getJsHandlerFileFullNameUseCache(final HttpServletRequest request) {
         final String path = request.getServletPath();
         String jsHandlerFileFullName = Path_FileFullPath_Cache.getIfPresent(path);
-        if (jsHandlerFileFullName != null && jsHandlerFileFullName.startsWith("###")) {
-            return null;
+        if (jsHandlerFileFullName != null && jsHandlerFileFullName.startsWith(No_FileFullPath_Mapping)) {
+            final long time = NumberUtils.toLong(jsHandlerFileFullName.substring(No_FileFullPath_Mapping.length()), -1);
+            if ((System.currentTimeMillis() - time) <= No_FileFullPath_Mapping_TimeOut) {
+                return null;
+            }
+            jsHandlerFileFullName = null;
         }
         if (StringUtils.isNotBlank(jsHandlerFileFullName) && jsCodeFileExists(jsHandlerFileFullName)) {
             return jsHandlerFileFullName;
@@ -117,7 +128,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         if (StringUtils.isNotBlank(jsHandlerFileFullName)) {
             Path_FileFullPath_Cache.put(path, jsHandlerFileFullName);
         } else {
-            Path_FileFullPath_Cache.put(path, "###" + System.currentTimeMillis());
+            Path_FileFullPath_Cache.put(path, No_FileFullPath_Mapping + System.currentTimeMillis());
         }
         return jsHandlerFileFullName;
     }
@@ -211,11 +222,17 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
+        if (handler instanceof HandlerMethod && request.getParameter(Debug_Use_Js_Handler) == null) {
+            return true;
+        }
         // 获取JS文件全名称
         final long startTime1 = System.currentTimeMillis();
         final String jsHandlerFileFullName = getJsHandlerFileFullNameUseCache(request);
         if (StringUtils.isBlank(jsHandlerFileFullName)) {
-            log.info("使用js代码处理请求 | 跳过js处理 | 总耗时 {}ms", System.currentTimeMillis() - startTime1);
+            final long tmp = System.currentTimeMillis() - startTime1;
+            if (tmp > 0) {
+                log.debug("使用js代码处理请求 | 跳过js处理 | 总耗时 {}ms", tmp);
+            }
             return true;
         }
         // 获取js模块对象处理请求
@@ -230,7 +247,7 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
         final long startTime4 = doHandle(jsHandler, request, response);
         // 请求处理完成 - 打印日志
         long endTime = System.currentTimeMillis();
-        log.info(
+        log.debug(
                 "使用js代码处理请求 | [{}] | [总]耗时 {}ms | [Js处理全过程]耗时 {}ms | [Js函数调用]耗时 {}ms | [返回值序列化]耗时 {}ms",
                 jsHandlerFileFullName,
                 endTime - startTime1,
@@ -243,11 +260,11 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
 
 //    @Override
 //    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-//        log.info("=================================================== postHandle");
+//        log.debug("=================================================== postHandle");
 //    }
 //
 //    @Override
 //    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-//        log.info("=================================================== afterCompletion");
+//        log.debug("=================================================== afterCompletion");
 //    }
 }
