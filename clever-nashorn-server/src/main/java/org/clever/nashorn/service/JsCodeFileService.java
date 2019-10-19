@@ -67,6 +67,25 @@ public class JsCodeFileService {
         return BuildTreeUtils.buildTree(treeList);
     }
 
+    /**
+     * 拆分路径<br />
+     * <pre>
+     *     ""                -> "", ""
+     *     "/"               -> "/", ""
+     *     "/public"         -> "/", "public"
+     *     "/public/"        -> "/", "public"
+     *     "/public/tmp.js"  -> "/public/", "tmp.js"
+     * </pre>
+     *
+     * @param filePath 文件路径
+     */
+    public static TupleTow<String, String> getParentPath(String filePath) {
+        if (filePath.endsWith(EnumConstant.File_Path_Separator)) {
+            filePath = filePath.substring(0, filePath.length() - 1);
+        }
+        return JsCodeFilePathUtils.getParentPath(filePath);
+    }
+
     @Transactional
     public JsCodeFile addJsCodeFile(JsCodeFileAddReq req) {
         JsCodeFile jsCodeFile = BeanMapper.mapper(req, JsCodeFile.class);
@@ -79,7 +98,7 @@ public class JsCodeFileService {
         }
         // 如果父路径不是根路径，校验父路径存在
         if (!Objects.equals(EnumConstant.File_Path_Separator, jsCodeFile.getFilePath())) {
-            TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
+            TupleTow<String, String> tupleTow = getParentPath(req.getFilePath());
             JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(req.getBizType(), req.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
             if (parent == null) {
                 throw new BusinessException("父路径不存在");
@@ -119,7 +138,7 @@ public class JsCodeFileService {
         if (req.getFilePath() != null
                 && !Objects.equals(req.getFilePath(), old.getFilePath())
                 && !Objects.equals(req.getFilePath(), EnumConstant.File_Path_Separator)) {
-            TupleTow<String, String> tupleTow = JsCodeFilePathUtils.getParentPath(req.getFilePath());
+            TupleTow<String, String> tupleTow = getParentPath(req.getFilePath());
             JsCodeFile parent = jsCodeFileMapper.getJsCodeFile(old.getBizType(), old.getGroupName(), EnumConstant.Node_Type_2, tupleTow.getValue1(), tupleTow.getValue2());
             if (parent == null) {
                 throw new BusinessException("父路径不存在");

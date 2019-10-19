@@ -24,6 +24,7 @@ create index js_code_file_biz_type on js_code_file (biz_type);
 create index js_code_file_group_name on js_code_file (group_name);
 create index js_code_file_file_path on js_code_file (file_path);
 create index js_code_file_name on js_code_file (name);
+create unique index js_code_full_path on js_code_file (biz_type, group_name, file_path, name);
 /*------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------*/
