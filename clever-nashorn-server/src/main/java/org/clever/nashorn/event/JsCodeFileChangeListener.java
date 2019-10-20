@@ -1,7 +1,7 @@
 package org.clever.nashorn.event;
 
 import lombok.extern.slf4j.Slf4j;
-import org.clever.nashorn.cache.MemoryJsCodeFileCache;
+import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.entity.JsCodeFile;
 import org.clever.nashorn.module.cache.ModuleCache;
 import org.clever.nashorn.utils.JsCodeFilePathUtils;
@@ -20,7 +20,7 @@ public class JsCodeFileChangeListener implements ApplicationListener<JsCodeFileC
 
     @Qualifier("HttpRequestJsHandler-JsCodeFileCache")
     @Autowired
-    private MemoryJsCodeFileCache memoryJsCodeFileCache;
+    private JsCodeFileCache memoryJsCodeFileCache;
 
     @Qualifier("HttpRequestJsHandler-ModuleCache")
     @Autowired

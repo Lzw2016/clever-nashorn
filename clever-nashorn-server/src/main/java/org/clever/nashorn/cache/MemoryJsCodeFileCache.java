@@ -5,6 +5,7 @@ import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.entity.JsCodeFile;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -111,6 +112,10 @@ public class MemoryJsCodeFileCache implements JsCodeFileCache {
     @Override
     public void put(JsCodeFile jsCodeFile) {
         intervalClear();
+        JsCodeFile exists = Js_Code_File_Map.values().stream().filter(file -> Objects.equals(file.getId(), jsCodeFile.getId())).findFirst().orElse(null);
+        if (exists != null) {
+            remove(exists);
+        }
         String key = getCacheKey(jsCodeFile);
         Js_Code_File_Map.put(key, jsCodeFile);
     }

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 作者：lizw <br/>
@@ -79,7 +80,7 @@ public class JsCodeFileService {
      *
      * @param filePath 文件路径
      */
-    public static TupleTow<String, String> getParentPath(String filePath) {
+    private static TupleTow<String, String> getParentPath(String filePath) {
         if (filePath.endsWith(EnumConstant.File_Path_Separator)) {
             filePath = filePath.substring(0, filePath.length() - 1);
         }
@@ -133,7 +134,14 @@ public class JsCodeFileService {
         // 文件夹没有脚本内容
         if (Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
             req.setJsCode(null);
+            if (req.getName() != null && req.getName().endsWith(".js")) {
+                throw new BusinessException("文件夹名称不能以“.js”结尾");
+            }
+        } else if (req.getName() != null && !req.getName().endsWith(".js")) {
+            req.setName(StringUtils.trim(req.getName()) + ".js");
         }
+        // 更新filePath 或者 更新name
+        boolean updateFullPath = false;
         // 如果更新 filePath 则校验
         if (req.getFilePath() != null
                 && !Objects.equals(req.getFilePath(), old.getFilePath())
@@ -143,7 +151,8 @@ public class JsCodeFileService {
             if (parent == null) {
                 throw new BusinessException("父路径不存在");
             }
-            // TODO 文件夹更新filePath??
+            // 文件夹更新filePath
+            updateFullPath = true;
         }
         // 如果更新 name 则校验
         if (req.getName() != null && !Objects.equals(req.getName(), old.getName())) {
@@ -152,7 +161,8 @@ public class JsCodeFileService {
             if (exists != null) {
                 throw new BusinessException("与已经存在的文件" + (Objects.equals(EnumConstant.Node_Type_2, exists.getNodeType()) ? "夹" : "") + "同名，请重新指定名称");
             }
-            // TODO 文件夹更新name??
+            // 文件夹更新name
+            updateFullPath = true;
         }
         // 记录历史记录
         if (Objects.equals(EnumConstant.Node_Type_1, old.getNodeType())) {
@@ -163,6 +173,24 @@ public class JsCodeFileService {
         update.setId(old.getId());
         jsCodeFileMapper.updateById(update);
         update = jsCodeFileMapper.selectById(id);
+        // 文件夹更新filePath 或者 文件夹更新name
+        if (updateFullPath && Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
+            String oldFullPath = JsCodeFilePathUtils.concat(old.getFilePath(), old.getName());
+            String newFullPath = JsCodeFilePathUtils.concat(update.getFilePath(), update.getName());
+            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(oldFullPath);
+            List<JsCodeFile> updateList = new ArrayList<>(childList.size());
+            childList.forEach((file) -> {
+                String filePath = file.getFilePath().substring(oldFullPath.length());
+                filePath = newFullPath + filePath;
+                JsCodeFile tmp = new JsCodeFile();
+                tmp.setId(file.getId());
+                tmp.setFilePath(filePath);
+                updateList.add(tmp);
+            });
+            updateList.forEach(file -> jsCodeFileMapper.updateById(file));
+            childList = jsCodeFileMapper.selectBatchIds(updateList.stream().map(JsCodeFile::getId).collect(Collectors.toSet()));
+            childList.forEach(file -> applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, file)));
+        }
         // 发布更新事件
         applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, update));
         return update;
@@ -223,7 +251,7 @@ public class JsCodeFileService {
         JsCodeFile update = new JsCodeFile();
         update.setId(old.getId());
         update.setReadOnly(EnumConstant.Read_Only_1);
-        jsCodeFileMapper.updateById(old);
+        jsCodeFileMapper.updateById(update);
         return jsCodeFileMapper.selectById(old.getId());
     }
 
