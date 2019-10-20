@@ -202,6 +202,9 @@ public class JsCodeFileService {
         if (old == null) {
             return null;
         }
+        if (Objects.equals(old.getDisableDelete(), EnumConstant.Disable_Delete_1)) {
+            throw new BusinessException("不可删除当前数据，请联系管理员");
+        }
         if (Objects.equals(old.getNodeType(), EnumConstant.Node_Type_1)) {
             // 删除文件
             jsCodeFileMapper.deleteById(id);

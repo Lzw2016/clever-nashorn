@@ -28,6 +28,9 @@ public class JsCodeFile implements Serializable {
 
     /** 读写权限：0-可读可写，1-只读 */
     private Integer readOnly;
+
+    /** 禁止删除：0-可删除，1-不可删除 */
+    private Integer disableDelete;
     
     /** 上级路径，以“/”号结尾 */
     private String filePath;

@@ -52,6 +52,14 @@ public class EnumConstant {
      */
     public static final Integer Read_Only_1 = 1;
     /**
+     * 禁止删除：0-可删除
+     */
+    public static final Integer Disable_Delete_0 = 0;
+    /**
+     * 禁止删除：1-不可删除
+     */
+    public static final Integer Disable_Delete_1 = 1;
+    /**
      * 脚本运行状态：1-运行中
      */
     public static final Integer Status_1 = 1;
