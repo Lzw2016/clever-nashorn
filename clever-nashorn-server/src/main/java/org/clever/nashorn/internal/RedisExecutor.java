@@ -271,6 +271,15 @@ public class RedisExecutor {
     }
 
     /**
+     * 获取Value的值
+     *
+     * @param key key
+     */
+    public Object vGet(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    /**
      * 返回 key 中字符串值的子字符
      *
      * @param key   key

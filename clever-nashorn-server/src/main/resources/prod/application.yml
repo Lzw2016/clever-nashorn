@@ -263,9 +263,9 @@ clever:
           dataSource2:
             pool-name: dataSource2
             driver-class-name: org.mariadb.jdbc.Driver
-            jdbc-url: jdbc:mysql://172.18.1.1:3306/clever-nashorn
-            username: clever-nashorn
-            password: lizhiwei1993
+            jdbc-url: jdbc:mysql://172.18.1.1:3306/clever-nashorn-demo
+            username: clever-nashorn-demo
+            password: demo
       multiple-redis:
         default-redis: redisDb1
         global-config:

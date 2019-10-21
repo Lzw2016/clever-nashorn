@@ -178,18 +178,20 @@ public class JsCodeFileService {
             String oldFullPath = JsCodeFilePathUtils.concat(old.getFilePath(), old.getName());
             String newFullPath = JsCodeFilePathUtils.concat(update.getFilePath(), update.getName());
             List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(oldFullPath);
-            List<JsCodeFile> updateList = new ArrayList<>(childList.size());
-            childList.forEach((file) -> {
-                String filePath = file.getFilePath().substring(oldFullPath.length());
-                filePath = newFullPath + filePath;
-                JsCodeFile tmp = new JsCodeFile();
-                tmp.setId(file.getId());
-                tmp.setFilePath(filePath);
-                updateList.add(tmp);
-            });
-            updateList.forEach(file -> jsCodeFileMapper.updateById(file));
-            childList = jsCodeFileMapper.selectBatchIds(updateList.stream().map(JsCodeFile::getId).collect(Collectors.toSet()));
-            childList.forEach(file -> applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, file)));
+            if (childList.size() > 0) {
+                List<JsCodeFile> updateList = new ArrayList<>(childList.size());
+                childList.forEach((file) -> {
+                    String filePath = file.getFilePath().substring(oldFullPath.length());
+                    filePath = newFullPath + filePath;
+                    JsCodeFile tmp = new JsCodeFile();
+                    tmp.setId(file.getId());
+                    tmp.setFilePath(filePath);
+                    updateList.add(tmp);
+                });
+                updateList.forEach(file -> jsCodeFileMapper.updateById(file));
+                childList = jsCodeFileMapper.selectBatchIds(updateList.stream().map(JsCodeFile::getId).collect(Collectors.toSet()));
+                childList.forEach(file -> applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, file)));
+            }
         }
         // 发布更新事件
         applicationContext.publishEvent(new JsCodeFileChangeEvent(this, JsCodeFileChangeEnum.Update, update));

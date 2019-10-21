@@ -457,7 +457,11 @@ public class JdbcExecutor {
     public int[] batchUpdate(String sql, Collection<Map<String, Object>> arrayParamMap) {
         List<SqlParameterSource> paramMapList = new ArrayList<>(arrayParamMap.size());
         for (Map<String, Object> map : arrayParamMap) {
-            paramMapList.add(new MapSqlParameterSource(map));
+            Map<String, Object> tmp = map;
+            if (tmp instanceof ScriptObjectMirror) {
+                tmp = jsToJavaMap(tmp);
+            }
+            paramMapList.add(new MapSqlParameterSource(tmp));
         }
         return jdbcTemplate.batchUpdate(sql, paramMapList.toArray(new SqlParameterSource[0]));
     }
@@ -697,7 +701,7 @@ public class JdbcExecutor {
             return Collections.emptyMap();
         }
         Map<String, Object> javaMap = new HashMap<>(paramMap.size());
-        paramMap.forEach((key, value) -> javaMap.put(key, ObjectConvertUtils.Instance.jsBaseToJava(value)));
+        paramMap.forEach((key, value) -> javaMap.put(key, ObjectConvertUtils.jsBaseToJava(value)));
         return javaMap;
     }
 
