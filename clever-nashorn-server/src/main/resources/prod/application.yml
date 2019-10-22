@@ -85,6 +85,13 @@ spring:
       max-lifetime: 1800000
       connection-test-query: SELECT 1
 
+  elasticsearch:
+    jest:
+      uris: http://172.18.1.1:9200
+      multi-threaded: true
+      connection-timeout: 3s
+      read-timeout: 3s
+
   cloud: #------------------------------------------------------------ Spring Cloud
     consul:
       enabled: false

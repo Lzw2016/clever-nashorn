@@ -1,20 +1,44 @@
 package org.clever.nashorn.utils;
 
 import jdk.nashorn.api.scripting.NashornScriptEngine;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.clever.common.utils.exception.ExceptionUtils;
 
 import javax.script.Bindings;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 作者：lizw <br/>
  * 创建时间：2019/08/21 09:26 <br/>
  */
 public class ScriptEngineUtils {
+    private static final Set<String> Java_Type = new HashSet<>();
+    private static final NashornScriptEngineFactory NASHORN_FACTORY;
+
+    static {
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        NashornScriptEngineFactory nashornFactory = null;
+        for (ScriptEngineFactory factory : scriptEngineManager.getEngineFactories()) {
+            if (factory instanceof NashornScriptEngineFactory) {
+                nashornFactory = (NashornScriptEngineFactory) factory;
+                break;
+            }
+        }
+        if (nashornFactory == null) {
+            throw new RuntimeException("当前Java版本没有Nashorn JS引擎，建议使用Java1.8.0_211版本");
+        }
+        NASHORN_FACTORY = nashornFactory;
+        Java_Type.add("org.apache.commons.lang3.StringUtils");
+        Java_Type.add("org.clever.nashorn.entity.JsCodeFile");
+        Java_Type.add("org.clever.nashorn.internal.TestInternal");
+    }
 
     // 默认的 NashornScriptEngine
     private static final NashornScriptEngine Default_Engine = creatEngine();
@@ -49,8 +73,8 @@ public class ScriptEngineUtils {
      * 创建一个新的 NashornScriptEngine
      */
     public static NashornScriptEngine creatEngine() {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        return (NashornScriptEngine) scriptEngineManager.getEngineByName("nashorn");
+        String[] stringArray = new String[]{"-doe"};
+        return (NashornScriptEngine) NASHORN_FACTORY.getScriptEngine(stringArray, getAppClassLoader(), Java_Type::contains);
         // 支持ES6语法的 NashornScriptEngine
         // ScriptEngineManager sm = new ScriptEngineManager();
         // NashornScriptEngineFactory factory = null;
@@ -62,6 +86,12 @@ public class ScriptEngineUtils {
         // }
         // String[] stringArray = new String[]{"-doe", "--language=es6"};
         // return factory.getScriptEngine(stringArray);
+    }
+
+    // 参考 NashornScriptEngineFactory 实现
+    private static ClassLoader getAppClassLoader() {
+        ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+        return ccl == null ? NashornScriptEngineFactory.class.getClassLoader() : ccl;
     }
 
     /**
