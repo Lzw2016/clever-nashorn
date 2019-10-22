@@ -3,6 +3,7 @@ package org.clever.nashorn.internal;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.utils.DateTimeUtils;
 import org.clever.nashorn.utils.ObjectConvertUtils;
+import org.clever.nashorn.utils.StrFormatter;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -103,8 +104,6 @@ public class CommonUtils {
         return ObjectConvertUtils.Instance.javaToJSObject(obj);
     }
 
-    // TODO String处理等工具类
-
     /**
      * 获取当前时间搓(毫秒)
      */
@@ -134,4 +133,26 @@ public class CommonUtils {
     public Object underlineToCamel(Object obj) {
         return ObjectConvertUtils.Instance.underlineToCamel(obj);
     }
+
+    /**
+     * 抛出运行时异常
+     *
+     * @param strPattern 异常消息模板
+     * @param argArray   异常消息变量
+     */
+    public void throwRuntimeException(final String strPattern, final Object... argArray) {
+        throw new RuntimeException(StrFormatter.format(strPattern, argArray));
+    }
+
+    /**
+     * 字符串格式化
+     *
+     * @param strPattern 模板
+     * @param argArray   变量
+     */
+    public String format(final String strPattern, final Object... argArray) {
+        return StrFormatter.format(strPattern, argArray);
+    }
+
+    // TODO String处理等工具类
 }
