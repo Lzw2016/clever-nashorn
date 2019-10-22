@@ -119,6 +119,7 @@ public class JestClientTest {
         Delete.Builder builder = new Delete.Builder("lzwdb4849e7-2254-44ec-81ee-b10319881fd9")
                 .index("lzw-test")
                 .type("test");
+
         DocumentResult jestResult = client.execute(builder.build());
         log.info("--> {}", jestResult.getId());
     }

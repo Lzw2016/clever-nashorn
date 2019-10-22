@@ -117,6 +117,7 @@ public class BeanConfiguration {
         context.put("HttpUtils", HttpUtils.Instance);
         context.put("JdbcUtils", JdbcUtils.Instance);
         context.put("RedisUtils", RedisUtils.Instance);
+        context.put("JestUtils", JestUtils.Instance);
         return Collections.unmodifiableMap(context);
     }
 
