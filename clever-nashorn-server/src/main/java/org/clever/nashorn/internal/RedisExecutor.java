@@ -131,7 +131,7 @@ public class RedisExecutor {
      * @param scriptObjectMirror 过期时间
      */
     public Boolean kExpireAt(String key, ScriptObjectMirror scriptObjectMirror) {
-        Object date = ObjectConvertUtils.Instance.jsBaseToJava(scriptObjectMirror);
+        Object date = ObjectConvertUtils.jsBaseToJava(scriptObjectMirror);
         if (!(date instanceof Date)) {
             throw new IllegalArgumentException("过期时间必须是一个Date");
         }

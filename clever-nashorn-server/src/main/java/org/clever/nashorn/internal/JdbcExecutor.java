@@ -646,7 +646,7 @@ public class JdbcExecutor {
     private static int toInt(Object object, int defaultInt, String exceptionMessage) {
         int result = defaultInt;
         if (object != null) {
-            object = ObjectConvertUtils.Instance.jsBaseToJava(object);
+            object = ObjectConvertUtils.jsBaseToJava(object);
             if (!(object instanceof Number)) {
                 throw new RuntimeException(exceptionMessage);
             }
