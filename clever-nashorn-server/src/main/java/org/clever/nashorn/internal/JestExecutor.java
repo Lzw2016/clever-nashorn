@@ -66,11 +66,7 @@ public class JestExecutor {
      * @param mappings mappings
      * @param aliases  aliases
      */
-    public Map createIndex(
-            String index,
-            Map<String, Object> settings,
-            Map<String, Object> mappings,
-            Map<String, Object> aliases) throws IOException {
+    public Map createIndex(String index, Map<String, Object> settings, Map<String, Object> mappings, Map<String, Object> aliases) throws IOException {
         return createIndex(index, settings, mappings, aliases, null, null);
     }
 
@@ -695,8 +691,8 @@ public class JestExecutor {
     /**
      * 搜索查询
      *
-     * @param indexNames        索引名称
-     * @param indexTypes        文档类型
+     * @param index             索引名称
+     * @param type              文档类型
      * @param query             query
      * @param includePattern    includePattern
      * @param excludePattern    excludePattern
@@ -707,8 +703,8 @@ public class JestExecutor {
      * @param refresh           refresh
      */
     public Map search(
-            String indexNames,
-            String indexTypes,
+            String index,
+            String type,
             String query,
             String includePattern,
             String excludePattern,
@@ -717,43 +713,43 @@ public class JestExecutor {
             Boolean allow,
             Boolean ignore,
             Boolean refresh) throws IOException {
-        return search(Collections.singletonList(indexNames), Collections.singletonList(indexTypes), query, includePattern, excludePattern, scriptObjectToMaps(sorts), enableTrackScores, allow, ignore, refresh);
+        return search(Collections.singletonList(index), Collections.singletonList(type), query, includePattern, excludePattern, scriptObjectToMaps(sorts), enableTrackScores, allow, ignore, refresh);
     }
 
     /**
      * 搜索查询
      *
-     * @param indexNames     索引名称
-     * @param indexTypes     文档类型
+     * @param index          索引名称
+     * @param type           文档类型
      * @param query          query
      * @param includePattern includePattern
      * @param excludePattern excludePattern
      * @param sorts          sorts --> [ {field: 'fieldName', order: 'ASC/DESC'}, ...]
      */
     public Map search(
-            String indexNames,
-            String indexTypes,
+            String index,
+            String type,
             String query,
             String includePattern,
             String excludePattern,
             ScriptObjectMirror sorts) throws IOException {
-        return search(Collections.singletonList(indexNames), Collections.singletonList(indexTypes), query, includePattern, excludePattern, scriptObjectToMaps(sorts), null, null, null, null);
+        return search(Collections.singletonList(index), Collections.singletonList(type), query, includePattern, excludePattern, scriptObjectToMaps(sorts), null, null, null, null);
     }
 
     /**
      * 搜索查询
      *
-     * @param indexNames 索引名称
-     * @param indexTypes 文档类型
-     * @param query      query
-     * @param sorts      sorts --> [ {field: 'fieldName', order: 'ASC/DESC'}, ...]
+     * @param index 索引名称
+     * @param type  文档类型
+     * @param query query
+     * @param sorts sorts --> [ {field: 'fieldName', order: 'ASC/DESC'}, ...]
      */
     public Map search(
-            String indexNames,
-            String indexTypes,
+            String index,
+            String type,
             String query,
             ScriptObjectMirror sorts) throws IOException {
-        return search(Collections.singletonList(indexNames), Collections.singletonList(indexTypes), query, null, null, scriptObjectToMaps(sorts), null, null, null, null);
+        return search(Collections.singletonList(index), Collections.singletonList(type), query, null, null, scriptObjectToMaps(sorts), null, null, null, null);
     }
 
     /**
