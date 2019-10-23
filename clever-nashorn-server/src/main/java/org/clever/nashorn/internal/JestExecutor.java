@@ -138,10 +138,13 @@ public class JestExecutor {
      * @param source  文档数据
      * @param refresh refresh
      */
-    public Map saveOrUpdate(String index, String type, String id, Map<String, Object> source, Boolean refresh) throws IOException {
+    public Map saveOrUpdate(String index, String type, Object id, Map<String, Object> source, Boolean refresh) throws IOException {
         Index.Builder builder = new Index.Builder(source).index(index).type(type);
-        if (StringUtils.isNotBlank(id)) {
-            builder.id(id);
+        if (id != null) {
+            String idStr = String.valueOf(id);
+            if (StringUtils.isNotBlank(idStr)) {
+                builder.id(idStr);
+            }
         }
         if (refresh != null) {
             builder.refresh(refresh);
@@ -158,7 +161,7 @@ public class JestExecutor {
      * @param id     文档ID
      * @param source 文档数据
      */
-    public Map saveOrUpdate(String index, String type, String id, Map<String, Object> source) throws IOException {
+    public Map saveOrUpdate(String index, String type, Object id, Map<String, Object> source) throws IOException {
         return saveOrUpdate(index, type, id, source, null);
     }
 
@@ -182,11 +185,11 @@ public class JestExecutor {
      * @param payload payload
      * @param refresh refresh
      */
-    public Map update(String index, String type, String id, Object payload, Boolean refresh) throws IOException {
+    public Map update(String index, String type, Object id, Object payload, Boolean refresh) throws IOException {
         Update.Builder builder = new Update.Builder(payload);
         builder.index(index);
         builder.type(type);
-        builder.id(id);
+        builder.id(String.valueOf(id));
         if (refresh != null) {
             builder.refresh(refresh);
         }
@@ -202,7 +205,7 @@ public class JestExecutor {
      * @param id      数据id
      * @param payload payload
      */
-    public Map update(String index, String type, String id, Object payload) throws IOException {
+    public Map update(String index, String type, Object id, Object payload) throws IOException {
         return update(index, type, id, payload, null);
     }
 
@@ -363,8 +366,8 @@ public class JestExecutor {
      * @param id      数据ID
      * @param refresh refresh
      */
-    public Map delete(String index, String type, String id, Boolean refresh) throws IOException {
-        Delete.Builder builder = new Delete.Builder(id);
+    public Map deleteData(String index, String type, Object id, Boolean refresh) throws IOException {
+        Delete.Builder builder = new Delete.Builder(String.valueOf(id));
         builder.index(index);
         builder.type(type);
         if (refresh != null) {
@@ -381,8 +384,8 @@ public class JestExecutor {
      * @param type  文档类型集
      * @param id    数据ID
      */
-    public Map delete(String index, String type, String id) throws IOException {
-        return delete(index, type, id, null);
+    public Map deleteData(String index, String type, Object id) throws IOException {
+        return deleteData(index, type, id, null);
     }
 
     /**
@@ -759,8 +762,8 @@ public class JestExecutor {
      * @param id      数据ID
      * @param refresh refresh
      */
-    public Map getData(String index, String id, Boolean refresh) throws IOException {
-        Get.Builder builder = new Get.Builder(index, id);
+    public Map getData(String index, Object id, Boolean refresh) throws IOException {
+        Get.Builder builder = new Get.Builder(index, String.valueOf(id));
         if (refresh != null) {
             builder.refresh(refresh);
         }
@@ -774,7 +777,7 @@ public class JestExecutor {
      * @param index 索引名称
      * @param id    数据ID
      */
-    public Map getData(String index, String id) throws IOException {
+    public Map getData(String index, Object id) throws IOException {
         return getData(index, id, null);
     }
 
@@ -786,9 +789,9 @@ public class JestExecutor {
      * @param ids     数据ID集合
      * @param refresh refresh
      */
-    public Map multiGet(String index, String type, Collection<String> ids, Boolean refresh) throws IOException {
+    public Map multiGet(String index, String type, Collection<?> ids, Boolean refresh) throws IOException {
         MultiGet.Builder.ById builder = new MultiGet.Builder.ById(index, type);
-        builder.addId(ids);
+        builder.addId(toStrList(ids));
         if (refresh != null) {
             builder.refresh(refresh);
         }
@@ -803,7 +806,7 @@ public class JestExecutor {
      * @param type  文档类型
      * @param ids   数据ID集合
      */
-    public Map multiGet(String index, String type, Collection<String> ids) throws IOException {
+    public Map multiGet(String index, String type, Collection<Object> ids) throws IOException {
         return multiGet(index, type, ids, null);
     }
 
@@ -896,5 +899,12 @@ public class JestExecutor {
             array.add((String) str);
         });
         return array;
+    }
+
+    public List<String> toStrList(Collection<?> ids) {
+        if (ids == null) {
+            return null;
+        }
+        return ids.stream().map(String::valueOf).collect(Collectors.toList());
     }
 }
