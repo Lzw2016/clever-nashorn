@@ -298,6 +298,15 @@ clever:
             database: 2
           redisDb3:
             database: 3
+      multiple-jest:
+        default-jest: jest1
+        global-config:
+          multi-threaded: true
+          connection-timeout: 30s
+          read-timeout: 30s
+        jest-config-map:
+          jest1:
+            uris: http://elasticsearch.msvc.top
 
 ###################################################################################
 ### Feign配置

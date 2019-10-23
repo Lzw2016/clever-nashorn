@@ -24,4 +24,9 @@ public class GlobalConfig {
      */
     @NestedConfigurationProperty
     private MultipleRedisConfig multipleRedis = new MultipleRedisConfig();
+    /**
+     * 多Jest配置
+     */
+    @NestedConfigurationProperty
+    private MultipleJestConfig multipleJest = new MultipleJestConfig();
 }

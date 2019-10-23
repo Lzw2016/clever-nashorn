@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.SqlExplainInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.searchbox.client.JestClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.clever.common.server.config.CustomPaginationInterceptor;
@@ -22,10 +24,13 @@ import org.clever.nashorn.module.cache.MemoryModuleCache;
 import org.clever.nashorn.module.cache.ModuleCache;
 import org.clever.nashorn.service.CodeRunLogService;
 import org.clever.nashorn.utils.MergeDataSourceConfig;
+import org.clever.nashorn.utils.MergeJestProperties;
 import org.clever.nashorn.utils.MergeRedisProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.boot.autoconfigure.elasticsearch.jest.HttpClientConfigBuilderCustomizer;
+import org.springframework.boot.autoconfigure.elasticsearch.jest.JestProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -260,6 +265,55 @@ public class BeanConfiguration {
                 log.info("[" + name + "]Redis Connection Destroy completed!");
             } catch (Throwable e) {
                 log.info("[" + name + "]Redis Connection Destroy error", e);
+            }
+        })));
+        return result;
+    }
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Bean("MultipleJest")
+    public Map<String, JestClient> multipleJest(
+            @Autowired GlobalConfig globalConfig,
+            @Autowired(required = false) JestClient jestClient,
+            @Autowired(required = false) Gson gson,
+            @Autowired(required = false) List<HttpClientConfigBuilderCustomizer> builderCustomizers) {
+        MultipleJestConfig multipleJest = globalConfig.getMultipleJest();
+        if (multipleJest == null) {
+            multipleJest = new MultipleJestConfig();
+            globalConfig.setMultipleJest(multipleJest);
+        }
+        int jestConfigCount = multipleJest.getJestConfigMap().size();
+        if (jestClient != null) {
+            jestConfigCount = jestConfigCount + 1;
+        }
+        final Map<String, JestClient> jestClientMap = new HashMap<>(jestConfigCount);
+        // 加入已存在的数据源
+        if (jestClient != null) {
+            jestClientMap.put("spring-data-jest", jestClient);
+        }
+        // 初始化配置的数据源
+        final JestProperties jestGlobalConfig = multipleJest.getGlobalConfig();
+        multipleJest.getJestConfigMap().forEach((name, jestConfig) -> {
+            if (jestClientMap.containsKey(name)) {
+                if ("spring-data-jest".equals(name)) {
+                    throw new RuntimeException("jest-config-map 名称不能使用“spring-data-jest”");
+                }
+                throw new RuntimeException("jest-config-map 名称重复: " + name);
+            }
+            jestConfig = MergeJestProperties.mergeConfig(jestGlobalConfig, jestConfig);
+            JestClientBuilder jestClientBuilder = new JestClientBuilder(jestConfig, gson, builderCustomizers);
+            JestClient jestClientTmp = jestClientBuilder.builder();
+            jestClientMap.put(name, jestClientTmp);
+        });
+        final Map<String, JestClient> result = Collections.unmodifiableMap(jestClientMap);
+        // 关闭 JestClient
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> jestClientMap.forEach((name, jestClientTmp) -> {
+            log.info("[" + name + "]JestClient Close start...");
+            try {
+                jestClientTmp.close();
+                log.info("[" + name + "]JestClient Close completed!");
+            } catch (Throwable e) {
+                log.info("[" + name + "]JestClient Close error", e);
             }
         })));
         return result;

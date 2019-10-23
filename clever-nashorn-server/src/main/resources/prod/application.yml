@@ -296,6 +296,15 @@ clever:
             database: 2
           redisDb3:
             database: 3
+      multiple-jest:
+        default-jest: jest1
+        global-config:
+          multi-threaded: true
+          connection-timeout: 3s
+          read-timeout: 3s
+        jest-config-map:
+          jest1:
+            uris: http://172.18.1.1:9200
 
 ###################################################################################
 ### Feign配置
