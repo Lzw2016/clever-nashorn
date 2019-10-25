@@ -210,15 +210,13 @@ public class BeanConfiguration {
         });
         final Map<String, DataSource> result = Collections.unmodifiableMap(dataSourceMap);
         // 关闭连接池
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            result.forEach((name, dataSource) -> {
-                if (dataSource instanceof HikariDataSource) {
-                    HikariDataSource tmp = (HikariDataSource) dataSource;
-                    tmp.close();
-                }
-                // 其他类型的连接池也要关闭连接池
-            });
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> result.forEach((name, dataSource) -> {
+            if (dataSource instanceof HikariDataSource) {
+                HikariDataSource tmp = (HikariDataSource) dataSource;
+                tmp.close();
+            }
+            // 其他类型的连接池也要关闭连接池
+        })));
         return result;
     }
 
