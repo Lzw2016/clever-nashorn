@@ -22,4 +22,13 @@ public class CanalConfig {
      */
     @NestedConfigurationProperty
     private CanalParameter canalParameter;
+
+    /**
+     * TODO 数据库 IP + port
+     */
+    private String hostname;
+    /**
+     * TODO 数据库 IP + port
+     */
+    private int port;
 }

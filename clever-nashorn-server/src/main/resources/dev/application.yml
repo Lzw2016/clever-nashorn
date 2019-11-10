@@ -14,6 +14,7 @@ logging:
   level:
     org.springframework: warn
     org.clever: debug
+    org.clever.canal: info
 
 ###################################################################################
 ### Spring配置
@@ -307,13 +308,50 @@ clever:
         jest-config-map:
           jest1:
             uris: http://elasticsearch.msvc.top
-#      multiple-canal:
-#        global-config:
-#          filter: ''
-#          canal-parameter:
-#            meta-mode: local_file
-#        canal-config-map:
-#          canalDefault:
+      multiple-canal:
+        global-config:
+          canal-parameter:
+            meta-mode: local_file
+            storage-mode: memory
+            storage-batch-mode: mem_size
+            memory-storage-raw-entry: false
+            ddl-isolation: true
+            black-filter: ''
+            sourcing-type: mysql
+            gt-id-enable: true
+            slave-id: 666
+            db-username: ''
+            db-password: ''
+            ts-db-enable: false
+            detecting-enable: false
+            ha-mode: heartbeat
+            heartbeat-ha-enable: true
+            log-position-mode: meta
+          hostname: ''
+          port: 3306
+          filter: ''
+        canal-config-map:
+          08MySql-binlog:
+            canal-parameter:
+              meta-mode: local_file
+              storage-mode: memory
+              storage-batch-mode: mem_size
+              memory-storage-raw-entry: false
+              ddl-isolation: true
+              black-filter: ''
+              sourcing-type: mysql
+              gt-id-enable: true
+              slave-id: 666
+              db-username: 'test-slave'
+              db-password: 'lizhiwei1993'
+              ts-db-enable: false
+              detecting-enable: false
+              ha-mode: heartbeat
+              heartbeat-ha-enable: true
+              log-position-mode: meta
+            hostname: 'mysql.msvc.top'
+            port: 3306
+            filter: ''
 
 
 ###################################################################################

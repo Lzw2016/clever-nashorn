@@ -30,3 +30,5 @@ target
 .DS_Store
 pom.xml.versionsBackup
 httpCache
+**/meta-manager
+**/parse-manager

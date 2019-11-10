@@ -33,7 +33,7 @@ public class ConsumeBinlogThread extends Thread {
         this.canalServerWithEmbedded = canalServerWithEmbedded;
         this.scriptModuleInstance = scriptModuleInstance;
         clientIdentity = new ClientIdentity(destination, id);
-        setName(String.format("ConsumeBinlogThread-%s", id));
+        setName(String.format("ConsumeBinlogThread-[%s]-[%s]", destination, id));
         setDaemon(true);
     }
 

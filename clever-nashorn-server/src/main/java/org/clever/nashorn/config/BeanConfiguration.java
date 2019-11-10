@@ -179,6 +179,7 @@ public class BeanConfiguration {
             globalConfig.setMultipleCanal(multipleCanalConfig);
         }
         // TODO Merge Config
+        // TODO 校验配置重复(不同的destination 对应同一个数据库)
         CanalMysqlSlave canalMysqlSlave = new CanalMysqlSlave(scriptModuleInstance, Collections.unmodifiableMap(multipleCanalConfig.getCanalConfigMap()));
         canalMysqlSlave.start();
         // 关闭 CanalMysqlSlave
