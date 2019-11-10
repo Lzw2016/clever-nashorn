@@ -29,4 +29,9 @@ public class GlobalConfig {
      */
     @NestedConfigurationProperty
     private MultipleJestConfig multipleJest = new MultipleJestConfig();
+    /**
+     * 多Canal配置
+     */
+    @NestedConfigurationProperty
+    private MultipleCanalConfig multipleCanal = new MultipleCanalConfig();
 }

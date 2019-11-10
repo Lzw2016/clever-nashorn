@@ -307,6 +307,14 @@ clever:
         jest-config-map:
           jest1:
             uris: http://elasticsearch.msvc.top
+#      multiple-canal:
+#        global-config:
+#          filter: ''
+#          canal-parameter:
+#            meta-mode: local_file
+#        canal-config-map:
+#          canalDefault:
+
 
 ###################################################################################
 ### Feign配置

@@ -15,6 +15,7 @@ import org.clever.nashorn.ScriptModuleInstance;
 import org.clever.nashorn.cache.JsCodeFileCache;
 import org.clever.nashorn.cache.JsCodeFileCacheService;
 import org.clever.nashorn.cache.MemoryJsCodeFileCache;
+import org.clever.nashorn.canal.CanalMysqlSlave;
 import org.clever.nashorn.entity.EnumConstant;
 import org.clever.nashorn.folder.DatabaseFolder;
 import org.clever.nashorn.folder.Folder;
@@ -136,13 +137,11 @@ public class BeanConfiguration {
         return new MemoryJsCodeFileCache(1000 * 3600 * 2, jsCodeFileCacheService);
     }
 
-    @Bean
-    public HttpRequestJsHandler httpRequestJsHandler(
-            @Autowired ObjectMapper objectMapper,
+    @Bean("Global-ScriptModuleInstance")
+    public ScriptModuleInstance scriptModuleInstance(
             @Autowired @Qualifier("HttpRequestJsHandler-ModuleCache") ModuleCache moduleCache,
             @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") JsCodeFileCache jsCodeFileCache,
-            @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context,
-            @Autowired CodeRunLogService codeRunLogService
+            @Autowired @Qualifier("ScriptGlobalContext") Map<String, Object> context
     ) {
         final String bizType = EnumConstant.DefaultBizType;
         final String groupName = EnumConstant.DefaultGroupName;
@@ -154,8 +153,37 @@ public class BeanConfiguration {
             //noinspection unchecked
             context = (Map<String, Object>) context.get("ScriptGlobalContext");
         }
-        ScriptModuleInstance scriptModuleInstance = new ScriptModuleInstance(rootFolder, moduleCache, console, context);
+        return new ScriptModuleInstance(rootFolder, moduleCache, console, context);
+    }
+
+    @Bean
+    public HttpRequestJsHandler httpRequestJsHandler(
+            @Autowired ObjectMapper objectMapper,
+            @Autowired @Qualifier("HttpRequestJsHandler-JsCodeFileCache") JsCodeFileCache jsCodeFileCache,
+            @Autowired @Qualifier("Global-ScriptModuleInstance") ScriptModuleInstance scriptModuleInstance,
+            @Autowired CodeRunLogService codeRunLogService
+    ) {
+        final String bizType = EnumConstant.DefaultBizType;
+        final String groupName = EnumConstant.DefaultGroupName;
         return new HttpRequestJsHandler(bizType, groupName, objectMapper, jsCodeFileCache, scriptModuleInstance, codeRunLogService);
+    }
+
+    @Bean
+    public CanalMysqlSlave canalMysqlSlave(
+            @Autowired GlobalConfig globalConfig,
+            @Autowired @Qualifier("Global-ScriptModuleInstance") ScriptModuleInstance scriptModuleInstance
+    ) {
+        MultipleCanalConfig multipleCanalConfig = globalConfig.getMultipleCanal();
+        if (multipleCanalConfig == null) {
+            multipleCanalConfig = new MultipleCanalConfig();
+            globalConfig.setMultipleCanal(multipleCanalConfig);
+        }
+        // TODO Merge Config
+        CanalMysqlSlave canalMysqlSlave = new CanalMysqlSlave(scriptModuleInstance, Collections.unmodifiableMap(multipleCanalConfig.getCanalConfigMap()));
+        canalMysqlSlave.start();
+        // 关闭 CanalMysqlSlave
+        Runtime.getRuntime().addShutdownHook(new Thread(canalMysqlSlave::stop));
+        return canalMysqlSlave;
     }
 
     @Bean("MultipleDataSource")
