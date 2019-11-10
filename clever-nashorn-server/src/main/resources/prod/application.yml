@@ -306,6 +306,50 @@ clever:
         jest-config-map:
           jest1:
             uris: http://172.18.1.1:9200
+      multiple-canal:
+        global-config:
+          canal-parameter:
+            meta-mode: local_file
+            storage-mode: memory
+            storage-batch-mode: mem_size
+            memory-storage-raw-entry: false
+            ddl-isolation: true
+            black-filter: ''
+            sourcing-type: mysql
+            gt-id-enable: true
+            slave-id: 666
+            db-username: ''
+            db-password: ''
+            ts-db-enable: false
+            detecting-enable: false
+            ha-mode: heartbeat
+            heartbeat-ha-enable: true
+            log-position-mode: meta
+          hostname: ''
+          port: 3306
+          filter: ''
+        canal-config-map:
+          08MySql-binlog:
+            canal-parameter:
+              meta-mode: local_file
+              storage-mode: memory
+              storage-batch-mode: mem_size
+              memory-storage-raw-entry: false
+              ddl-isolation: true
+              black-filter: ''
+              sourcing-type: mysql
+              gt-id-enable: true
+              slave-id: 666
+              db-username: 'test-slave'
+              db-password: 'lizhiwei1993'
+              ts-db-enable: false
+              detecting-enable: false
+              ha-mode: heartbeat
+              heartbeat-ha-enable: true
+              log-position-mode: meta
+            hostname: '172.18.1.1'
+            port: 3306
+            filter: ''
 
 ###################################################################################
 ### Feign配置

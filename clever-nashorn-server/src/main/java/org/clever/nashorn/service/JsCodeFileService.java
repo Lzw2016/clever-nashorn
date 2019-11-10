@@ -177,7 +177,7 @@ public class JsCodeFileService {
         if (updateFullPath && Objects.equals(EnumConstant.Node_Type_2, old.getNodeType())) {
             String oldFullPath = JsCodeFilePathUtils.concat(old.getFilePath(), old.getName());
             String newFullPath = JsCodeFilePathUtils.concat(update.getFilePath(), update.getName());
-            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(oldFullPath);
+            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(old.getBizType(), old.getGroupName(), oldFullPath);
             if (childList.size() > 0) {
                 List<JsCodeFile> updateList = new ArrayList<>(childList.size());
                 childList.forEach((file) -> {
@@ -212,7 +212,7 @@ public class JsCodeFileService {
             jsCodeFileMapper.deleteById(id);
         } else if (Objects.equals(old.getNodeType(), EnumConstant.Node_Type_2)) {
             // 查询所有需要删除的子目录或者文件
-            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(JsCodeFilePathUtils.concat(old.getFilePath(), old.getName()));
+            List<JsCodeFile> childList = jsCodeFileMapper.findAllChildByFilePath(old.getBizType(), old.getGroupName(), JsCodeFilePathUtils.concat(old.getFilePath(), old.getName()));
             List<Long> idList = new ArrayList<>(childList.size() + 1);
             idList.add(old.getId());
             childList.forEach(file -> idList.add(file.getId()));
