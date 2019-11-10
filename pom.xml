@@ -71,6 +71,7 @@
         <mybatis-plus.version>3.1.2</mybatis-plus.version>
         <common.version>1.0.2.RELEASES</common.version>
         <security.version>1.0.1.RELEASES</security.version>
+        <clever-canal.version>0.0.1-SNAPSHOT</clever-canal.version>
     </properties>
 
     <dependencyManagement>
@@ -183,6 +184,17 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-extension</artifactId>
                 <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!--clever-canal-->
+            <dependency>
+                <groupId>org.clever</groupId>
+                <artifactId>clever-canal-server</artifactId>
+                <version>${clever-canal.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.clever</groupId>
+                <artifactId>clever-canal-prometheus</artifactId>
+                <version>${clever-canal.version}</version>
             </dependency>
             <!--依赖包-->
             <dependency>

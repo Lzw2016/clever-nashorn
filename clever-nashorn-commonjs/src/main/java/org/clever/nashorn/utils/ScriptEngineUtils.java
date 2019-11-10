@@ -35,6 +35,7 @@ public class ScriptEngineUtils {
             throw new RuntimeException("当前Java版本没有Nashorn JS引擎，建议使用Java1.8.0_211版本");
         }
         NASHORN_FACTORY = nashornFactory;
+        Java_Type.add("org.clever.nashorn.internal.CommonUtils");
         Java_Type.add("org.apache.commons.lang3.StringUtils");
         Java_Type.add("org.clever.nashorn.entity.JsCodeFile");
         Java_Type.add("org.clever.nashorn.internal.TestInternal");
