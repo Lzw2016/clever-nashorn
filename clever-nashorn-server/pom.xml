@@ -17,12 +17,21 @@
         <!--spring-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
         </dependency>
         <!--swagger2-->
         <dependency>
@@ -113,10 +122,10 @@
             <groupId>org.clever</groupId>
             <artifactId>clever-canal-server</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.clever</groupId>-->
-<!--            <artifactId>clever-canal-prometheus</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.clever</groupId>-->
+        <!--            <artifactId>clever-canal-prometheus</artifactId>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <profiles>
