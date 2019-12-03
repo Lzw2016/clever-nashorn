@@ -27,11 +27,17 @@ steps:
 
   - name: 构建镜像[Docker]
     image: plugins/docker
+    volumes:
+      - name: docker-daemon
+        path: /etc/docker
     settings:
       registry: '172.18.1.1:15000'
       repo: '172.18.1.1:15000/java-service/clever-nashorn-server'
-      # bip: true
-      insecure: true
+      username:
+        from_secret: harborUsername
+      password:
+        from_secret: harborPassword
+      # insecure: true
       dockerfile: ./Dockerfile
       target: prod
       tags: ['0.0.1-SNAPSHOT']
@@ -102,5 +108,9 @@ volumes:
   - name: package-java
     host:
       path: /home/lizw/Desktop/docker-opt/package/java
+  # docker-daemon 配置
+  - name: docker-daemon
+    host:
+      path: /etc/docker
 
 # -------------------------------------------------------------------------------------------------------------
