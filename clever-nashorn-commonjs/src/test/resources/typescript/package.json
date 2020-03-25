@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "tsc": "tsc -w"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}

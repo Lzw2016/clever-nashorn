@@ -32,3 +32,5 @@ pom.xml.versionsBackup
 httpCache
 **/meta-manager
 **/parse-manager
+node_modules
+**/typescript/build

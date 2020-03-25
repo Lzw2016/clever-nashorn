@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+    "module": "CommonJS",
+    "target": "ES3",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "paths": {}
+  },
+  "exclude": [
+    "node_modules",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "tslint:latest",
+    "tslint-config-prettier",
+    "example",
+    "_test_"
+  ]
+}
