@@ -1,5 +1,6 @@
 package org.clever.nashorn.modules;
 
+import com.google.common.collect.Maps;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -8,12 +9,14 @@ import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.clever.nashorn.ScriptModuleInstance;
+import org.clever.nashorn.internal.CommonUtils;
 import org.junit.Test;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * 作者： lzw<br/>
@@ -71,14 +74,32 @@ public class DirectoryWatcherTest {
         observer.addListener(fileListener);
         monitor.start();
 
-        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", root);
+        Map<String, Object> context = Maps.newLinkedHashMap();
+        context.put("CommonUtils", CommonUtils.Instance);
+        ScriptModuleInstance scriptModuleInstance = ScriptModuleInstance.creatDefault("test", "test", root,context);
         fileListener.setScriptModuleInstance(scriptModuleInstance);
 
-        for (int i = 0; i <= 100; i++) {
-            Thread.sleep(1000 * 3);
+        new Thread(()->{
+            log.info("start v1=========");
             ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./test.js");
-            log.info(" # --- {}", scriptObjectMirror.callMember("addNumberWrapper", 1, i));
-        }
+            log.info(" # --- {}", scriptObjectMirror.callMember("testA"));
+        }).start();
+
+        Thread.sleep(5000);
+
+        new Thread(()->{
+            log.info("start v2=========");
+            ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./test.js");
+            log.info(" # --- {}", scriptObjectMirror.callMember("testA"));
+        }).start();
+
+//        for (int i = 0; i <= 100; i++) {
+//            Thread.sleep(1000 * 3);
+//            ScriptObjectMirror scriptObjectMirror = scriptModuleInstance.useJs("./test.js");
+//            // log.info(" # --- {}", scriptObjectMirror.callMember("addNumberWrapper", 1, i));
+//        }
+
+        Thread.sleep(Integer.MAX_VALUE);
 
         monitor.stop();
     }
@@ -133,7 +154,7 @@ public class DirectoryWatcherTest {
             if (scriptModuleInstance == null) {
                 return;
             }
-//            scriptModuleInstance.getModuleCache().remove(file.getAbsolutePath());
+//             scriptModuleInstance.getModuleCache().remove(file.getAbsolutePath());
             scriptModuleInstance.getModuleCache().clear();
         }
     }
