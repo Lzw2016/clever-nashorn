@@ -81,6 +81,7 @@ spring:
         characterEncoding: utf-8
         zeroDateTimeBehavior: convert_to_null
         useSSL: false
+        useCursorFetch: true
       auto-commit: false
       maximum-pool-size: 100
       minimum-idle: 5
