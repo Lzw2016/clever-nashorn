@@ -260,6 +260,10 @@ public class JsCodeFileService {
         return jsCodeFileMapper.selectById(old.getId());
     }
 
+    public JsCodeFile getFile(String bizType, String groupName, String fileFullPath) {
+        return jsCodeFileMapper.getByFileFullPath(bizType, groupName, fileFullPath);
+    }
+
     @Transactional
     protected void addHistory(JsCodeFile jsCodeFile) {
         CodeFileHistory old = codeFileHistoryMapper.getLastHistory(jsCodeFile.getBizType(), jsCodeFile.getGroupName(), jsCodeFile.getFilePath(), jsCodeFile.getName());

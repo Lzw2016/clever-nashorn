@@ -58,6 +58,16 @@ public interface JsCodeFileMapper extends BaseMapper<JsCodeFile> {
             @Param("filePath") String filePath,
             @Param("name") String name);
 
+    @Select({
+            "select * from js_code_file ",
+            "where biz_type=#{bizType} and group_name=#{groupName} and concat(file_path, name)=#{fileFullPath} ",
+            "limit 1"
+    })
+    JsCodeFile getByFileFullPath(
+            @Param("bizType") String bizType,
+            @Param("groupName") String groupName,
+            @Param("fileFullPath") String fileFullPath);
+
     @Select("select * from js_code_file")
     Set<JsCodeFile> findAll();
 
