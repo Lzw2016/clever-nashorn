@@ -2,6 +2,8 @@ package org.clever.nashorn.utils;
 
 import org.springframework.boot.autoconfigure.elasticsearch.jest.JestProperties;
 
+import java.time.Duration;
+
 /**
  * 作者：lizw <br/>
  * 创建时间：2019/10/23 15:57 <br/>
@@ -23,8 +25,12 @@ public class MergeJestProperties {
         }
         if (target.getConnectionTimeout() == null) {
             target.setConnectionTimeout(source.getConnectionTimeout());
+        } else if (target.getConnectionTimeout().equals(Duration.ofSeconds(3)) && source.getConnectionTimeout() != null) {
+            target.setConnectionTimeout(source.getConnectionTimeout());
         }
         if (target.getReadTimeout() == null) {
+            target.setReadTimeout(source.getReadTimeout());
+        } else if (target.getReadTimeout().equals(Duration.ofSeconds(3)) && source.getReadTimeout() != null) {
             target.setReadTimeout(source.getReadTimeout());
         }
         if (target.getProxy() != null && source.getProxy() != null) {
