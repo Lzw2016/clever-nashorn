@@ -33,6 +33,9 @@ public class RequireLib implements RequireLibFunction, CompileModule {
 
     @Override
     public ScriptObjectMirror requireLib(String module) throws ScriptException, NashornException {
+        if (StringUtils.isNotBlank(module) && module.startsWith("@/")) {
+            module = module.substring(1);
+        }
         Tuple3<String[], String, Folder> tuple3 = InnerUtils.resolvedFolder(module, folder);
         String[] folderParts = tuple3.getValue1();
         String filename = tuple3.getValue2();

@@ -1,4 +1,4 @@
-import { addNumber, testB } from './lib';
+import { addNumber } from '@/lib';
 
 const addNumberWrapper = (a: number, b: number): number => {
   console.log("addNumber --> 之前 a=", a, " | b=", b);
@@ -9,11 +9,7 @@ const addNumberWrapper = (a: number, b: number): number => {
 }
 
 export function testA() {
-  while(true){
-    console.log('A-v2');
-    testB();
-    CommonUtils.sleep(1000);
-  }
+  console.log('A-v2');
 }
 
 export function testA2() {

@@ -111,6 +111,7 @@ spring:
         health-check-interval: 1s
         prefer-ip-address: true
         health-check-url: http://${spring.cloud.client.ip-address}:${server.port}/actuator/health
+        health-check-critical-timeout: 30s
 
 ###################################################################################
 ### management配置
