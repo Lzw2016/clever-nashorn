@@ -49,7 +49,7 @@ public abstract class Handler<T extends WebSocketTaskReq, K extends Task<T>> ext
         // 守护线程
         Thread thread = new Thread(() -> {
             while (true) {
-                clearTask(false);
+                //clearTask(false);
                 try {
                     Thread.sleep(1000 * 3);
                 } catch (Throwable e) {

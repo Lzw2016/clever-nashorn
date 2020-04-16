@@ -62,7 +62,7 @@ public abstract class Task<T extends WebSocketTaskReq> {
      * 任务运行超时时间单位秒(小于等于0表示不超时)
      */
     @Getter
-    protected long runTimeOut = 60;
+    protected long runTimeOut = -1;
 
     /**
      * 当前任务ID(全局唯一)

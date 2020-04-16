@@ -1,5 +1,6 @@
 package org.clever.nashorn.internal;
 
+import com.google.common.collect.Maps;
 import org.clever.common.utils.spring.SpringContextHolder;
 import org.clever.nashorn.config.GlobalConfig;
 
@@ -13,27 +14,27 @@ public class JdbcUtils {
     /**
      * 所有的 JdbcExecutor
      */
-    private static Map<String, JdbcExecutor> JdbcExecutor_Map;
+    private static Map<String, JdbcExecutor> JdbcExecutorMap = Maps.newConcurrentMap();
     /**
      * 默认的 DataSource
      */
     private static String defaultDataSourceName;
 
     private synchronized static Map<String, JdbcExecutor> getJdbcExecutorMap() {
-        if (JdbcExecutor_Map == null) {
-            Map<String, DataSource> dataSourceMap = SpringContextHolder.getBean("MultipleDataSource");
-            Map<String, JdbcExecutor> tmpMap = new HashMap<>(dataSourceMap.size());
-            dataSourceMap.forEach((name, dataSource) -> {
+
+        Map<String, DataSource> dataSourceMap = SpringContextHolder.getBean("MultipleDataSource");
+        dataSourceMap.forEach((name, dataSource) -> {
+            if(!JdbcExecutorMap.containsKey(name)){
                 JdbcExecutor jdbcExecutor = new JdbcExecutor(dataSource);
-                tmpMap.put(name, jdbcExecutor);
-            });
-            JdbcExecutor_Map = Collections.unmodifiableMap(tmpMap);
-        }
+                JdbcExecutorMap.put(name, jdbcExecutor);
+            }
+        });
+
         if (defaultDataSourceName == null) {
             GlobalConfig globalConfig = SpringContextHolder.getBean(GlobalConfig.class);
             defaultDataSourceName = globalConfig.getMultipleDataSource().getDefaultDataSource();
         }
-        return JdbcExecutor_Map;
+        return JdbcExecutorMap;
     }
 
     public static final JdbcUtils Instance = new JdbcUtils();

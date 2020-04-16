@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.SqlExplainInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -124,6 +125,7 @@ public class BeanConfiguration {
         context.put("JdbcUtils", JdbcUtils.Instance);
         context.put("RedisUtils", RedisUtils.Instance);
         context.put("JestUtils", JestUtils.Instance);
+        context.put(DataSourceManager.INSTANCE_NAME, DataSourceManager.Instance);
         return Collections.unmodifiableMap(context);
     }
 
@@ -226,18 +228,20 @@ public class BeanConfiguration {
         }
         // 初始化配置的数据源
         final HikariConfig dataSourceGlobalConfig = multipleDataSource.getDataSourceGlobalConfig();
+        final Map<String, DataSource> result = Maps.newConcurrentMap();
         multipleDataSource.getDataSourceMap().forEach((name, hikariConfig) -> {
             if (dataSourceMap.containsKey(name)) {
                 throw new RuntimeException("DataSource 名称重复: " + name);
             }
-            hikariConfig = MergeDataSourceConfig.mergeConfig(dataSourceGlobalConfig, hikariConfig);
             if (StringUtils.isBlank(hikariConfig.getPoolName())) {
                 hikariConfig.setPoolName(name);
             }
+            hikariConfig = MergeDataSourceConfig.mergeConfig(dataSourceGlobalConfig, hikariConfig);
             HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
             dataSourceMap.put(name, hikariDataSource);
+            result.put(name,hikariDataSource);
         });
-        final Map<String, DataSource> result = Collections.unmodifiableMap(dataSourceMap);
+
         // 关闭连接池
         Runtime.getRuntime().addShutdownHook(new Thread(() -> result.forEach((name, dataSource) -> {
             if (dataSource instanceof HikariDataSource) {

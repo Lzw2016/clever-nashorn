@@ -48,24 +48,7 @@
             <artifactId>clever-common-server</artifactId>
         </dependency>
         <!--clever-security-jwt-->
-        <dependency>
-            <groupId>org.clever</groupId>
-            <artifactId>clever-security-embed</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+
         <!--clever-nashorn-commonjs-->
         <dependency>
             <groupId>org.clever</groupId>

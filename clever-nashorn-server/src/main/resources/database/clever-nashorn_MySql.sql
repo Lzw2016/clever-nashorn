@@ -1,5 +1,5 @@
-create database if not exists `clever-nashorn` default character set = utf8;
-use `clever-nashorn`;
+create database if not exists `web-exchange-nashorn` default character set = utf8;
+use `web-exchange-nashorn`;
 
 
 /* ====================================================================================================================
