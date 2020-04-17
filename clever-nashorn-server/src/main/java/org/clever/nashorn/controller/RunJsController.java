@@ -49,7 +49,7 @@ public class RunJsController {
     /**
      * 所有的任务 Map<taskId, ThreadPoolExecutor> <br />
      */
-    private static final ExecutorService EXECUTOR_SERVICE = new ThreadPoolExecutor(3, 32, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private static final ExecutorService EXECUTOR_SERVICE = new ThreadPoolExecutor(32, 32, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
     private static final Map<String, Long> Task_Mapping = new HashMap<>(1000);
 
@@ -101,9 +101,9 @@ public class RunJsController {
                 status = EnumConstant.Run_Log_Status_3;
                 stackTrace = ExceptionUtils.getStackTraceAsString(e);
             } finally {
-                Task_Log.remove(codeRunLogId);
                 codeRunLogService.appendLog(codeRunLogId, String.format("%s\n%s", getLogs(logsArray), stackTrace));
                 codeRunLogService.endLog(codeRunLogId, status);
+                Task_Log.remove(codeRunLogId);
             }
         });
         return new AjaxMessage<>(taskId, "任务启动成功");

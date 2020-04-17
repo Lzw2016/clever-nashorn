@@ -23,7 +23,7 @@ public interface CodeRunLogMapper extends BaseMapper<CodeRunLog> {
     List<CodeRunLogQueryRes> queryByPage(@Param("query") CodeRunLogQueryReq query);
 
     @Update("update code_run_log set run_log=concat(run_log, #{addLog}) where id=#{codeRunLogId}")
-    int appendLog(Long codeRunLogId, String addLog);
+    int appendLog(@Param("codeRunLogId") Long codeRunLogId, @Param("addLog") String addLog);
 
     List<CodeRunLogStatusSummaryRes> groupByStatus(@Param("query") CodeRunLogQueryReq query);
 }
