@@ -12,7 +12,7 @@ export function testA() {
   while(true){
     console.log('A-v2');
     testB();
-    CommonUtils.sleep(1000);
+    // CommonUtils.sleep(1000);
   }
 }
 

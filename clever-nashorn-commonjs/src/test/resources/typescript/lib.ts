@@ -10,6 +10,17 @@ export function testB() {
   testA2();
 }
 
+function helloWord(target: any) {
+  console.log('hello Word!');
+}
+
+@helloWord
+class Test {
+
+}
+
+
 export {
   addNumber,
+  Test,
 }
