@@ -1,4 +1,4 @@
-import { testA2 } from './test';
+// import { testA2 } from './test';
 
 const addNumber = (a: number, b: number): number => {
   return a + b;
@@ -7,7 +7,6 @@ const addNumber = (a: number, b: number): number => {
 
 export function testB() {
   console.log('B-v2')
-  testA2();
 }
 
 function helloWord(target: any) {

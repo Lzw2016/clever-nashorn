@@ -5,6 +5,7 @@ import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.clever.nashorn.folder.Folder;
 import org.clever.nashorn.internal.Console;
 import org.clever.nashorn.module.cache.ModuleCache;
@@ -193,7 +194,17 @@ public class Module extends SimpleBindings implements RequireFunction, CompileMo
 
     @Override
     public ScriptObjectMirror require(String module) throws ScriptException, NashornException {
-        Tuple3<String[], String, Folder> tuple3 = InnerUtils.resolvedFolder(module, folder);
+        boolean useRoot = false;
+        if (StringUtils.isNotBlank(module) && module.startsWith("@/")) {
+            useRoot = true;
+            module = module.substring(1);
+        }
+        Tuple3<String[], String, Folder> tuple3;
+        if (useRoot && main != null) {
+            tuple3 = InnerUtils.resolvedFolder(module, main.folder);
+        } else {
+            tuple3 = InnerUtils.resolvedFolder(module, folder);
+        }
         String[] folderParts = tuple3.getValue1();
         String filename = tuple3.getValue2();
         Folder resolvedFolder = tuple3.getValue3();
