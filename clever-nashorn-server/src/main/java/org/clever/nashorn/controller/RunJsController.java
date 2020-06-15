@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -65,7 +66,8 @@ public class RunJsController {
     public AjaxMessage<String> run(
             @RequestParam("fileFullPath") String fileFullPath,
             @RequestParam("fucName") String fucName,
-            @RequestParam("note") String note) {
+            @RequestParam(name = "note", required = false, defaultValue = "") String note,
+            @RequestParam(name = "params", required = false) List<String> params) {
         DebugReq req = new DebugReq("default", "default");
         req.setFileFullPath(fileFullPath);
         req.setFucName(fucName);
@@ -95,7 +97,7 @@ public class RunJsController {
                     logsArray = (ScriptObjectMirror) logs;
                     Task_Log.put(codeRunLogId, logsArray);
                 }
-                scriptObjectMirror.callMember(fucName);
+                scriptObjectMirror.callMember(fucName, params);
                 // codeRunLogService.appendLog();
             } catch (Exception e) {
                 status = EnumConstant.Run_Log_Status_3;
