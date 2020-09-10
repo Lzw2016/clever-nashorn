@@ -293,6 +293,18 @@ public class HttpRequestJsHandler implements HandlerInterceptor {
                 endTime - startTime3,
                 endTime - startTime4
         );
+        String origin = request.getHeader("Origin");
+        if (StringUtils.isNotBlank(origin)) {
+            response.addHeader("Access-Control-Allow-Origin", origin);
+            response.addHeader("Access-Control-Allow-Credentials", "true");
+        } else {
+            response.addHeader("Access-Control-Allow-Origin", "*");
+            response.addHeader("Access-Control-Allow-Credentials", "false");
+        }
+        response.addHeader("Access-Control-Request-Method", "OPTIONS");
+        response.addHeader("Access-Control-Request-Headers", "*");
+        response.addHeader("Access-Control-Expose-Headers", "*");
+        response.addHeader("Access-Control-Allow-Headers", "*");
         return false;
     }
 
