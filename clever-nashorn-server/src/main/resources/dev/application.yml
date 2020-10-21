@@ -193,9 +193,9 @@ clever:
             password: KgSYtPKRF6Lx
           b2b-prod-ro:
             driver-class-name: com.mysql.cj.jdbc.Driver
-            jdbc-url: jdbc:mysql://b2b5-cluster.cluster-ro-c9xmug6pfqr3.rds.cn-northwest-1.amazonaws.com.cn/b2b5?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&dataBaseType=write
-            username: user_supplier
-            password: k2D-2Es-JDw-23S
+            jdbc-url: jdbc:mysql://b2b5-cluster.cluster-ro-c9xmug6pfqr3.rds.cn-northwest-1.amazonaws.com.cn:3306/b2b5?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&dataBaseType=write
+            username: user_b2b5
+            password: Dw6-Yc3-coD-q2O
           b2b-local-validate:
             driver-class-name: com.mysql.cj.jdbc.Driver
             jdbc-url: jdbc:mysql://jzterp.cluster-c9xmug6pfqr3.rds.cn-northwest-1.amazonaws.com.cn/jzterp?autoReconnect=true&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&dataBaseType=write
