@@ -53,4 +53,4 @@
 
 ![jetbrains](https://raw.githubusercontent.com/Lzw2016/clever-nashorn/master/images/jetbrains.svg)
 
-[JetBrains Open Source license] (https://www.jetbrains.com/?from=clever-nashorn)
+[JetBrains Open Source license](https://www.jetbrains.com/?from=clever-nashorn)
