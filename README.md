@@ -47,3 +47,7 @@
 - [ ] 引入GraalVM支持Java、Python、Ruby、R、Scala、Kotlin，甚至是C、C++语言的混用
 - [ ] 升级Web IDE基于[Eclipse Theia](https://theia-ide.org/ "Eclipse Theia")做二次开发，IDE功能更加强大，交互更加友好
 
+### 感谢JetBrains Open Source license(s)
+
+![intellij-idea](https://raw.githubusercontent.com/Lzw2016/clever-nashorn/master/images/icon-intellij-idea.png)
+[JetBrains Open Source license(s)] (https://www.jetbrains.com/?from=clever-nashorn)
